@@ -1,0 +1,16 @@
+{
+    "swaggerVersion": "1.2",
+    "resourcePath": "/test",
+    "apis": [
+        {
+            "path": "/test-path",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "This is a test",
+                    "nickname": "test"
+                }
+            ]
+        }
+    ]
+}
