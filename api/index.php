@@ -1,5 +1,6 @@
 <?php
 include 'util.php';
+include 'cc-settings.php';
 require 'Slim/Slim.php';
 \Slim\Slim::registerAutoloader();
 
