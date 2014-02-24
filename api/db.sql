@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS `feedcontent` (
   `FeedID` int(11) NOT NULL,
   `Location` text NOT NULL,
   `ItemID` int(11) DEFAULT NULL,
-  `Content` int(11) NOT NULL,
+  `Content` text NOT NULL,
   `CrawlTS` int(11) NOT NULL,
   PRIMARY KEY (`ContentID`),
   KEY `FeedID` (`FeedID`),
