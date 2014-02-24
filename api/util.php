@@ -6,4 +6,9 @@ function random_bytes($n) {
 	}
 	return $bytes;
 }
+
+function json($json) {
+	$GLOBALS['app']->response->header('Content-Type', 'application/json');
+	echo json_encode($json);
+}
 ?>

@@ -2,45 +2,54 @@
 require 'Slim/Slim.php';
 \Slim\Slim::registerAutoloader();
 
+$app = new \Slim\Slim();
+GLOBAL $app;
+
+include 'cc-settings.php';
+GLOBAL $dbh;
+
 include 'authmiddleware.php';
 include 'util.php';
-
-$app = new \Slim\Slim();
 
 $app->add(new AuthMiddleware());
 
 $app->group('/account', function() use($app) {
 
 	$app->post('/login', function() use($app) {
-		$app->response->header('Content-Type', 'application/json');
-
 		$username = $app->request->params('username');
 		$password = $app->request->params('password');
 
-		include 'cc-settings.php';
-
+		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh->query("SELECT * FROM users WHERE username='$username'");
 		if ($sth) {
+			if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+				$userid = $result['UserID'];
+				$salt = $result['Salt'];
+				if ($result['Password'] == md5($password.$salt)) {
+					$sth = $dbh->query("SELECT * FROM clientauthorization WHERE userid='$userid'");
+					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+						$token = $result['Tolken'];
+					}
+					else {
+						$token = base64_encode(random_bytes(32));
 
+						$dbh->exec("INSERT INTO clientauthorization (userid, clientid, tolken, clientdescription, clientversion, uuid, seents) VALUES($userid, 1, '$token', 'Castcloud', '1.0', '', 1881)");
+					}
+
+					json(array("token" => $token));
+				}
+				else {
+					json(array("status" => "Login failed"));
+				}
+			}
+			else {
+				json(array("status" => "Login failed"));
+			}
 		}
-
-		$json = array("token" => base64_encode(random_bytes(32)));
-		echo json_encode($json);
 	});
 
 	$app->get('/ping', function() use($app) {
-		$app->response->header('Content-Type', 'application/json');
-
-		if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-			$status = "sykebil";
-		}
-		else {
-			$status = "no token";
-		}
-		$userid = $app->request->params('userid');
-
-		$json = array("status" => $status);
-		echo json_encode($json);
+		json(array("status" => "Logged in"));
 	});
 
 	$app->get('/settings', function() use($app) {

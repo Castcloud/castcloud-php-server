@@ -8,24 +8,22 @@ class AuthMiddleware extends \Slim\Middleware {
 			if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
 				$userid = $this->app->request->params('userid');
 
-				include 'cc-settings.php';
-
-				$sth = $dbh->query("SELECT * FROM clientauthorization WHERE userid=$userid");
+				$sth = $GLOBALS['dbh']->query("SELECT * FROM clientauthorization WHERE userid=$userid");
 				if ($sth) {
 					$result = $sth->fetch(PDO::FETCH_ASSOC);
-					if ($result['tolken'] == $_SERVER['HTTP_AUTHORIZATION']) {
+					if ($result['Tolken'] == $_SERVER['HTTP_AUTHORIZATION']) {
 						$this->next->call();
 					}
+					else {
+						json(array("status" => "Bad token"));
+					}
 				}
-
-				$this->app->response->header('Content-Type', 'application/json');
-				$json = array("status" => "Auth failed");
-				echo json_encode($json);
+				else {
+					json(array("status" => "Auth failed"));				
+				}
 			}
 			else {
-				$this->app->response->header('Content-Type', 'application/json');
-				$json = array("status" => "No auth token");
-				echo json_encode($json);
+				json(array("status" => "No token"));
 			}
 		}
 	}
