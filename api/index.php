@@ -53,29 +53,23 @@ $app->group('/account', function() use($app) {
 	});
 
 	$app->get('/settings', function() use($app) {
-		$app->response->header('Content-Type', 'application/json');
-
-		$json = array("key" => "value", "key2" => "value");
-		echo json_encode($json);
+		json(array("key" => "value", "key2" => "value"));
 	});
 
 	$app->post('/settings', function() use($app) {
-		$app->response->header('Content-Type', 'application/json');
-
-		$json = array("status" => "success");
-		echo json_encode($json);
+		json(array("status" => "success"));
 	});
 
 	$app->get('/takeout', function() use($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 	$app->get('/takeout/opml', function() use($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 	$app->post('/takeout/opml', function() use($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 });
@@ -83,40 +77,37 @@ $app->group('/account', function() use($app) {
 $app->group('/library', function() use($app) {
 
 	$app->get('/newepisodes', function() use($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 	$app->get('/episodes/:castid', function($castid) use ($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 	$app->get('/casts', function() use ($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 	$app->post('/casts', function() use ($app) {
-		$app->response->header('Content-Type', 'application/json');
-
 		$feedurl = $app->request->params('feedurl');
 
-		$json = array("status" => "success");
-		echo json_encode($json);
+		json(array("status" => "success"));
 	});
 
 	$app->get('/casts/:tag', function($tag) use ($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 	$app->get('/events', function() use ($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 	$app->post('/events', function() use ($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 	$app->get('tags', function() use ($app) {
-		$app->response->header('Content-Type', 'application/json');
+		json(array("Not" => "Implemented"));
 	});
 
 });
