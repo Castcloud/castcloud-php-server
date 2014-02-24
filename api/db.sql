@@ -20,7 +20,7 @@ SET time_zone = "+00:00";
 -- Tabellstruktur for tabell `Client`
 --
 
-CREATE TABLE IF NOT EXISTS `Client` (
+CREATE TABLE IF NOT EXISTS `client` (
   `ClientID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` text NOT NULL,
   `ApiKey` int(11) DEFAULT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `Client` (
 -- Tabellstruktur for tabell `ClientAuthorization`
 --
 
-CREATE TABLE IF NOT EXISTS `ClientAuthorization` (
+CREATE TABLE IF NOT EXISTS `clientauthorization` (
   `UniqueClientID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
   `ClientID` int(11) NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `ClientAuthorization` (
 -- Tabellstruktur for tabell `Event`
 --
 
-CREATE TABLE IF NOT EXISTS `Event` (
+CREATE TABLE IF NOT EXISTS `event` (
   `EventID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
   `Type` int(11) NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS `Event` (
 -- Tabellstruktur for tabell `Feed`
 --
 
-CREATE TABLE IF NOT EXISTS `Feed` (
+CREATE TABLE IF NOT EXISTS `feed` (
   `FeedID` int(11) NOT NULL AUTO_INCREMENT,
   `URL` text,
   `CrawlTS` int(11) NOT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS `Feed` (
 -- Tabellstruktur for tabell `FeedContent`
 --
 
-CREATE TABLE IF NOT EXISTS `FeedContent` (
+CREATE TABLE IF NOT EXISTS `feedcontent` (
   `ContentID` int(11) NOT NULL AUTO_INCREMENT,
   `FeedID` int(11) NOT NULL,
   `Location` text NOT NULL,
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS `FeedContent` (
 -- Tabellstruktur for tabell `ItemID`
 --
 
-CREATE TABLE IF NOT EXISTS `ItemID` (
+CREATE TABLE IF NOT EXISTS `itemid` (
   `ItemID` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`ItemID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS `ItemID` (
 -- Tabellstruktur for tabell `Setting`
 --
 
-CREATE TABLE IF NOT EXISTS `Setting` (
+CREATE TABLE IF NOT EXISTS `setting` (
   `SettingID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
   `Key` int(11) NOT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS `Setting` (
 -- Tabellstruktur for tabell `Subscription`
 --
 
-CREATE TABLE IF NOT EXISTS `Subscription` (
+CREATE TABLE IF NOT EXISTS `subscription` (
   `FeedID` int(11) NOT NULL AUTO_INCREMENT,
   `Tags` text NOT NULL,
   `UserID` int(11) NOT NULL,
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS `Subscription` (
 -- Tabellstruktur for tabell `Users`
 --
 
-CREATE TABLE IF NOT EXISTS `Users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `UserID` int(11) NOT NULL AUTO_INCREMENT,
   `Username` text NOT NULL,
   `Name` text,
@@ -164,14 +164,14 @@ CREATE TABLE IF NOT EXISTS `Users` (
 --
 -- Begrensninger for tabell `ClientAuthorization`
 --
-ALTER TABLE `ClientAuthorization`
+ALTER TABLE `clientauthorization`
   ADD CONSTRAINT `ClientAuthorization_ClientID` FOREIGN KEY (`ClientID`) REFERENCES `Client` (`ClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `ClientAuthorization_UserID` FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Begrensninger for tabell `Event`
 --
-ALTER TABLE `Event`
+ALTER TABLE `event`
   ADD CONSTRAINT `Event_UserID` FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Event_UniqueClientID` FOREIGN KEY (`UniqueClientID`) REFERENCES `ClientAuthorization` (`UniqueClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Event_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `ItemID` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
@@ -179,21 +179,21 @@ ALTER TABLE `Event`
 --
 -- Begrensninger for tabell `FeedContent`
 --
-ALTER TABLE `FeedContent`
+ALTER TABLE `feedcontent`
   ADD CONSTRAINT `FeedContent_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `Feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `FeedContent_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `ItemID` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Begrensninger for tabell `Setting`
 --
-ALTER TABLE `Setting`
+ALTER TABLE `setting`
   ADD CONSTRAINT `Setting_ClientID` FOREIGN KEY (`ClientID`) REFERENCES `Client` (`ClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Setting_UserID` FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Begrensninger for tabell `Subscription`
 --
-ALTER TABLE `Subscription`
+ALTER TABLE `subscription`
   ADD CONSTRAINT `Subscription_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `Feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Subscription_UserID` FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
