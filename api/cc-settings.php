@@ -3,9 +3,9 @@
 //base path?
 
 $db_host = 'localhost';
-$db_user = 'username';
+$db_user = 'root';
 $db_pass = 'password';
 $db_name = 'castcloud';
 $db_prefix = 'cc_';
-$dbh = new PDO("mysql:host=$db_host;dbname=mysql", $db_user, $db_pass);
+$dbh = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
 ?>

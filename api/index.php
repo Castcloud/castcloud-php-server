@@ -1,10 +1,13 @@
 <?php
-include 'util.php';
-include 'cc-settings.php';
 require 'Slim/Slim.php';
 \Slim\Slim::registerAutoloader();
 
+include 'authmiddleware.php';
+include 'util.php';
+
 $app = new \Slim\Slim();
+
+$app->add(new AuthMiddleware());
 
 $app->group('/account', function() use($app) {
 
@@ -13,6 +16,13 @@ $app->group('/account', function() use($app) {
 
 		$username = $app->request->params('username');
 		$password = $app->request->params('password');
+
+		include 'cc-settings.php';
+
+		$sth = $dbh->query("SELECT * FROM users WHERE username='$username'");
+		if ($sth) {
+
+		}
 
 		$json = array("token" => base64_encode(random_bytes(32)));
 		echo json_encode($json);
