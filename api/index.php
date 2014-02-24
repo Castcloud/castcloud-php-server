@@ -18,6 +18,11 @@ $app->group('/account', function() use($app) {
 	$app->post('/login', function() use($app) {
 		$username = $app->request->params('username');
 		$password = $app->request->params('password');
+		$clientname = $app->request->params('clientname');
+		$clientdescription = $app->request->params('clientdescription');
+		$clientversion = $app->request->params('clientversion');
+		$uuid = $app->request->params('uuid');
+		$apikey = $app->request->params('apikey');
 
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh->query("SELECT * FROM users WHERE username='$username'");
@@ -26,14 +31,21 @@ $app->group('/account', function() use($app) {
 				$userid = $result['UserID'];
 				$salt = $result['Salt'];
 				if ($result['Password'] == md5($password.$salt)) {
-					$sth = $dbh->query("SELECT * FROM clientauthorization WHERE userid='$userid'");
+					$sth = $dbh->query("SELECT * FROM client WHERE Name='$clientname'");
 					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-						$token = $result['Tolken'];
-					}
+						$sth = $dbh->query("SELECT * FROM clientauthorization WHERE userid='$userid'");
+                                        	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+                                                	$token = $result['Tolken'];
+                                        	}
+                                        }
 					else {
 						$token = base64_encode(random_bytes(32));
-
-						$dbh->exec("INSERT INTO clientauthorization (userid, clientid, tolken, clientdescription, clientversion, uuid, seents) VALUES($userid, 1, '$token', 'Castcloud', '1.0', '', 1881)");
+						// shit hits the fan
+/*						$dbh->exec("INSERT INTO client (name) VALUES('$clientname')");
+						$sth = $dbh->query("SELECT LAST_INSERT_ID();");
+						if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+							$dbh->exec("INSERT INTO clientauthorization (userid, clientid, tolken, clientdescription, clientversion, uuid, seents) VALUES($userid, 1, '$token', 'Castcloud', '1.0', '', 1881)");
+						}*/
 					}
 
 					json(array("token" => $token));
