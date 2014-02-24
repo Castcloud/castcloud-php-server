@@ -101,11 +101,27 @@ $app->group('/library', function() use($app) {
 	});
 
 	$app->get('/casts', function() use ($app) {
-		json(array("Not" => "Implemented"));
+		$casts = array();
+
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh->query("SELECT * FROM feed");
+		if ($sth) {
+			foreach ($sth as $row) {
+				array_push($casts, array("url" => $row['URL']));
+			}
+		}
+
+		json($casts);
 	});
 
 	$app->post('/casts', function() use ($app) {
 		$feedurl = $app->request->params('feedurl');
+
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh->query("SELECT * FROM feed WHERE url='$feedurl'");
+		if ($sth && $sth->rowCount() < 1) {
+			$dbh->exec("INSERT INTO feed (url, crawlts) VALUES('$feedurl', 0)");
+		}
 
 		json(array("status" => "success"));
 	});
