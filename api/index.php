@@ -20,7 +20,7 @@ $app->group('/account', function() use($app) {
 		$password = $app->request->params('password');
 
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh->query("SELECT * FROM users WHERE username='$username'");
+		$sth = $dbh->query("SELECT * FROM uSers WHERE username='$username'");
 		if ($sth) {
 			if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 				$userid = $result['UserID'];
@@ -47,6 +47,7 @@ $app->group('/account', function() use($app) {
 			}
 		}
 		else {
+			error_log("Castcloud database error: " . $dbh->errorInfo()[2], 0);
 			json(array("status" => "Database fail"));
 		}
 	});
