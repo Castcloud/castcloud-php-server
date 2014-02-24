@@ -89,7 +89,17 @@ $app->group('/library', function() use($app) {
 	});
 
 	$app->get('/casts', function() use ($app) {
-		json(array("Not" => "Implemented"));
+		$casts = array();
+
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh->query("SELECT * FROM feed");
+		if ($sth) {
+			foreach ($sth as $row) {
+				array_push($casts, array("url" => $row['URL']));
+			}
+		}
+
+		json($casts);
 	});
 
 	$app->post('/casts', function() use ($app) {
