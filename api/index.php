@@ -9,6 +9,7 @@ include 'cc-settings.php';
 GLOBAL $dbh;
 
 include 'authmiddleware.php';
+include 'crawler.php';
 include 'util.php';
 
 $app->add(new AuthMiddleware());
@@ -118,10 +119,12 @@ $app->group('/library', function() use($app) {
 		$feedurl = $app->request->params('feedurl');
 
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh->query("SELECT * FROM feed WHERE url='$feedurl'");
+		/*$sth = $dbh->query("SELECT * FROM feed WHERE url='$feedurl'");
 		if ($sth && $sth->rowCount() < 1) {
 			$dbh->exec("INSERT INTO feed (url, crawlts) VALUES('$feedurl', 0)");
-		}
+		}*/
+
+		crawl($feedurl);
 
 		json(array("status" => "success"));
 	});
