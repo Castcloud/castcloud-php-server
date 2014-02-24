@@ -46,6 +46,9 @@ $app->group('/account', function() use($app) {
 				json(array("status" => "Login failed"));
 			}
 		}
+		else {
+			json(array("status" => "Database fail"));
+		}
 	});
 
 	$app->get('/ping', function() use($app) {
