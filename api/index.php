@@ -95,6 +95,12 @@ $app->group('/library', function() use($app) {
 	$app->post('/casts', function() use ($app) {
 		$feedurl = $app->request->params('feedurl');
 
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh->query("SELECT * FROM feed WHERE url='$feedurl'");
+		if ($sth && $sth->rowCount() < 1) {
+			$dbh->exec("INSERT INTO feed (url, crawlts) VALUES('$feedurl', 0)");
+		}
+
 		json(array("status" => "success"));
 	});
 
