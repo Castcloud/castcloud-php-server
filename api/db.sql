@@ -134,12 +134,12 @@ CREATE TABLE IF NOT EXISTS `setting` (
 --
 
 CREATE TABLE IF NOT EXISTS `subscription` (
-  `FeedID` int(11) NOT NULL AUTO_INCREMENT,
+  `FeedID` int(11) NOT NULL,
   `Tags` text NOT NULL,
   `UserID` int(11) NOT NULL,
   KEY `FeedID` (`FeedID`),
   KEY `UserID` (`UserID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
 -- --------------------------------------------------------
 
