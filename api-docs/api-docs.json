@@ -1,9 +1,10 @@
 {
-    "apiVersion": null,
+    "apiVersion": "1.0.0",
     "swaggerVersion": "1.2",
     "apis": [
         {
-            "path": "/login.json"
+            "path": "/account.json",
+            "description": "Account related operations"
         }
     ]
 }

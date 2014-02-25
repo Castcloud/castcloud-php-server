@@ -14,7 +14,38 @@ include 'util.php';
 
 $app->add(new AuthMiddleware());
 
+/**
+ * @SWG\Resource(
+ *   apiVersion="1.0.0",
+ *   swaggerVersion="1.2",
+ *   basePath="http://api.castcloud.org/api",
+ *   resourcePath="/account",
+ *   description="Account related operations",
+ *   produces="['application/json','application/xml']"
+ * )
+ */
+
 $app->group('/account', function() use($app) {
+	/**
+	 *
+	 * @SWG\Api(
+	 *   path="/account/login",
+	 *   description="User login. Returns tolken required for accessing the rest of the api.",
+	 *   @SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Login",
+	 *		summary="This is a test",
+	 *		type="Herp",
+	 * 		@SWG\Parameter(
+	 *			name="username",
+	 *			description="ID of pet that needs to be fetched",
+	 *			paramType="body",
+	 *			required=true,
+	 *			type="string"
+	 *		)
+	 *   )
+	 * )
+	 */	
 
 	$app->post('/login', function() use($app) {
 		$username = $app->request->params('username');
@@ -162,22 +193,4 @@ $app->group('/library', function() use($app) {
 });
 
 $app->run();
-
-/**
- * Eksempel som kompilerer:
- *
- * @SWG\Resource(
- *		basePath="http://localhost/api",
- *      resourcePath="/login",
- *      @SWG\Api(
- *          path="/login",
- *          @SWG\Operation(
- *              nickname="test",
- *              method="GET",
- *              summary="This is a test",
- *				type="Herp"
- *          )
- *      )
- * )
- */
 ?>
