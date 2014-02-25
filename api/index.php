@@ -57,10 +57,18 @@ $app->group('/account', function() use($app) {
 		$apikey = $app->request->params('apikey');
 
 		$required = array("username", "password", "clientname", "clientdescription", "clientversion", "uuid");
+		$status = "The following parameters are missing: ";
+		$missing = 0;
 		foreach ($required as $key) {
 			if (!array_key_exists($key, $app->request->params())) {
-				echo "$key is missing :(";
+				$status.=$key.", ";
+				$missing++;
 			}
+		}
+		$status = substr($status, 0, strlen($status) - 2);
+		if ($missing > 0) {
+			json(array("status" => $status));
+			$app->stop();
 		}
 
 		$dbh = $GLOBALS['dbh'];
@@ -139,7 +147,18 @@ $app->group('/library', function() use($app) {
 	});
 
 	$app->get('/episodes/:castid', function($castid) use ($app) {
-		json(array("Not" => "Implemented"));
+		$episodes = array();
+
+		$titles = crawler_get_all($castid, "channel/item/title");
+		$descriptions = crawler_get_all($castid, "channel/item/description");
+		
+		for ($i = 0; $i < sizeof($titles); $i++) {
+			array_push($episodes, array(
+				"title" => $titles[$i],
+				"description" => $descriptions[$i]));
+		}
+
+		json($episodes);
 	});
 
 	$app->get('/casts', function() use ($app) {
@@ -151,6 +170,7 @@ $app->group('/library', function() use($app) {
 			foreach ($sth as $row) {
 				$feedid = $row['FeedID'];
 				array_push($casts, array(
+					"id" => $feedid,
 					"name" => crawler_get($feedid, "channel/title"),
 					"description" => crawler_get($feedid, "channel/description"), 
 					"url" => $row['URL']));
