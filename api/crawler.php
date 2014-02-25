@@ -52,4 +52,12 @@ function push_line($feedid, $location, $itemid, $content, $time) {
 	$sth->bindParam(':itemid', $itemid, PDO::PARAM_INT);
 	$sth->execute();
 }
+
+function crawler_get($feedid, $location) {
+	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND location='$location'");
+	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+		return $result['Content'];
+	}
+	return "";
+}
 ?>

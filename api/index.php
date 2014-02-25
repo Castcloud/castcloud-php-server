@@ -115,7 +115,11 @@ $app->group('/library', function() use($app) {
 		$sth = $dbh->query("SELECT * FROM feed");
 		if ($sth) {
 			foreach ($sth as $row) {
-				array_push($casts, array("url" => $row['URL']));
+				$feedid = $row['FeedID'];
+				array_push($casts, array(
+					"name" => crawler_get($feedid, "channel/title"),
+					"description" => crawler_get($feedid, "channel/description"), 
+					"url" => $row['URL']));
 			}
 		}
 
