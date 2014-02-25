@@ -14,8 +14,10 @@ function crawl($feedurl) {
 		$dbh->exec("INSERT INTO feed (url, crawlts) VALUES('$feedurl', $time)");
 		$feedid = $dbh->lastInsertId();
 	}
+	
+	foo($xml->channel, "channel/", $feedid, $time);
 
-	$sth = $dbh->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
+	/*$sth = $dbh->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
 	if ($sth && $sth->rowCount() < 1) {
 		push_line($feedid, "channel/title", null, (string)$xml->channel->title, $time);
 		push_line($feedid, "channel/description", null, (string)$xml->channel->description, $time);
@@ -42,9 +44,53 @@ function crawl($feedurl) {
 			push_line($feedid, "channel/item/pubdate", $itemid, (string)$item->pubdate, $time);
 			push_line($feedid, "channel/item/guid", $itemid, (string)$item->guid, $time);
 		}
-	}
+	}*/
 
 	return $feedid;
+}
+
+function foo($node, $url, $feedid, $time) {
+	static $item = false;
+	static $buffer = array();
+	static $itemid = null;
+
+	foreach ($node->children() as $child) {
+		if ($child->count() > 0) {
+			if ($child->getName() == "item") {
+				$item = true;
+			}
+			foo($child, $url.$child->getName()."/", $feedid, $time);
+		}
+		else {
+			if ($child->getName() == "guid") {
+				$item = false;
+				$i = 0;
+				$dbh = $GLOBALS['dbh'];
+
+				$sth = $dbh->query("SELECT * FROM feedcontent WHERE location='channel/item/guid' AND content='$child' AND feedid=$feedid");
+				if ($sth && $sth->rowCount() > 0) {
+					// Existing item
+				}
+				else {
+					$dbh->exec("INSERT INTO itemid () VALUES()");
+					$itemid = $dbh->lastInsertId();
+
+					foreach ($buffer as $line) {
+						push_line($feedid, $line["location"], $itemid, $line["content"], $time);
+					}
+					$buffer = array();
+				}
+			}
+
+			if ($item) {
+				array_push($buffer, array("location" => $url.$child->getName(), "content" => (string)$child));
+			}
+			else {
+				push_line($feedid, $url.$child->getName(), $itemid, (string)$child, $time);
+			}
+			echo($url.$child->getName().": ".(string)$child."\n");
+		}
+	}
 }
 
 function push_line($feedid, $location, $itemid, $content, $time) {
