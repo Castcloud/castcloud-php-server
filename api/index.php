@@ -39,21 +39,24 @@ $app->group('/account', function() use($app) {
 				$userid = $result['UserID'];
 				$salt = $result['Salt'];
 				if ($result['Password'] == md5($password.$salt)) {
-					//$sth = $dbh->query("SELECT * FROM client WHERE Name='$clientname'");
-					//if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-					$sth = $dbh->query("SELECT * FROM clientauthorization WHERE userid='$userid'");
-                	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-                        	$token = $result['Tolken'];
-                	}
-                    //}
+					$sth = $dbh->query("SELECT * FROM client WHERE Name='$clientname'");
+					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+						$sth = $dbh->query("SELECT * FROM clientauthorization WHERE userid='$userid'");
+              				  	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+                        				$token = $result['Tolken'];
+                				}
+                   			}
 					else {
 						$token = base64_encode(random_bytes(32));
-						// shit hits the fan
-						//$dbh->exec("INSERT INTO client (name) VALUES('$clientname')");
-						//$sth = $dbh->query("SELECT LAST_INSERT_ID();");
-						//if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-						$dbh->exec("INSERT INTO clientauthorization (userid, clientid, tolken, clientdescription, clientversion, uuid, seents) VALUES($userid, 1, '$token', 'Castcloud', '1.0', '', 1881)");
-						//}
+						$sth = $dbh->prepare("INSERT INTO client (name) VALUES(:clientname)");
+						$sth->bindParam(':clientname', $clientname, PDO::PARAM_STR);
+						$sth->execute();
+						$sth = $dbh->prepare("INSERT INTO clientauthorization (userid, clientid, tolken, clientdescription, clientversion, uuid, seents) " .
+							"VALUES($userid, " . $dbh->lastInsertId() . ", '$token', :clientdescription, :clientversion, :uuid, " . time() . ")");
+						$sth->bindParam(':clientdescription', $clientdescription, PDO::PARAM_STR);
+						$sth->bindParam(':clientversion', $clientversion, PDO::PARAM_STR);
+						$sth->bindParam(':uuid', $uuid, PDO::PARAM_STR);
+                                                $sth->execute();
 					}
 
 					json(array("token" => $token));
