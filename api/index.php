@@ -118,7 +118,11 @@ $app->group('/library', function() use($app) {
 		$sth = $dbh->query("SELECT * FROM feed");
 		if ($sth) {
 			foreach ($sth as $row) {
-				array_push($casts, array("url" => $row['URL']));
+				$feedid = $row['FeedID'];
+				array_push($casts, array(
+					"name" => crawler_get($feedid, "channel/title"),
+					"description" => crawler_get($feedid, "channel/description"), 
+					"url" => $row['URL']));
 			}
 		}
 
@@ -127,14 +131,14 @@ $app->group('/library', function() use($app) {
 
 	$app->post('/casts', function() use ($app) {
 		$feedurl = $app->request->params('feedurl');
+		$feedid = crawl($feedurl);
+		$userid = $app->request->params('userid');
 
-		$dbh = $GLOBALS['dbh'];
-		/*$sth = $dbh->query("SELECT * FROM feed WHERE url='$feedurl'");
+		$dbh = $GLOBALS['dbh'];		
+		$sth = $dbh->query("SELECT * FROM subscription WHERE feedid=$feedid AND userid=$userid");
 		if ($sth && $sth->rowCount() < 1) {
-			$dbh->exec("INSERT INTO feed (url, crawlts) VALUES('$feedurl', 0)");
-		}*/
-
-		crawl($feedurl);
+			$dbh->exec("INSERT INTO subscription (feedid, tags, userid) VALUES($feedid, '', $userid)");
+		}
 
 		json(array("status" => "success"));
 	});

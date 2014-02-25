@@ -7,13 +7,12 @@ function crawl($feedurl) {
 	$sth = $dbh->query("SELECT * FROM feed WHERE url='$feedurl'");
 	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 		$feedid = $result['FeedID'];
-		// Update TS here
+		
+		$dbh->exec("UPDATE feed SET crawlts=$time");
 	}
 	else {
 		$dbh->exec("INSERT INTO feed (url, crawlts) VALUES('$feedurl', $time)");
 		$feedid = $dbh->lastInsertId();
-		$userid = $GLOBALS['app']->request->params('userid');
-		$dbh->exec("INSERT INTO subscription (feedid, tags, userid) VALUES($feedid, '', $userid)");
 	}
 
 	$sth = $dbh->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
@@ -44,11 +43,21 @@ function crawl($feedurl) {
 			push_line($feedid, "channel/item/guid", $itemid, (string)$item->guid, $time);
 		}
 	}
+
+	return $feedid;
 }
 
 function push_line($feedid, $location, $itemid, $content, $time) {
 	$sth = $GLOBALS['dbh']->prepare("INSERT INTO feedcontent (feedid, location, itemid, content, crawlts) VALUES($feedid, '$location', :itemid, '$content', $time)");
 	$sth->bindParam(':itemid', $itemid, PDO::PARAM_INT);
 	$sth->execute();
+}
+
+function crawler_get($feedid, $location) {
+	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND location='$location'");
+	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+		return $result['Content'];
+	}
+	return "";
 }
 ?>
