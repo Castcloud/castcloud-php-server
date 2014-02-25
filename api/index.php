@@ -25,6 +25,13 @@ $app->group('/account', function() use($app) {
 		$uuid = $app->request->params('uuid');
 		$apikey = $app->request->params('apikey');
 
+		$required = array("username", "password", "clientname", "clientdescription", "clientversion", "uuid");
+		foreach ($required as $key) {
+			if (!array_key_exists($key, $app->request->params())) {
+				echo "$key is missing :(";
+			}
+		}
+
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh->query("SELECT * FROM users WHERE username='$username'");
 		if ($sth) {
