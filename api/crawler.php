@@ -12,37 +12,43 @@ function crawl($feedurl) {
 	else {
 		$dbh->exec("INSERT INTO feed (url, crawlts) VALUES('$feedurl', $time)");
 		$feedid = $dbh->lastInsertId();
+		$userid = $GLOBALS['app']->request->params('userid');
+		$dbh->exec("INSERT INTO subscription (feedid, tags, userid) VALUES($feedid, '', $userid)");
 	}
 
-	$sth = $dbh->query("SELECT * FROM feed WHERE feedid=$feedid");
+	$sth = $dbh->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
 	if ($sth && $sth->rowCount() < 1) {
-		push_line($feedid, "channel/title", null, (string)$xml->channel->title);
-		push_line($feedid, "channel/description", null, (string)$xml->channel->description);
-		push_line($feedid, "channel/image/title", null, (string)$xml->channel->image->title);
-		push_line($feedid, "channel/image/url", null, (string)$xml->channel->image->url);
-		push_line($feedid, "channel/image/width", null, (string)$xml->channel->image->width);
-		push_line($feedid, "channel/image/height", null, (string)$xml->channel->image->height);
-		push_line($feedid, "channel/link", null, (string)$xml->channel->link);
-		push_line($feedid, "channel/language", null, (string)$xml->channel->language);
-		push_line($feedid, "channel/copyright", null, (string)$xml->channel->copyright);
+		push_line($feedid, "channel/title", null, (string)$xml->channel->title, $time);
+		push_line($feedid, "channel/description", null, (string)$xml->channel->description, $time);
+		push_line($feedid, "channel/image/title", null, (string)$xml->channel->image->title, $time);
+		push_line($feedid, "channel/image/url", null, (string)$xml->channel->image->url, $time);
+		push_line($feedid, "channel/image/width", null, (string)$xml->channel->image->width, $time);
+		push_line($feedid, "channel/image/height", null, (string)$xml->channel->image->height, $time);
+		push_line($feedid, "channel/link", null, (string)$xml->channel->link, $time);
+		push_line($feedid, "channel/language", null, (string)$xml->channel->language, $time);
+		push_line($feedid, "channel/copyright", null, (string)$xml->channel->copyright, $time);
 	}
 
 	foreach($xml->channel->item as $item) {
-		$sth = $dbh->query("SELECT * FROM feedcontent WHERE location='channel/item/guid' AND feedid=$feedid");
+		$sth = $dbh->query("SELECT * FROM feedcontent WHERE location='channel/item/guid' AND content='$item->guid' AND feedid=$feedid");
 		if ($sth && $sth->rowCount() > 0) {
 			// Existing item
 		}
 		else {
-			// Need new ItemID
 			$dbh->exec("INSERT INTO itemid () VALUES()");
 			$itemid = $dbh->lastInsertId();
 
-			push_line($feedid, "channel/item/title", $itemid, (string)$item->title);
+			push_line($feedid, "channel/item/title", $itemid, (string)$item->title, $time);
+			push_line($feedid, "channel/item/description", $itemid, (string)$item->description, $time);
+			push_line($feedid, "channel/item/pubdate", $itemid, (string)$item->pubdate, $time);
+			push_line($feedid, "channel/item/guid", $itemid, (string)$item->guid, $time);
 		}
 	}
 }
 
-function push_line($feedid, $location, $itemid, $content) {
-
+function push_line($feedid, $location, $itemid, $content, $time) {
+	$sth = $GLOBALS['dbh']->prepare("INSERT INTO feedcontent (feedid, location, itemid, content, crawlts) VALUES($feedid, '$location', :itemid, '$content', $time)");
+	$sth->bindParam(':itemid', $itemid, PDO::PARAM_INT);
+	$sth->execute();
 }
 ?>
