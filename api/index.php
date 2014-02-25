@@ -26,10 +26,18 @@ $app->group('/account', function() use($app) {
 		$apikey = $app->request->params('apikey');
 
 		$required = array("username", "password", "clientname", "clientdescription", "clientversion", "uuid");
+		$status = "The following parameters are missing: ";
+		$missing = 0;
 		foreach ($required as $key) {
 			if (!array_key_exists($key, $app->request->params())) {
-				echo "$key is missing :(";
+				$status.=$key.", ";
+				$missing++;
 			}
+		}
+		$status = substr($status, 0, strlen($status) - 2);
+		if ($missing > 0) {
+			json(array("status" => $status));
+			$app->stop();
 		}
 
 		$dbh = $GLOBALS['dbh'];
