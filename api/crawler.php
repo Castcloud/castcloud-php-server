@@ -60,4 +60,16 @@ function crawler_get($feedid, $location) {
 	}
 	return "";
 }
+
+function crawler_get_all($feedid, $location) {
+	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND location='$location'");
+	if ($result = $sth->fetchAll()) {
+		$list = array();
+		foreach ($result as $row) {
+			array_push($list, $row['Content']);
+		}
+		return $list;
+	}
+	return null;
+}
 ?>

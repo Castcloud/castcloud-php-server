@@ -108,7 +108,18 @@ $app->group('/library', function() use($app) {
 	});
 
 	$app->get('/episodes/:castid', function($castid) use ($app) {
-		json(array("Not" => "Implemented"));
+		$episodes = array();
+
+		$titles = crawler_get_all($castid, "channel/item/title");
+		$descriptions = crawler_get_all($castid, "channel/item/description");
+		
+		for ($i = 0; $i < sizeof($titles); $i++) {
+			array_push($episodes, array(
+				"title" => $titles[$i],
+				"description" => $descriptions[$i]));
+		}
+
+		json($episodes);
 	});
 
 	$app->get('/casts', function() use ($app) {
@@ -120,6 +131,7 @@ $app->group('/library', function() use($app) {
 			foreach ($sth as $row) {
 				$feedid = $row['FeedID'];
 				array_push($casts, array(
+					"id" => $feedid,
 					"name" => crawler_get($feedid, "channel/title"),
 					"description" => crawler_get($feedid, "channel/description"), 
 					"url" => $row['URL']));
