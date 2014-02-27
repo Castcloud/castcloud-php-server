@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `clientauthorization` (
   `UniqueClientID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
   `ClientID` int(11) NOT NULL,
-  `Tolken` text NOT NULL,
+  `Token` text NOT NULL,
   `ClientDescription` text NOT NULL,
   `ClientVersion` text NOT NULL,
   `UUID` text NOT NULL,

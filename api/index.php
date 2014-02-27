@@ -34,15 +34,15 @@ $app -> group('/account', function() use ($app) {
 	/**
 	 * @SWG\Api(
 	 * 	path="/account/ping",
-	 * 	description="Tests if tolken works",
+	 * 	description="Tests if token works",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
 	 * 		nickname="Ping",
-	 * 		summary="Test tolken",
+	 * 		summary="Test token",
 	 * 		type="Herp",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
-	 * 			description="clients login tolken",
+	 * 			description="clients login token",
 	 * 			paramType="header",
 	 * 			required=true,
 	 * 			type="string"
@@ -65,7 +65,7 @@ $app -> group('/account', function() use ($app) {
 	 * 		type="Herp",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
-	 * 			description="clients login tolken",
+	 * 			description="clients login token",
 	 * 			paramType="header",
 	 * 			required=true,
 	 * 			type="string"
@@ -88,7 +88,7 @@ $app -> group('/account', function() use ($app) {
 	 * 		type="Herp",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
-	 * 			description="clients login tolken",
+	 * 			description="clients login token",
 	 * 			paramType="header",
 	 * 			required=true,
 	 * 			type="string"

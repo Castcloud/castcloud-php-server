@@ -1,12 +1,20 @@
 <?php
 /**
+ * @SWG\Resource(
+ *   apiVersion="1.0.0",
+ *   swaggerVersion="1.2",
+ *   basePath="http://api.castcloud.org/api",
+ *   resourcePath="/account",
+ *   description="Account related operations",
+ *   produces="['application/json','application/xml']"
+ * )
  * @SWG\Api(
  * 	path="/account/login",
  * 	description="User login.",
  * 	@SWG\Operation(
  * 		method="POST",
  * 		nickname="Login",
- * 		summary="Get access tolken",
+ * 		summary="Get access token",
  * 		type="Herp",
  * 		@SWG\Parameter(
  * 			name="username",
@@ -93,12 +101,12 @@ function post_login($app) {
 			if ($result['Password'] == md5($password . $salt)) {
 				$sth = $dbh -> query("SELECT * FROM clientauthorization WHERE userid='$userid'");
 				if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
-					$token = $result['Tolken'];
+					$token = $result['Token'];
 				}
 				else {
 					$token = base64_encode(random_bytes(32));
 
-					$sth = $dbh->query("SELECT tolken FROM clientauthorization");
+					$sth = $dbh->query("SELECT token FROM clientauthorization");
 					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 						while (in_array($token, $result)) {
 							$token = base64_encode(random_bytes(32));
@@ -117,7 +125,7 @@ function post_login($app) {
 						$clientid = $dbh->lastInsertId();
 					}
 
-					$sth = $dbh -> prepare("INSERT INTO clientauthorization (userid, clientid, tolken, clientdescription, clientversion, uuid, seents) "
+					$sth = $dbh -> prepare("INSERT INTO clientauthorization (userid, clientid, token, clientdescription, clientversion, uuid, seents) "
 					 . "VALUES($userid, $clientid, '$token', :clientdescription, :clientversion, :uuid, " . time() . ")");
 					$sth -> bindParam(':clientdescription', $clientdescription, PDO::PARAM_STR);
 					$sth -> bindParam(':clientversion', $clientversion, PDO::PARAM_STR);

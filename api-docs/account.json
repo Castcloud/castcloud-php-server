@@ -10,7 +10,7 @@
             "operations": [
                 {
                     "method": "POST",
-                    "summary": "Get access tolken",
+                    "summary": "Get access token",
                     "nickname": "Login",
                     "type": "Herp",
                     "parameters": [
@@ -69,11 +69,11 @@
         },
         {
             "path": "/account/ping",
-            "description": "Tests if tolken works",
+            "description": "Tests if token works",
             "operations": [
                 {
                     "method": "GET",
-                    "summary": "Test tolken",
+                    "summary": "Test token",
                     "nickname": "Ping",
                     "type": "Herp",
                     "parameters": [
@@ -82,7 +82,7 @@
                             "name": "Authorization",
                             "type": "string",
                             "required": true,
-                            "description": "clients login tolken"
+                            "description": "clients login token"
                         }
                     ]
                 }
@@ -103,7 +103,7 @@
                             "name": "Authorization",
                             "type": "string",
                             "required": true,
-                            "description": "clients login tolken"
+                            "description": "clients login token"
                         }
                     ]
                 },
@@ -118,7 +118,7 @@
                             "name": "Authorization",
                             "type": "string",
                             "required": true,
-                            "description": "clients login tolken"
+                            "description": "clients login token"
                         },
                         {
                             "paramType": "body",
