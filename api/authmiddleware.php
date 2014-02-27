@@ -9,7 +9,7 @@ class AuthMiddleware extends \Slim\Middleware {
 				if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
 					$token = $_SERVER['HTTP_AUTHORIZATION'];
 					$sth = $GLOBALS['dbh']->query("SELECT * FROM clientauthorization WHERE token='$token'");
-					if (!($result = $sth->fetch(PDO::FETCH_ASSOC))) {
+					if ($sth && $sth->rowCount() < 1) {
 						json(array("status" => "Bad token"));
 						$this->app->stop();
 					}

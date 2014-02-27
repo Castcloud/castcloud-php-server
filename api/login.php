@@ -99,7 +99,19 @@ function post_login($app) {
 			$userid = $result['UserID'];
 			$salt = $result['Salt'];
 			if ($result['Password'] == md5($password . $salt)) {
-				$sth = $dbh -> query("SELECT * FROM clientauthorization WHERE userid='$userid'");
+				$sth = $dbh -> query("SELECT * FROM client WHERE Name='$clientname'");
+				if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+					$clientid = $result['ClientID'];
+				}
+				else {
+					$sth = $dbh -> prepare("INSERT INTO client (name) VALUES(:clientname)");
+					$sth -> bindParam(':clientname', $clientname, PDO::PARAM_STR);
+					$sth -> execute();
+
+					$clientid = $dbh->lastInsertId();
+				}
+
+				$sth = $dbh -> query("SELECT * FROM clientauthorization WHERE userid=$userid AND clientid=$clientid AND uuid='$uuid'");
 				if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 					$token = $result['Token'];
 				}
@@ -111,18 +123,6 @@ function post_login($app) {
 						while (in_array($token, $result)) {
 							$token = base64_encode(random_bytes(32));
 						}
-					}
-
-					$sth = $dbh -> query("SELECT * FROM client WHERE Name='$clientname'");
-					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-						$clientid = $result['ClientID'];
-					}
-					else {
-						$sth = $dbh -> prepare("INSERT INTO client (name) VALUES(:clientname)");
-						$sth -> bindParam(':clientname', $clientname, PDO::PARAM_STR);
-						$sth -> execute();
-
-						$clientid = $dbh->lastInsertId();
 					}
 
 					$sth = $dbh -> prepare("INSERT INTO clientauthorization (userid, clientid, token, clientdescription, clientversion, uuid, seents) "
