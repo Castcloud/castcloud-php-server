@@ -63,7 +63,6 @@ function process_child($child, $ns, $url, $feedid, $time) {
 	else {
 		if ($child->getName() == "guid") {
 			$item = false;
-			$i = 0;
 
 			$sth = $dbh->query("SELECT * FROM feedcontent WHERE location='channel/item/guid' AND content='$child' AND feedid=$feedid");
 			if ($sth && $sth->rowCount() > 0) {
