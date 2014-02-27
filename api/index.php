@@ -27,68 +27,66 @@ $app -> add(new AuthMiddleware());
 
 $app -> group('/account', function() use ($app) {
 	/**
-	 *
 	 * @SWG\Api(
-	 *   path="/account/login",
-	 *   description="User login. Returns tolken required for accessing the rest of the api.",
-	 *   @SWG\Operation(
-	 * 	   method="POST",
-	 * 	   nickname="Login",
-	 *	   summary="This is a test",
-	 *	   type="Herp",
-	 * 	   @SWG\Parameter(
-	 *	    name="username",
-	 *	    description="Users username",
-	 *	    paramType="form",
-	 *	    required=true,
-	 *	    type="string"
-	 *	  ),
-	 * 	  @SWG\Parameter(
-	 *	    name="password",
-	 *	    description="Users password",
-	 *	    paramType="form",
-	 *	    required=true,
-	 *	    type="string"
-	 *	  ),
-	 *    @SWG\Parameter(
-	 *	    name="clientname",
-	 *	    description="Client Name",
-	 *	    paramType="form",
-	 *	    required=true,
-	 *	    type="string"
-	 *	  ),
-	 *    @SWG\Parameter(
-	 *	    name="clientdescription",
-	 *	    description="Client Description. e.g. Sallys iPad",
-	 *	    paramType="form",
-	 *	    required=true,
-	 *	    type="string"
-	 *	  ),
-	 *    @SWG\Parameter(
-	 *	    name="clientversion",
-	 *	    description="Client Version",
-	 *	    paramType="form",
-	 *	    required=true,
-	 *	    type="string"
-	 *    ),
-	 *    @SWG\Parameter(
-	 *      name="uuid",
-	 *	    description="Universally unique identifier. String used for uniqely identifying an instanse of an application.",
-	 *	    paramType="form",
-	 *	    required=true,
-	 *	    type="string"
-	 *	  ),
-	 *    @SWG\Parameter(
-	 *	    name="apikey",
-	 *	    description="Clients official apikey. Not yet implemented",
-	 *	    paramType="form",
-	 *	    required=false,
-	 *	    type="string"
-	 *	  )
-	 *   )
+	 * 	path="/account/login",
+	 * 	description="User login. Returns tolken required for accessing the rest of the api.",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Login",
+	 * 		summary="This is a test",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="username",
+	 * 			description="Users username",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="password",
+	 * 			description="Users password",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="clientname",
+	 * 			description="Client Name",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="clientdescription",
+	 * 			description="Client Description. e.g. Sallys iPad",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="clientversion",
+	 * 			description="Client Version",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="uuid",
+	 * 			description="Universally unique identifier. String used for uniqely identifying an instanse of an application.",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="apikey",
+	 * 			description="Clients official apikey. Not yet implemented",
+	 * 			paramType="form",
+	 * 			required=false,
+	 * 			type="string"
+	 * 		)
+	 * 	)
 	 * )
 	 */
-
 	$app -> post('/login', function() use ($app) {
 		$username = $app -> request -> params('username');
 		$password = $app -> request -> params('password');
