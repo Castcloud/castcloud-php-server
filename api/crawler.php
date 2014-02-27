@@ -15,80 +15,79 @@ function crawl($feedurl) {
 		$feedid = $dbh->lastInsertId();
 	}
 	
-	foo($xml->channel, "channel/", $feedid, $time);
-
-	/*$sth = $dbh->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
-	if ($sth && $sth->rowCount() < 1) {
-		push_line($feedid, "channel/title", null, (string)$xml->channel->title, $time);
-		push_line($feedid, "channel/description", null, (string)$xml->channel->description, $time);
-		push_line($feedid, "channel/image/title", null, (string)$xml->channel->image->title, $time);
-		push_line($feedid, "channel/image/url", null, (string)$xml->channel->image->url, $time);
-		push_line($feedid, "channel/image/width", null, (string)$xml->channel->image->width, $time);
-		push_line($feedid, "channel/image/height", null, (string)$xml->channel->image->height, $time);
-		push_line($feedid, "channel/link", null, (string)$xml->channel->link, $time);
-		push_line($feedid, "channel/language", null, (string)$xml->channel->language, $time);
-		push_line($feedid, "channel/copyright", null, (string)$xml->channel->copyright, $time);
-	}
-
-	foreach($xml->channel->item as $item) {
-		$sth = $dbh->query("SELECT * FROM feedcontent WHERE location='channel/item/guid' AND content='$item->guid' AND feedid=$feedid");
-		if ($sth && $sth->rowCount() > 0) {
-			// Existing item
-		}
-		else {
-			$dbh->exec("INSERT INTO itemid () VALUES()");
-			$itemid = $dbh->lastInsertId();
-
-			push_line($feedid, "channel/item/title", $itemid, (string)$item->title, $time);
-			push_line($feedid, "channel/item/description", $itemid, (string)$item->description, $time);
-			push_line($feedid, "channel/item/pubdate", $itemid, (string)$item->pubdate, $time);
-			push_line($feedid, "channel/item/guid", $itemid, (string)$item->guid, $time);
-		}
-	}*/
+	next_child($xml->channel, "channel/", $feedid, $time);
 
 	return $feedid;
 }
 
-function foo($node, $url, $feedid, $time) {
+function next_child($node, $url, $feedid, $time) {
+	foreach ($node->children() as $child) {
+		process_child($child, null, $url, $feedid, $time);
+	}
+
+	foreach ($node->getDocNamespaces() as $ns => $nsurl) {
+		foreach ($node->children($nsurl) as $child) {
+			process_child($child, $ns, $url, $feedid, $time);
+		}
+	}
+}
+
+function process_child($child, $ns, $url, $feedid, $time) {
 	static $item = false;
 	static $buffer = array();
 	static $itemid = null;
+	$dbh = $GLOBALS['dbh'];
 
-	foreach ($node->children() as $child) {
-		if ($child->count() > 0) {
-			if ($child->getName() == "item") {
-				$item = true;
-			}
-			foo($child, $url.$child->getName()."/", $feedid, $time);
+	if ($ns != null) {
+		$newurl = $url.$ns.":".$child->getName();
+		echo "$newurl\n";
+	}
+	else {
+		$newurl = $url.$child->getName();
+	}
+
+	if (!startsWith($url, "channel/item")) {
+		$itemid = null;
+
+		$sth = $dbh->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND location='$newurl'");
+		if ($sth && $sth->rowCount() > 0) {
+			return;
 		}
-		else {
-			if ($child->getName() == "guid") {
-				$item = false;
-				$i = 0;
-				$dbh = $GLOBALS['dbh'];
+	}
 
-				$sth = $dbh->query("SELECT * FROM feedcontent WHERE location='channel/item/guid' AND content='$child' AND feedid=$feedid");
-				if ($sth && $sth->rowCount() > 0) {
-					// Existing item
-				}
-				else {
-					$dbh->exec("INSERT INTO itemid () VALUES()");
-					$itemid = $dbh->lastInsertId();
+	if ($child->count() > 0) {
+		if ($child->getName() == "item") {
+			$item = true;
+		}
+		next_child($child, $newurl."/", $feedid, $time);
+	}
+	else {
+		if ($child->getName() == "guid") {
+			$item = false;
+			$i = 0;
 
-					foreach ($buffer as $line) {
-						push_line($feedid, $line["location"], $itemid, $line["content"], $time);
-					}
-					$buffer = array();
-				}
-			}
-
-			if ($item) {
-				array_push($buffer, array("location" => $url.$child->getName(), "content" => (string)$child));
+			$sth = $dbh->query("SELECT * FROM feedcontent WHERE location='channel/item/guid' AND content='$child' AND feedid=$feedid");
+			if ($sth && $sth->rowCount() > 0) {
+				// Existing item
 			}
 			else {
-				push_line($feedid, $url.$child->getName(), $itemid, (string)$child, $time);
+				$dbh->exec("INSERT INTO itemid () VALUES()");
+				$itemid = $dbh->lastInsertId();
+
+				foreach ($buffer as $line) {
+					push_line($feedid, $line["location"], $itemid, $line["content"], $time);
+				}
+				$buffer = array();
 			}
-			echo($url.$child->getName().": ".(string)$child."\n");
+		}
+
+		if ($item) {
+			array_push($buffer, array("location" => $newurl, "content" => (string)$child));
+		}
+		else {
+			if (!($itemid == null && startsWith($newurl, "channel/item"))) {
+				push_line($feedid, $newurl, $itemid, (string)$child, $time);
+			}
 		}
 	}
 }
