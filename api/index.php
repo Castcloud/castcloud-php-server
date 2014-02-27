@@ -9,8 +9,8 @@ include 'cc-settings.php';
 GLOBAL $dbh;
 
 include 'authmiddleware.php';
-include 'crawler.php';
 include 'util.php';
+include 'crawler.php';
 
 $app -> add(new AuthMiddleware());
 

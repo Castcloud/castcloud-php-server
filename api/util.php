@@ -11,4 +11,14 @@ function json($json) {
 	$GLOBALS['app']->response->header('Content-Type', 'application/json');
 	echo json_encode($json);
 }
+
+function startsWith($haystack, $needle)
+{
+    return $needle === "" || strpos($haystack, $needle) === 0;
+}
+
+function endsWith($haystack, $needle)
+{
+    return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
+}
 ?>
