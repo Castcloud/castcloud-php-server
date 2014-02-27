@@ -38,9 +38,51 @@ $app->group('/account', function() use($app) {
 	 *		type="Herp",
 	 * 		@SWG\Parameter(
 	 *			name="username",
-	 *			description="ID of pet that needs to be fetched",
-	 *			paramType="body",
+	 *			description="Users username",
+	 *			paramType="form",
 	 *			required=true,
+	 *			type="string"
+	 *		),
+	 * 		@SWG\Parameter(
+	 *			name="password",
+	 *			description="Users password",
+	 *			paramType="form",
+	 *			required=true,
+	 *			type="string"
+	 *		),
+	 *  	@SWG\Parameter(
+	 *			name="clientname",
+	 *			description="Client Name",
+	 *			paramType="form",
+	 *			required=true,
+	 *			type="string"
+	 *		),
+	 *   	@SWG\Parameter(
+	 *			name="clientdescription",
+	 *			description="Client Description. e.g. Sallys iPad",
+	 *			paramType="form",
+	 *			required=true,
+	 *			type="string"
+	 *		),
+	 *   	@SWG\Parameter(
+	 *			name="clientversion",
+	 *			description="Client Version",
+	 *			paramType="form",
+	 *			required=true,
+	 *			type="string"
+	 *		),
+	 *    	@SWG\Parameter(
+	 *			name="uuid",
+	 *			description="Universally unique identifier. String used for uniqely identifying an instanse of an application.",
+	 *			paramType="form",
+	 *			required=true,
+	 *			type="string"
+	 *		),
+	 *     	@SWG\Parameter(
+	 *			name="apikey",
+	 *			description="Clients official apikey. Not yet implemented",
+	 *			paramType="form",
+	 *			required=false,
 	 *			type="string"
 	 *		)
 	 *   )
