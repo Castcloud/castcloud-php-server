@@ -29,11 +29,11 @@ $app -> group('/account', function() use ($app) {
 	/**
 	 * @SWG\Api(
 	 * 	path="/account/login",
-	 * 	description="User login. Returns tolken required for accessing the rest of the api.",
+	 * 	description="User login.",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
 	 * 		nickname="Login",
-	 * 		summary="This is a test",
+	 * 		summary="Get access tolken",
 	 * 		type="Herp",
 	 * 		@SWG\Parameter(
 	 * 			name="username",
@@ -151,14 +151,78 @@ $app -> group('/account', function() use ($app) {
 		}
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/account/ping",
+	 * 	description="Tests if tolken works",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Ping",
+	 * 		summary="Test tolken",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login tolken",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/ping', function() use ($app) {
 		json(array("status" => "Logged in"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/account/settings",
+	 * 	description="Settings",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get Settings",
+	 * 		summary="Get Settings",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login tolken",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/settings', function() use ($app) {
 		json(array("key" => "value", "key2" => "value"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/account/settings",
+	 * 	description="Settings",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Set Settings",
+	 * 		summary="Set Settings",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login tolken",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="json",
+	 * 			description="New or modified settings (TBD)",
+	 * 			paramType="body",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> post('/settings', function() use ($app) {
 		json(array("status" => "success"));
 	});

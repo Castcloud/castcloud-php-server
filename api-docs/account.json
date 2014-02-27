@@ -6,18 +6,126 @@
     "apis": [
         {
             "path": "/account/login",
-            "description": "User login. Returns tolken required for accessing the rest of the api.",
+            "description": "User login.",
             "operations": [
                 {
                     "method": "POST",
+                    "summary": "Get access tolken",
                     "nickname": "Login",
+                    "type": "Herp",
                     "parameters": [
                         {
-                            "paramType": "body",
+                            "paramType": "form",
                             "name": "username",
                             "type": "string",
                             "required": true,
-                            "description": "ID of pet that needs to be fetched"
+                            "description": "Users username"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "password",
+                            "type": "string",
+                            "required": true,
+                            "description": "Users password"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "clientname",
+                            "type": "string",
+                            "required": true,
+                            "description": "Client Name"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "clientdescription",
+                            "type": "string",
+                            "required": true,
+                            "description": "Client Description. e.g. Sallys iPad"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "clientversion",
+                            "type": "string",
+                            "required": true,
+                            "description": "Client Version"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "uuid",
+                            "type": "string",
+                            "required": true,
+                            "description": "Universally unique identifier. String used for uniqely identifying an instanse of an application."
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "apikey",
+                            "type": "string",
+                            "required": false,
+                            "description": "Clients official apikey. Not yet implemented"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/account/ping",
+            "description": "Tests if tolken works",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Test tolken",
+                    "nickname": "Ping",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login tolken"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/account/settings",
+            "description": "Settings",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get Settings",
+                    "nickname": "Get Settings",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login tolken"
+                        }
+                    ]
+                },
+                {
+                    "method": "POST",
+                    "summary": "Set Settings",
+                    "nickname": "Set Settings",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login tolken"
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "json",
+                            "type": "string",
+                            "required": true,
+                            "description": "New or modified settings (TBD)"
                         }
                     ]
                 }
