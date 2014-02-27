@@ -40,7 +40,6 @@ function process_child($child, $ns, $url, $feedid, $time) {
 
 	if ($ns != null) {
 		$newurl = $url.$ns.":".$child->getName();
-		echo "$newurl\n";
 	}
 	else {
 		$newurl = $url.$child->getName();
@@ -83,10 +82,18 @@ function process_child($child, $ns, $url, $feedid, $time) {
 
 		if ($item) {
 			array_push($buffer, array("location" => $newurl, "content" => (string)$child));
+
+			foreach ($child->attributes() as $key => $value) {
+				array_push($buffer, array("location" => "$newurl/$key", "content" => $value));
+			}
 		}
 		else {
 			if (!($itemid == null && startsWith($newurl, "channel/item"))) {
 				push_line($feedid, $newurl, $itemid, (string)$child, $time);
+
+				foreach ($child->attributes() as $key => $value) {
+					push_line($feedid, "$newurl/$key", $itemid, $value, $time);
+				}
 			}
 		}
 	}
