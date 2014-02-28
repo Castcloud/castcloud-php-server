@@ -160,7 +160,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/newepisodes', function() use ($app) {
-		json(array("Not" => "Implemented"));
+		json(crawler_get_new_episodes($app->request->params('since')));
 	});
 
 	/**
@@ -190,16 +190,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/episodes/:castid', function($castid) use ($app) {
-		$episodes = array();
-
-		$titles = crawler_get_all($castid, "channel/item/title");
-		$descriptions = crawler_get_all($castid, "channel/item/description");
-
-		for ($i = 0; $i < sizeof($titles); $i++) {
-			array_push($episodes, array("title" => $titles[$i], "description" => $descriptions[$i]));
-		}
-
-		json($episodes);
+		json(crawler_get_episodes($castid));
 	});
 
 	/**
