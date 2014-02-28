@@ -282,8 +282,20 @@ $app -> group('/library', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
-	$app -> get('tags', function() use ($app) {
-		json(array("Not" => "Implemented"));
+	$app -> get('/tags', function() use ($app) {
+		$dbh = $GLOBALS['dbh'];
+		$userid = $app -> userid;
+		$tags = array();
+		$sth = $dbh -> query("SELECT Tags FROM subscription WHERE UserID=$userid");
+		if ($sth){
+			foreach ($sth as $row){
+				if ($row['Tags'] != ''){
+				array_push($tags, $row['Tags']);
+				}
+			}
+		}
+		asort($tags);	
+		json(array_values(array_unique($tags)));
 	});
 
 });
