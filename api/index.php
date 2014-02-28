@@ -217,7 +217,7 @@ $app -> group('/library', function() use ($app) {
 		$casts = array();
 
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT * FROM feed");
+		$sth = $dbh -> query("SELECT * FROM subscription WHERE userid=$app->userid");
 		if ($sth) {
 			foreach ($sth as $row) {
 				$feedid = $row['FeedID'];
