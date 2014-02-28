@@ -280,13 +280,12 @@ $app -> group('/library', function() use ($app) {
 		$sth = $dbh -> query("SELECT Tags FROM subscription WHERE UserID=$userid");
 		if ($sth){
 			foreach ($sth as $row){
-				if ($row['Tags'] != '' && strpos($row['Tags'],',') == false){
-					array_push($tags, $row['Tags']);
+				$tag = $row['Tags'];
+				if ($tag != '' && !strpos($tag,',')){
+					array_push($tags, $tag);
 				}
-				if (strpos($row['Tags'],',')) 
-				{
-					$arr = explode( ',', str_replace(' ','',$row['Tags'])); 
-					$tags = array_merge($tags, $arr);
+				if (strpos($tag,',')){
+					$tags = array_merge($tags, explode( ',', str_replace(' ','',$tag)));
 				}
 			}
 		}
