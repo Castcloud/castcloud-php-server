@@ -1,0 +1,103 @@
+{
+    "basePath": "http://api.castcloud.org/api",
+    "swaggerVersion": "1.2",
+    "apiVersion": "1.0.0",
+    "resourcePath": "/library",
+    "apis": [
+        {
+            "path": "/account/casts",
+            "description": "Get users subcriptions",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get users subcriptions",
+                    "nickname": "Get users subcriptions",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        }
+                    ]
+                },
+                {
+                    "method": "POST",
+                    "summary": "Get users subcriptions",
+                    "nickname": "Get users subcriptions",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/account/episodes/{castid}",
+            "description": "Get all episodes of a cast",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Get all episodes",
+                    "nickname": "Get all episodes",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "path",
+                            "name": "castid",
+                            "type": "integer",
+                            "required": true,
+                            "description": "The casts castid"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/account/newepisodes",
+            "description": "Get new episodes",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get new episodes",
+                    "nickname": "Get new episodes",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "since",
+                            "type": "integer",
+                            "required": false,
+                            "description": "timestamp of last call"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "produces": [
+        "application/json"
+    ]
+}

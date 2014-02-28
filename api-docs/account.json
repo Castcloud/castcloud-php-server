@@ -133,7 +133,6 @@
         }
     ],
     "produces": [
-        "application/json",
-        "application/xml"
+        "application/json"
     ]
 }

@@ -22,7 +22,7 @@ $app -> add(new AuthMiddleware());
  *   basePath="http://api.castcloud.org/api",
  *   resourcePath="/account",
  *   description="Account related operations",
- *   produces="['application/json','application/xml']"
+ *   produces="['application/json']"
  * )
  */
 $app -> group('/account', function() use ($app) {
@@ -121,12 +121,74 @@ $app -> group('/account', function() use ($app) {
 
 });
 
+/**
+ * @SWG\Resource(
+ *   apiVersion="1.0.0",
+ *   swaggerVersion="1.2",
+ *   basePath="http://api.castcloud.org/api",
+ *   resourcePath="/library",
+ *   description="Library related operations",
+ *   produces="['application/json']"
+ * )
+ */
 $app -> group('/library', function() use ($app) {
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/account/newepisodes",
+	 * 	description="Get new episodes",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get new episodes",
+	 * 		summary="Get new episodes",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="since",
+	 * 			description="timestamp of last call",
+	 * 			paramType="query",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/newepisodes', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/account/episodes/{castid}",
+	 * 	description="Get all episodes of a cast",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Get all episodes",
+	 * 		summary="Get all episodes",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="castid",
+	 * 			description="The casts castid",
+	 * 			paramType="path",
+	 * 			required=true,
+	 * 			type="integer"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/episodes/:castid', function($castid) use ($app) {
 		$episodes = array();
 
@@ -140,6 +202,26 @@ $app -> group('/library', function() use ($app) {
 		json($episodes);
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/account/casts",
+	 * 	description="Get users subcriptions",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get users subcriptions",
+	 * 		summary="Get users subcriptions",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
+	 //Skal outputte i json og opml
 	$app -> get('/casts', function() use ($app) {
 		$casts = array();
 
@@ -161,6 +243,25 @@ $app -> group('/library', function() use ($app) {
 		json($casts);
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/account/casts",
+	 * 	description="Get users subcriptions",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Get users subcriptions",
+	 * 		summary="Get users subcriptions",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
 		$feedid = crawl($feedurl);

@@ -5,6 +5,10 @@
         {
             "path": "/account.json",
             "description": "Account related operations"
+        },
+        {
+            "path": "/library.json",
+            "description": "Library related operations"
         }
     ]
 }
