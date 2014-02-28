@@ -230,13 +230,7 @@ $app -> group('/library', function() use ($app) {
 		if ($sth) {
 			foreach ($sth as $row) {
 				$feedid = $row['FeedID'];
-				array_push($casts,
-					array("id" => $feedid,
-						"name" => crawler_get($feedid, "channel/title"),
-						"description" => crawler_get($feedid, "channel/description"),
-						"url" => $row['URL']
-					)
-				);
+				array_push($casts, array_merge(array("id" => $feedid), crawler_get_cast($feedid)));
 			}
 		}
 
@@ -265,7 +259,7 @@ $app -> group('/library', function() use ($app) {
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
 		$feedid = crawl($feedurl);
-		$userid = $app -> request -> params('userid');
+		$userid = $app -> userid;
 
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> query("SELECT * FROM subscription WHERE feedid=$feedid AND userid=$userid");

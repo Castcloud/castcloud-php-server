@@ -123,4 +123,25 @@ function crawler_get_all($feedid, $location) {
 	}
 	return null;
 }
+
+function crawler_get_cast($feedid) {
+	$cast = array();
+
+	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
+	if ($result = $sth->fetchAll()) {
+		foreach ($result as $row) {
+			if (!startsWith($row['Location'], "channel/item")) {
+				$exploded = explode("/", $row['Location']);
+				if (sizeof($exploded) > 2) {
+					$cast[$exploded[1]][$exploded[2]] = $row['Content'];
+				}
+				else {
+					$cast[$exploded[1]] = $row['Content'];
+				}
+			}
+		}
+	}
+
+	return $cast;
+}
 ?>
