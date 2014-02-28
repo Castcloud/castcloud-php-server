@@ -26,7 +26,7 @@ $app -> add(new AuthMiddleware());
  * )
  */
 $app -> group('/account', function() use ($app) {
-	
+
 	$app -> post('/login', function() use ($app) {
 		post_login($app);
 	});
@@ -212,7 +212,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	 //Skal outputte i json og opml
+	//Skal outputte i json og opml
 	$app -> get('/casts', function() use ($app) {
 		$casts = array();
 
@@ -280,8 +280,13 @@ $app -> group('/library', function() use ($app) {
 		$sth = $dbh -> query("SELECT Tags FROM subscription WHERE UserID=$userid");
 		if ($sth){
 			foreach ($sth as $row){
-				if ($row['Tags'] != ''){
-				array_push($tags, $row['Tags']);
+				if ($row['Tags'] != '' && strpos($row['Tags'],',') == false){
+					array_push($tags, $row['Tags']);
+				}
+				if (strpos($row['Tags'],',')) 
+				{
+					$arr = explode( ',', str_replace(' ','',$row['Tags'])); 
+					$tags = array_merge($tags, $arr);
 				}
 			}
 		}
