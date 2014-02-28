@@ -74,7 +74,16 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/settings', function() use ($app) {
-		json(array("key" => "value", "key2" => "value"));
+		$settings = array();
+
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM setting WHERE userid=$app->userid");
+		if ($sth) {
+			foreach ($sth as $row) {
+				$settings[$row['Key']] = $row['Value'];
+			}
+		}
+
+		json($settings);
 	});
 
 	/**
@@ -255,7 +264,7 @@ $app -> group('/library', function() use ($app) {
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> query("SELECT * FROM subscription WHERE feedid=$feedid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
-			$dbh -> exec("INSERT INTO subscription (feedid, tags, userid) VALUES($feedid, '', $userid)");
+			$dbh -> exec("INSERT INTO subscription (feedid, tags, userid) VALUES($feedid, 'bjarne,nils', $userid)");
 		}
 
 		json(array("status" => "success"));
