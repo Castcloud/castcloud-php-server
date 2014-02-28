@@ -125,7 +125,7 @@ function crawler_get_cast($feedid) {
 	return $cast;
 }
 
-function crawler_get_episodes($feedid) {
+function crawler_get_episodes($feedid, $since = null) {
 	$episodes = array();
 	$itemid = null;	
 	$previtemid = null;
@@ -140,6 +140,10 @@ function crawler_get_episodes($feedid) {
 			}
 
 			if (startsWith($row['Location'], "channel/item")) {
+				if ($since != null && $row['CrawlTS'] < $since) {
+					continue;
+				}
+
 				$exploded = explode("/", $row['Location']);
 				if (sizeof($exploded) > 3) {
 					$episodes[$i][$exploded[2]][$exploded[3]] = $row['Content'];
@@ -154,6 +158,19 @@ function crawler_get_episodes($feedid) {
 				}
 			}
 			$previtemid = $itemid;
+		}
+	}
+
+	return $episodes;
+}
+
+function crawler_get_new_episodes($since) {
+	$episodes = array();
+
+	$sth = $GLOBALS['dbh']->query("SELECT * FROM feed");
+	if ($result = $sth->fetchAll()) {
+		foreach ($result as $row) {
+			$episodes = array_merge($episodes, crawler_get_episodes($row['FeedID'], $since));
 		}
 	}
 

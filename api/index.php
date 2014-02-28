@@ -160,7 +160,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/newepisodes', function() use ($app) {
-		json(array("Not" => "Implemented"));
+		json(crawler_get_new_episodes($app->request->params('since')));
 	});
 
 	/**
