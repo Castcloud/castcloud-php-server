@@ -104,26 +104,6 @@ function push_line($feedid, $location, $itemid, $content, $time) {
 	$sth->execute();
 }
 
-function crawler_get($feedid, $location) {
-	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND location='$location'");
-	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-		return $result['Content'];
-	}
-	return "";
-}
-
-function crawler_get_all($feedid, $location) {
-	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND location='$location'");
-	if ($result = $sth->fetchAll()) {
-		$list = array();
-		foreach ($result as $row) {
-			array_push($list, $row['Content']);
-		}
-		return $list;
-	}
-	return null;
-}
-
 function crawler_get_cast($feedid) {
 	$cast = array();
 
@@ -143,5 +123,40 @@ function crawler_get_cast($feedid) {
 	}
 
 	return $cast;
+}
+
+function crawler_get_episodes($feedid) {
+	$episodes = array();
+	$itemid = null;	
+	$previtemid = null;
+	$i = -1;
+
+	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
+	if ($result = $sth->fetchAll()) {
+		foreach ($result as $row) {
+			$itemid = $row['ItemID'];
+			if ($itemid != $previtemid) {
+				$i++;
+			}
+
+			if (startsWith($row['Location'], "channel/item")) {
+				$exploded = explode("/", $row['Location']);
+				if (sizeof($exploded) > 3) {
+					$episodes[$i][$exploded[2]][$exploded[3]] = $row['Content'];
+				}
+				else {
+					if ($exploded[2] == "guid") {
+						$episodes[$i]["guid"]["guid"] = $row['Content'];
+					}
+					else {
+						$episodes[$i][$exploded[2]] = $row['Content'];
+					}
+				}
+			}
+			$previtemid = $itemid;
+		}
+	}
+
+	return $episodes;
 }
 ?>
