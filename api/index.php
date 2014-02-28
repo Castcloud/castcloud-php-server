@@ -113,10 +113,15 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/settings', function() use ($app) {
-		$json = json_decode($app->request->params('json'));
+		if ($app->request->params('json') == null) {
+			$settings = $app->request->params();
+		}
+		else {			
+			$settings = json_decode($app->request->params('json'));
+		}
 
 		$dbh = $GLOBALS['dbh'];
-		foreach($json as $key => $value) {
+		foreach($settings as $key => $value) {
 			$sth = $dbh->query("SELECT * FROM setting WHERE userid=$app->userid AND keyz='$key'");
 			if ($sth && $sth->rowCount() > 0) {
 				$dbh->exec("UPDATE setting SET value='$value' WHERE userid=$app->userid AND keyz='$key'");				
