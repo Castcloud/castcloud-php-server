@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS `client` (
 
 CREATE TABLE IF NOT EXISTS `clientauthorization` (
   `UniqueClientID` int(11) NOT NULL AUTO_INCREMENT,
+  `StatusID` int(11) NOT NULL,
   `UserID` int(11) NOT NULL,
   `ClientID` int(11) NOT NULL,
   `Token` text NOT NULL,
@@ -151,6 +152,7 @@ CREATE TABLE IF NOT EXISTS `subscription` (
 
 CREATE TABLE IF NOT EXISTS `users` (
   `UserID` int(11) NOT NULL AUTO_INCREMENT,
+  `UserLevel` int(11) NOT NULL,
   `Username` text NOT NULL,
   `Name` text,
   `Mail` text NOT NULL,
