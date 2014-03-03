@@ -80,7 +80,7 @@
             "description": "Get all episodes of a cast",
             "operations": [
                 {
-                    "method": "POST",
+                    "method": "GET",
                     "summary": "Get all episodes",
                     "nickname": "Get all episodes",
                     "type": "Herp",
@@ -157,10 +157,17 @@
                         },
                         {
                             "paramType": "query",
-                            "name": "castid",
+                            "name": "CastID",
                             "type": "integer",
                             "required": false,
-                            "description": "filter by castid"
+                            "description": "filter by CastID"
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "ItemID",
+                            "type": "integer",
+                            "required": false,
+                            "description": "filter by ItemID"
                         }
                     ]
                 }

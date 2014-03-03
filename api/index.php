@@ -195,7 +195,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	path="/library/episodes/{castid}",
 	 * 	description="Get all episodes of a cast",
 	 * 	@SWG\Operation(
-	 * 		method="POST",
+	 * 		method="GET",
 	 * 		nickname="Get all episodes",
 	 * 		summary="Get all episodes",
 	 * 		type="Herp",
@@ -341,8 +341,15 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="integer"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="castid",
-	 * 			description="filter by castid",
+	 * 			name="CastID",
+	 * 			description="filter by CastID",
+	 * 			paramType="query",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="ItemID",
+	 * 			description="filter by ItemID",
 	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
@@ -352,6 +359,13 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/events', function() use ($app) {
 		$events = array();
+		array_push($events,
+			array(
+				"castcloud" => array(
+					"timestamp" => time()
+				)
+			)
+		);
 
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> query("SELECT * FROM event WHERE userid=$app->userid");
@@ -361,8 +375,7 @@ $app -> group('/library', function() use ($app) {
 					"type" => $row['Type'],
 					"itemid" => $row['ItemID'],
 					"event" => $row['Event'],
-					"clientts" => $row['ClientTS'],
-					"receivedts" => $row['ReceivedTS']));
+					"clientts" => $row['ClientTS']));
 			}
 		}
 
