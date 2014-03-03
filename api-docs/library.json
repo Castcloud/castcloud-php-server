@@ -5,7 +5,7 @@
     "resourcePath": "/library",
     "apis": [
         {
-            "path": "/account/casts",
+            "path": "/library/casts",
             "description": "Get users subcriptions",
             "operations": [
                 {
@@ -35,13 +35,48 @@
                             "type": "string",
                             "required": true,
                             "description": "clients login token"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "feedurl",
+                            "type": "string",
+                            "required": true,
+                            "description": "URL of podcast feed"
                         }
                     ]
                 }
             ]
         },
         {
-            "path": "/account/episodes/{castid}",
+            "path": "/library/casts/{tag}",
+            "description": "Get users subcriptions for spesific tag",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get users subcriptions for spesific tag",
+                    "nickname": "Get users subcriptions for spesific tag",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "path",
+                            "name": "tag",
+                            "type": "string",
+                            "required": false,
+                            "description": "filter by tag"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/episodes/{castid}",
             "description": "Get all episodes of a cast",
             "operations": [
                 {
@@ -69,7 +104,70 @@
             ]
         },
         {
-            "path": "/account/newepisodes",
+            "path": "/library/events",
+            "description": "Add events",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Add events",
+                    "nickname": "Add events",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "json",
+                            "type": "string",
+                            "required": true,
+                            "description": "New events (TBD)"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/events",
+            "description": "Get events",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get users tags",
+                    "nickname": "Get users tags",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "since",
+                            "type": "integer",
+                            "required": false,
+                            "description": "timestamp of last call"
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "castid",
+                            "type": "integer",
+                            "required": false,
+                            "description": "filter by castid"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/newepisodes",
             "description": "Get new episodes",
             "operations": [
                 {
@@ -91,6 +189,27 @@
                             "type": "integer",
                             "required": false,
                             "description": "timestamp of last call"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/tags",
+            "description": "Get users tags",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get users tags",
+                    "nickname": "Get users tags",
+                    "type": "Herp",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
                         }
                     ]
                 }

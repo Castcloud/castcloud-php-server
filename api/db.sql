@@ -119,8 +119,8 @@ CREATE TABLE IF NOT EXISTS `itemid` (
 CREATE TABLE IF NOT EXISTS `setting` (
   `SettingID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
-  `Key` int(11) NOT NULL,
-  `Value` int(11) NOT NULL,
+  `Setting` text NOT NULL,
+  `Value` text NOT NULL,
   `ClientID` int(11) DEFAULT NULL,
   PRIMARY KEY (`SettingID`),
   KEY `ClientID` (`ClientID`),
