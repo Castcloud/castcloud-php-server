@@ -187,6 +187,21 @@ function crawler_get_episodes($feedid, $since = null) {
 			}
 
 			if (startsWith($row['Location'], "channel/item")) {
+				if (!isset($episodes[$i]["castcloud"]["id"])) {
+					$episodes[$i]["castcloud"]["id"] = $itemid;
+					$episodes[$i]["castcloud"]["castid"] = $feedid;
+
+					$sth = $GLOBALS['dbh']->query("SELECT * FROM event WHERE itemid=$itemid ORDER BY clientts LIMIT 1");
+					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+						$episodes[$i]["castcloud"]["lastevent"]["type"] = $result["Type"];
+						$episodes[$i]["castcloud"]["lastevent"]["event"] = $result["Event"];
+						$episodes[$i]["castcloud"]["lastevent"]["clientts"] = $result["ClientTS"];
+					}
+					else {
+						$episodes[$i]["castcloud"]["lastevent"] = null;
+					}
+				}
+
 				$exploded = explode("/", $row['Location']);
 				if (sizeof($exploded) > 3) {
 					$episodes[$i][$exploded[2]][$exploded[3]] = $row['Content'];
