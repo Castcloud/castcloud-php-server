@@ -325,16 +325,16 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/casts/:tag', function($tag) use ($app) {
 		$casts = array();
 		$dbh = $GLOBALS['dbh'];
-		$tags = array();
-		$sth = $dbh -> query("SELECT FeedID FROM subscription like '%$tag%'");
+		$sth = $dbh -> query("SELECT FeedID FROM subscription WHERE find_in_set(binary '$tag', Tags) AND UserID=$app->userid");
 		if ($sth) {
 			foreach ($sth as $row) {
-				array_push($tags, $row['FeedID']);
+				$feedid = $row['FeedID'];
+				array_push($casts, array_merge(array("id" => $feedid), crawler_get_cast($feedid)));
 			}
 
 		}
 
-		json($tags);
+		json($casts);
 	});
 
 	/**
