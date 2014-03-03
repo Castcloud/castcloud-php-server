@@ -240,26 +240,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/casts', function() use ($app) {
-		$casts = array();
-
-		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT * FROM subscription WHERE userid=$app->userid");
-		if ($sth) {
-			foreach ($sth as $row) {
-				$feedid = $row['FeedID'];
-				$tags = explode(',', $row['Tags']);
-
-				$sth = $dbh->query("SELECT * FROM feed WHERE feedid=$feedid");
-				if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-					array_push($casts, array_merge(array("castcloud" => array(
-						"id" => $feedid, 
-						"url" => $result['URL'], 
-						"tags" => $tags)), crawler_get_cast($feedid)));
-				}
-			}
-		}
-
-		json($casts);
+		json(crawler_get_casts());
 	});
 
 	$app->get('/casts.opml', function() use($app) {
@@ -333,18 +314,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/casts/:tag', function($tag) use ($app) {
-		$casts = array();
-		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT FeedID FROM subscription WHERE find_in_set(binary '$tag', Tags) AND UserID=$app->userid");
-		if ($sth) {
-			foreach ($sth as $row) {
-				$feedid = $row['FeedID'];
-				array_push($casts, array_merge(array("id" => $feedid), crawler_get_cast($feedid)));
-			}
-
-		}
-
-		json($casts);
+		json(crawler_get_casts($tag));
 	});
 
 	/**

@@ -125,6 +125,35 @@ function crawler_get_cast($feedid) {
 	return $cast;
 }
 
+function crawler_get_casts($tag = null) {
+	$casts = array();
+	$app = $GLOBALS['app'];
+
+	$dbh = $GLOBALS['dbh'];
+	if ($tag == null) {
+		$sth = $dbh -> query("SELECT * FROM subscription WHERE userid=$app->userid");
+	}
+	else {
+		$sth = $dbh -> query("SELECT * FROM subscription WHERE find_in_set(binary '$tag', Tags) AND UserID=$app->userid");
+	}
+	if ($sth) {
+		foreach ($sth as $row) {
+			$feedid = $row['FeedID'];
+			$tags = explode(',', $row['Tags']);
+
+			$sth = $dbh->query("SELECT * FROM feed WHERE feedid=$feedid");
+			if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+				array_push($casts, array_merge(array("castcloud" => array(
+					"id" => $feedid, 
+					"url" => $result['URL'], 
+					"tags" => $tags)), crawler_get_cast($feedid)));
+			}
+		}
+	}
+
+	return $casts;
+}
+
 function crawler_get_episodes($feedid, $since = null) {
 	$episodes = array();
 	$itemid = null;	
