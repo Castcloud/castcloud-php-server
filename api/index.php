@@ -74,7 +74,16 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/settings', function() use ($app) {
-		json(array("key" => "value", "key2" => "value"));
+		$settings = array();
+
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM setting WHERE userid=$app->userid");
+		if ($sth) {
+			foreach ($sth as $row) {
+				$settings[$row['Keyz']] = $row['Value'];
+			}
+		}
+
+		json($settings);
 	});
 
 	/**
@@ -104,6 +113,24 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/settings', function() use ($app) {
+		if ($app->request->params('json') == null) {
+			$settings = $app->request->params();
+		}
+		else {			
+			$settings = json_decode($app->request->params('json'));
+		}
+
+		$dbh = $GLOBALS['dbh'];
+		foreach($settings as $key => $value) {
+			$sth = $dbh->query("SELECT * FROM setting WHERE userid=$app->userid AND keyz='$key'");
+			if ($sth && $sth->rowCount() > 0) {
+				$dbh->exec("UPDATE setting SET value='$value' WHERE userid=$app->userid AND keyz='$key'");				
+			}
+			else {
+				$dbh->exec("INSERT INTO setting (userid, keyz, value) VALUES($app->userid, '$key', '$value')");
+			}
+		}
+
 		json(array("status" => "success"));
 	});
 
@@ -135,7 +162,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/account/newepisodes",
+	 * 	path="/library/newepisodes",
 	 * 	description="Get new episodes",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
@@ -165,7 +192,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/account/episodes/{castid}",
+	 * 	path="/library/episodes/{castid}",
 	 * 	description="Get all episodes of a cast",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
@@ -195,7 +222,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/account/casts",
+	 * 	path="/library/casts",
 	 * 	description="Get users subcriptions",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
@@ -213,11 +240,12 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	//Skal outputte i json og opml
+	//mangler sourceurl, tags
 	$app -> get('/casts', function() use ($app) {
 		$casts = array();
 
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT * FROM feed");
+		$sth = $dbh -> query("SELECT * FROM subscription WHERE userid=$app->userid");
 		if ($sth) {
 			foreach ($sth as $row) {
 				$feedid = $row['FeedID'];
@@ -230,7 +258,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/account/casts",
+	 * 	path="/library/casts",
 	 * 	description="Get users subcriptions",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
@@ -241,6 +269,13 @@ $app -> group('/library', function() use ($app) {
 	 * 			name="Authorization",
 	 * 			description="clients login token",
 	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="feedurl",
+	 * 			description="URL of podcast feed",
+	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="string"
 	 * 		)
@@ -255,12 +290,38 @@ $app -> group('/library', function() use ($app) {
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> query("SELECT * FROM subscription WHERE feedid=$feedid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
-			$dbh -> exec("INSERT INTO subscription (feedid, tags, userid) VALUES($feedid, '', $userid)");
+			$dbh -> exec("INSERT INTO subscription (feedid, tags, userid) VALUES($feedid, 'bjarne,nils', $userid)");
 		}
 
 		json(array("status" => "success"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/casts/{tag}",
+	 * 	description="Get users subcriptions for spesific tag",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get users subcriptions for spesific tag",
+	 * 		summary="Get users subcriptions for spesific tag",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="tag",
+	 * 			description="filter by tag",
+	 * 			paramType="path",
+	 * 			required=false,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/casts/:tag', function($tag) use ($app) {
 		$casts = array();
 		$dbh = $GLOBALS['dbh'];
@@ -276,14 +337,92 @@ $app -> group('/library', function() use ($app) {
 		json($tags);
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/events",
+	 * 	description="Get events",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get users tags",
+	 * 		summary="Get users tags",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="since",
+	 * 			description="timestamp of last call",
+	 * 			paramType="query",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="castid",
+	 * 			description="filter by castid",
+	 * 			paramType="query",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/events', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/events",
+	 * 	description="Add events",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Add events",
+	 * 		summary="Add events",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="json",
+	 * 			description="New events (TBD)",
+	 * 			paramType="body",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> post('/events', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/tags",
+	 * 	description="Get users tags",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get users tags",
+	 * 		summary="Get users tags",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/tags', function() use ($app) {
 		$dbh = $GLOBALS['dbh'];
 		$userid = $app -> userid;

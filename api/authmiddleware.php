@@ -17,6 +17,7 @@ class AuthMiddleware extends \Slim\Middleware {
 						$result = $sth->fetch(PDO::FETCH_ASSOC);
 
 						$this->app->userid = $result['UserID'];
+						$this->app->clientid = $result['ClientID'];
 
 						$sth = $GLOBALS['dbh'] -> prepare("UPDATE clientauthorization SET SeenTS=:time WHERE UniqueClientID=:UniqueClientID");
 						$sth -> bindParam(':time', $time, PDO::PARAM_INT);
