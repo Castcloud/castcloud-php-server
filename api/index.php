@@ -162,7 +162,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/account/newepisodes",
+	 * 	path="/library/newepisodes",
 	 * 	description="Get new episodes",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
@@ -192,7 +192,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/account/episodes/{castid}",
+	 * 	path="/library/episodes/{castid}",
 	 * 	description="Get all episodes of a cast",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
@@ -222,7 +222,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/account/casts",
+	 * 	path="/library/casts",
 	 * 	description="Get users subcriptions",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
@@ -240,6 +240,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	//Skal outputte i json og opml
+	//mangler sourceurl, tags
 	$app -> get('/casts', function() use ($app) {
 		$casts = array();
 
@@ -257,7 +258,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/account/casts",
+	 * 	path="/library/casts",
 	 * 	description="Get users subcriptions",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
@@ -268,6 +269,13 @@ $app -> group('/library', function() use ($app) {
 	 * 			name="Authorization",
 	 * 			description="clients login token",
 	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="feedurl",
+	 * 			description="URL of podcast feed",
+	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="string"
 	 * 		)
@@ -288,18 +296,122 @@ $app -> group('/library', function() use ($app) {
 		json(array("status" => "success"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/casts/{tag}",
+	 * 	description="Get users subcriptions for spesific tag",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get users subcriptions for spesific tag",
+	 * 		summary="Get users subcriptions for spesific tag",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="tag",
+	 * 			description="filter by tag",
+	 * 			paramType="path",
+	 * 			required=false,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/casts/:tag', function($tag) use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/events",
+	 * 	description="Get events",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get users tags",
+	 * 		summary="Get users tags",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="since",
+	 * 			description="timestamp of last call",
+	 * 			paramType="query",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="castid",
+	 * 			description="filter by castid",
+	 * 			paramType="query",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/events', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/events",
+	 * 	description="Add events",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Add events",
+	 * 		summary="Add events",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="json",
+	 * 			description="New events (TBD)",
+	 * 			paramType="body",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> post('/events', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/tags",
+	 * 	description="Get users tags",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get users tags",
+	 * 		summary="Get users tags",
+	 * 		type="Herp",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> get('/tags', function() use ($app) {
 		$dbh = $GLOBALS['dbh'];
 		$userid = $app -> userid;
