@@ -341,13 +341,6 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="integer"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="CastID",
-	 * 			description="filter by CastID",
-	 * 			paramType="query",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\Parameter(
 	 * 			name="ItemID",
 	 * 			description="filter by ItemID",
 	 * 			paramType="query",
@@ -367,10 +360,11 @@ $app -> group('/library', function() use ($app) {
 			$query.=" AND itemid=$itemid";
 		}
 		if ($since != null) {
-			$query.=" AND clientts > $since";
+			$query.=" AND receivedts > $since";
 		}
 
 		$dbh = $GLOBALS['dbh'];
+		//Prepared query?
 		$sth = $dbh -> query($query);
 		if ($sth) {
 			foreach ($sth as $row) {
