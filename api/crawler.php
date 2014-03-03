@@ -1,11 +1,13 @@
 <?php
-if (isset($_GET['s']) && $_GET['s'] == 'arne') {
+if (isset($_GET['t'])){
 	include 'cc-settings.php';
-	include 'util.php';
-	$sth = $dbh->query("SELECT * FROM feed");
-	if ($sth) {
-		foreach ($sth as $row) {
-			crawl($row['URL']);
+	if ($_GET['t'] == $crawl_token) {
+		include 'util.php';
+		$sth = $dbh->query("SELECT * FROM feed");
+		if ($sth) {
+			foreach ($sth as $row) {
+				crawl($row['URL']);
+			}
 		}
 	}
 }

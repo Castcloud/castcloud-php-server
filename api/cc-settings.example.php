@@ -1,4 +1,6 @@
 <?php
+$crawl_token = 'QoVVUDcbR CSNYYxaNei1mMQQ3LnYuBVNMx iMCc6AM=';
+
 $db_host = 'localhost';
 $db_user = 'root';
 $db_pass = 'password';
