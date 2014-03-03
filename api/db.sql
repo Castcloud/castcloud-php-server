@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `event` (
   `UserID` int(11) NOT NULL,
   `Type` int(11) NOT NULL,
   `ItemID` int(11) NOT NULL,
-  `Event` text NOT NULL,
+  `PositionTS` int(11) NOT NULL,
   `ClientTS` int(11) NOT NULL,
   `ReceivedTS` int(11) NOT NULL,
   `UniqueClientID` int(11) NOT NULL,
