@@ -349,6 +349,17 @@ $app -> group('/library', function() use ($app) {
 	 * 		)
 	 * 	)
 	 * )
+	 * 
+	 * List of event types
+		10 => "start",
+		20 => "pause",
+		30 => "unpause",
+		40 => "slumber start",
+		50 => "slumber end",
+		60 => "seek start",
+		70 => "seek end",
+		80 => "end of track",
+		90 => "deleted"
 	 */
 	$app -> get('/events', function() use ($app) {
 		$events = array("timestamp" => time(), "events" => array());
