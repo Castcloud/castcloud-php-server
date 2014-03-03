@@ -171,7 +171,12 @@ function crawler_get_episodes($feedid, $since = null) {
 	$previtemid = null;
 	$i = -1;
 
-	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
+	if ($since == null) {
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND crawlts > $since");
+	}
+	else {
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
+	}
 	if ($result = $sth->fetchAll()) {
 		foreach ($result as $row) {
 			$itemid = $row['ItemID'];
@@ -180,10 +185,6 @@ function crawler_get_episodes($feedid, $since = null) {
 			}
 
 			if (startsWith($row['Location'], "channel/item")) {
-				if ($since != null && $row['CrawlTS'] < $since) {
-					continue;
-				}
-
 				$exploded = explode("/", $row['Location']);
 				if (sizeof($exploded) > 3) {
 					$episodes[$i][$exploded[2]][$exploded[3]] = $row['Content'];
