@@ -262,7 +262,18 @@ $app -> group('/library', function() use ($app) {
 	});
 
 	$app -> get('/casts/:tag', function($tag) use ($app) {
-		json(array("Not" => "Implemented"));
+		$casts = array();
+		$dbh = $GLOBALS['dbh'];
+		$tags = array();
+		$sth = $dbh -> query("SELECT FeedID FROM subscription like '%$tag%'");
+		if ($sth) {
+			foreach ($sth as $row) {
+				array_push($tags, $row['FeedID']);
+			}
+
+		}
+
+		json($tags);
 	});
 
 	$app -> get('/events', function() use ($app) {
