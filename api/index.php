@@ -138,11 +138,11 @@ $app -> group('/account', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
-	$app -> get('/takeout/opml', function() use ($app) {
+	$app -> get('/takeout.opml', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
-	$app -> post('/takeout/opml', function() use ($app) {
+	$app -> post('/takeout.opml', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
@@ -239,7 +239,6 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	//Skal outputte i json og opml
 	$app -> get('/casts', function() use ($app) {
 		$casts = array();
 
@@ -248,11 +247,23 @@ $app -> group('/library', function() use ($app) {
 		if ($sth) {
 			foreach ($sth as $row) {
 				$feedid = $row['FeedID'];
-				array_push($casts, array_merge(array("id" => $feedid), crawler_get_cast($feedid)));
+				$tags = explode(',', $row['Tags']);
+
+				$sth = $dbh->query("SELECT * FROM feed WHERE feedid=$feedid");
+				if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+					array_push($casts, array_merge(array("castcloud" => array(
+						"id" => $feedid, 
+						"url" => $result['URL'], 
+						"tags" => $tags)), crawler_get_cast($feedid)));
+				}
 			}
 		}
 
 		json($casts);
+	});
+
+	$app->get('/casts.opml', function() use($app) {
+		json(array("Not" => "Implemented"));
 	});
 
 	/**
@@ -293,11 +304,34 @@ $app -> group('/library', function() use ($app) {
 	});
 
 	$app -> get('/events', function() use ($app) {
-		json(array("Not" => "Implemented"));
+		$events = array();
+
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> query("SELECT * FROM event WHERE userid=$app->userid");
+		if ($sth) {
+			foreach ($sth as $row) {
+				array_push($events, array(
+					"type" => $row['Type'],
+					"itemid" => $row['ItemID'],
+					"event" => $row['Event'],
+					"clientts" => $row['ClientTS'],
+					"receivedts" => $row['ReceivedTS']));
+			}
+		}
+
+		json($events);
 	});
 
 	$app -> post('/events', function() use ($app) {
-		json(array("Not" => "Implemented"));
+		$type = $app->request->params('type');
+		$itemid = $app->request->params('itemid');
+		$event = $app->request->params('event');
+		$clientts = $app->request->params('clientts');
+		$receivedts = time();
+
+		$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, event, clientts, receivedts, uniqueclientid) VALUES($app->userid, $type, $itemid, '$event', $clientts, $receivedts, $app->uniqueclientid)");
+
+		json(array("Status" => "Success"));
 	});
 
 	$app -> get('/tags', function() use ($app) {
