@@ -1,4 +1,15 @@
 <?php
+if (isset($_GET['s']) && $_GET['s'] == 'arne') {
+	include 'cc-settings.php';
+	include 'util.php';
+	$sth = $dbh->query("SELECT * FROM feed");
+	if ($sth) {
+		foreach ($sth as $row) {
+			crawl($row['URL']);
+		}
+	}
+}
+
 function crawl($feedurl) {
 	$dbh = $GLOBALS['dbh'];
 	$time = time();
