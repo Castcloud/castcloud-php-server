@@ -396,14 +396,22 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/events', function() use ($app) {
-		$type = $app->request->params('type');
-		$itemid = $app->request->params('itemid');
-		$event = $app->request->params('event');
-		$clientts = $app->request->params('clientts');
 		$receivedts = time();
+		if ($app->request->params('json') == null) {
+			$type = $app->request->params('type');
+			$itemid = $app->request->params('itemid');
+			$event = $app->request->params('event');
+			$clientts = $app->request->params('clientts');
 
-		$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, event, clientts, receivedts, uniqueclientid) VALUES($app->userid, $type, $itemid, '$event', $clientts, $receivedts, $app->uniqueclientid)");
-
+			$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, event, clientts, receivedts, uniqueclientid) VALUES($app->userid, $type, $itemid, '$event', $clientts, $receivedts, $app->uniqueclientid)");
+		}
+		else {			
+			$json = json_decode($app->request->params('json'));
+			foreach ($json as $event) {
+				$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, event, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, '$event->event', $event->clientts, $receivedts, $app->uniqueclientid)");
+			}
+		}
+		
 		json(array("Status" => "Success"));
 	});
 
