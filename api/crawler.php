@@ -174,10 +174,10 @@ function crawler_get_episodes($feedid, $since = null) {
 	$i = -1;
 
 	if ($since == null) {
-		$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND crawlts > $since");
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
 	}
 	else {
-		$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND crawlts > $since");
 	}
 	if ($result = $sth->fetchAll()) {
 		foreach ($result as $row) {
