@@ -383,7 +383,9 @@ $app -> group('/library', function() use ($app) {
 					"type" => $row['Type'],
 					"itemid" => $row['ItemID'],
 					"positionts" => $row['PositionTS'],
-					"clientts" => $row['ClientTS']));
+					"clientts" => $row['ClientTS'],
+					"clientname" => $app->clientname,
+					"clientdescription" => $app->clientdescription));
 			}
 		}
 
