@@ -79,7 +79,7 @@ $app -> group('/account', function() use ($app) {
 		$sth = $GLOBALS['dbh']->query("SELECT * FROM setting WHERE userid=$app->userid");
 		if ($sth) {
 			foreach ($sth as $row) {
-				$settings[$row['Keyz']] = $row['Value'];
+				$settings[$row['Setting']] = $row['Value'];
 			}
 		}
 
@@ -122,12 +122,12 @@ $app -> group('/account', function() use ($app) {
 
 		$dbh = $GLOBALS['dbh'];
 		foreach($settings as $key => $value) {
-			$sth = $dbh->query("SELECT * FROM setting WHERE userid=$app->userid AND keyz='$key'");
+			$sth = $dbh->query("SELECT * FROM setting WHERE userid=$app->userid AND setting='$key'");
 			if ($sth && $sth->rowCount() > 0) {
-				$dbh->exec("UPDATE setting SET value='$value' WHERE userid=$app->userid AND keyz='$key'");				
+				$dbh->exec("UPDATE setting SET value='$value' WHERE userid=$app->userid AND setting='$key'");				
 			}
 			else {
-				$dbh->exec("INSERT INTO setting (userid, keyz, value) VALUES($app->userid, '$key', '$value')");
+				$dbh->exec("INSERT INTO setting (userid, setting, value) VALUES($app->userid, '$key', '$value')");
 			}
 		}
 
