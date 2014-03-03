@@ -205,13 +205,13 @@ function crawler_get_episodes($feedid, $since = null) {
 }
 
 function crawler_get_new_episodes($since) {
-	$episodes = array();
+	$episodes = array("timestamp" => time(), "episodes" => array());
 	$userid = $GLOBALS['app']->userid;
 
 	$sth = $GLOBALS['dbh']->query("SELECT * FROM subscription WHERE userid=$userid");
 	if ($result = $sth->fetchAll()) {
 		foreach ($result as $row) {
-			$episodes = array_merge($episodes, crawler_get_episodes($row['FeedID'], $since));
+			$episodes["episodes"] = array_merge($episodes["episodes"], crawler_get_episodes($row['FeedID'], $since));
 		}
 	}
 
