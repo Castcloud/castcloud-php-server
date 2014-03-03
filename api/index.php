@@ -358,20 +358,13 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/events', function() use ($app) {
-		$events = array();
-		array_push($events,
-			array(
-				"castcloud" => array(
-					"timestamp" => time()
-				)
-			)
-		);
+		$events = array("timestamp" => time(), "events" => array());
 
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> query("SELECT * FROM event WHERE userid=$app->userid");
 		if ($sth) {
 			foreach ($sth as $row) {
-				array_push($events, array(
+				array_push($events["events"], array(
 					"type" => $row['Type'],
 					"itemid" => $row['ItemID'],
 					"event" => $row['Event'],
