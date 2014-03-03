@@ -382,8 +382,10 @@ $app -> group('/library', function() use ($app) {
 				array_push($events["events"], array(
 					"type" => $row['Type'],
 					"itemid" => $row['ItemID'],
-					"event" => $row['Event'],
-					"clientts" => $row['ClientTS']));
+					"positionts" => $row['PositionTS'],
+					"clientts" => $row['ClientTS'],
+					"clientname" => $app->clientname,
+					"clientdescription" => $app->clientdescription));
 			}
 		}
 
@@ -421,15 +423,15 @@ $app -> group('/library', function() use ($app) {
 		if ($app->request->params('json') == null) {
 			$type = $app->request->params('type');
 			$itemid = $app->request->params('itemid');
-			$event = $app->request->params('event');
+			$positionts = $app->request->params('positionts');
 			$clientts = $app->request->params('clientts');
 
-			$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, event, clientts, receivedts, uniqueclientid) VALUES($app->userid, $type, $itemid, '$event', $clientts, $receivedts, $app->uniqueclientid)");
+			$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $type, $itemid, $positionts, $clientts, $receivedts, $app->uniqueclientid)");
 		}
 		else {			
-			$json = json_decode($app->request->params('json'));
+			$event = json_decode($app->request->params('json'));
 			foreach ($json as $event) {
-				$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, event, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, '$event->event', $event->clientts, $receivedts, $app->uniqueclientid)");
+				$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, $event->clientts, $receivedts, $app->uniqueclientid)");
 			}
 		}
 		
