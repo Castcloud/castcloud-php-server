@@ -194,7 +194,7 @@ function crawler_get_episodes($feedid, $since = null) {
 					$sth = $GLOBALS['dbh']->query("SELECT * FROM event WHERE itemid=$itemid ORDER BY clientts LIMIT 1");
 					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 						$episodes[$i]["castcloud"]["lastevent"]["type"] = $result["Type"];
-						$episodes[$i]["castcloud"]["lastevent"]["event"] = $result["Event"];
+						$episodes[$i]["castcloud"]["lastevent"]["positionts"] = $result["PositionTS"];
 						$episodes[$i]["castcloud"]["lastevent"]["clientts"] = $result["ClientTS"];
 					}
 					else {
