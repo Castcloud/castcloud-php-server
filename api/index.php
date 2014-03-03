@@ -359,9 +359,19 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/events', function() use ($app) {
 		$events = array("timestamp" => time(), "events" => array());
+		$query = "SELECT * FROM event WHERE userid=$app->userid";
+		$itemid = $app->request->params('itemid');
+		$since = $app->request->params('since');
+
+		if ($itemid != null) {
+			$query.=" AND itemid=$itemid";
+		}
+		if ($since != null) {
+			$query.=" AND clientts > $since";
+		}
 
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT * FROM event WHERE userid=$app->userid");
+		$sth = $dbh -> query($query);
 		if ($sth) {
 			foreach ($sth as $row) {
 				array_push($events["events"], array(
