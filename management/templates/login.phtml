@@ -12,23 +12,26 @@ else {
 ?>
 <div class="row">
 	<form action="login" method="POST">
-		<div class="small-12 medium-4 medium-offset-4 columns">
-			<div class="row">
-				<div class="large-12 columns">
-					<label>Username:
-						<input name="username" type="text">
-					</label>
+		<fieldset>
+			<legend>Login</legend>
+			<div class="small-12 medium-4 medium-offset-4 columns">
+				<div class="row">
+					<div class="large-12 columns">
+						<label>Username:
+							<input name="username" type="text">
+						</label>
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<div class="large-12 columns">
-					<label>Password:
-						<input name="password" type="password">
-					</label>
+				<div class="row">
+					<div class="large-12 columns">
+						<label>Password:
+							<input name="password" type="password">
+						</label>
+					</div>
 				</div>
+				<input type="submit" class="button" value="Log in">
 			</div>
-			<input type="submit" class="button" value="Log in">
-		</div>
+		</fieldset>
 	</form>
 </div>
 <?php 
