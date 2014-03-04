@@ -38,5 +38,10 @@ $app->post('/login', function() use($app) {
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
 });
 
+$app->post('/logout', function() use($app) {
+	session_destroy();
+	$app->response->redirect($_SERVER['HTTP_REFERER']);
+});
+
 $app->run();
 ?>
