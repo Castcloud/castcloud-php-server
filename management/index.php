@@ -2,20 +2,26 @@
 require '../lib/Slim/Slim.php';
 \Slim\Slim::registerAutoloader();
 
+include 'installmiddleware.php';
+
 session_cache_limiter(false);
 session_start();
 
 $app = new \Slim\Slim();
 GLOBAL $app;
 
-include '../api/cc-settings.php';
-GLOBAL $dbh;
+if (file_exists('../api/cc-settings.php')) {
+	include '../api/cc-settings.php';
+	GLOBAL $dbh;
+}
+
+$app->add(new InstallMiddleware());
 
 $app->get('/', function() {
 	if (isset($_SESSION['login'])) {
 		$status = "Hai ".$_SESSION['username'];
 	}
-	include('templates/login.phtml');
+	include 'templates/login.phtml';
 });
 
 $app->post('/login', function() use($app) {
@@ -41,6 +47,10 @@ $app->post('/login', function() use($app) {
 $app->post('/logout', function() use($app) {
 	session_destroy();
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
+});
+
+$app->get('/a', function() {
+	include 'templates/install.phtml';
 });
 
 $app->run();
