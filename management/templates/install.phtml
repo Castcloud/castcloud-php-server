@@ -3,7 +3,7 @@ include('header.phtml');
 ?>
 <div class="row">
 <div class="small-12 medium-6 medium-offset-3 columns">
-	<form action="install" method="POST">
+	<form id="install-form" action="install" method="POST">
 		<fieldset>
 			<legend>Database</legend>
 			<div class="small-12">
@@ -12,7 +12,7 @@ include('header.phtml');
 						<label for="right-label" class="right inline">Username</label>
 					</div>
 					<div class="small-9 columns">
-						<input type="text" id="db-username" placeholder="castcloud" value="castcloud">
+						<input type="text" name="db_username" placeholder="castcloud" value="castcloud">
 					</div>
 				</div>
 				<div class="row">
@@ -20,7 +20,7 @@ include('header.phtml');
 						<label for="right-label" class="right inline">Password</label>
 					</div>
 					<div class="small-9 columns">
-						<input type="password" id="db-password" placeholder="********">
+						<input type="password" name="db_password" placeholder="********">
 					</div>
 				</div>
 				<div class="row">
@@ -28,7 +28,7 @@ include('header.phtml');
 						<label for="right-label" class="right inline">Hostname</label>
 					</div>
 					<div class="small-9 columns">
-						<input type="text" id="db-hostname" placeholder="localhost" value="localhost">
+						<input type="text" name="db_hostname" placeholder="localhost" value="localhost">
 					</div>
 				</div>
 				<div class="row">
@@ -36,7 +36,7 @@ include('header.phtml');
 						<label for="right-label" class="right inline">Port</label>
 					</div>
 					<div class="small-9 columns">
-						<input type="text" id="db-hostname" placeholder="3306" value="3306">
+						<input type="text" name="db_port" placeholder="3306" value="3306">
 					</div>
 				</div>
 				<div class="row">
@@ -44,7 +44,7 @@ include('header.phtml');
 						<label for="right-label" class="right inline">Database</label>
 					</div>
 					<div class="small-9 columns">
-						<input type="text" id="db-hostname" placeholder="castcloud" value="castcloud">
+						<input type="text" name="db_name" placeholder="castcloud" value="castcloud">
 					</div>
 				</div>
 				<div class="row">
@@ -52,8 +52,8 @@ include('header.phtml');
 						<label for="right-label" class="right inline">Prefix</label>
 					</div>
 					<div class="small-9 columns">
-						<input type="text" id="db-hostname" placeholder="cc_" value="cc_">
-					</div>
+						<input type="text" name="db_prefix" placeholder="cc_" value="cc_">
+					</div
 				</div>
 			</div>
 		</fieldset>
@@ -65,7 +65,7 @@ include('header.phtml');
 						<label for="right-label" class="right inline">Username</label>
 					</div>
 					<div class="small-9 columns">
-						<input type="text" id="cc-username" placeholder="castcloud" value="castcloud">
+						<input type="text" name="cc_username" placeholder="castcloud" value="castcloud">
 					</div>
 				</div>
 				<div class="row">
@@ -73,10 +73,11 @@ include('header.phtml');
 						<label for="right-label" class="right inline">Password</label>
 					</div>
 					<div class="small-9 columns">
-						<input type="password" id="cc-password" placeholder="********">
+						<input type="password" name="cc_password" placeholder="********">
 					</div>
 				</div>
 		</fieldset>
+		<input type="submit" class="button" value="Install">
 	</form>
 </div>
 </div>
