@@ -1,39 +1,14 @@
--- phpMyAdmin SQL Dump
--- version 4.0.5
--- http://www.phpmyadmin.net
---
--- Vert: localhost
--- Generert den: 17. Feb, 2014 15:58 PM
--- Tjenerversjon: 5.1.70-log
--- PHP-Versjon: 5.5.9-pl0-gentoo
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
---
--- Database: `sjefen6`
---
-
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `Client`
---
-
-CREATE TABLE IF NOT EXISTS `client` (
+CREATE TABLE IF NOT EXISTS `prefix_client` (
   `ClientID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` text NOT NULL,
   `ApiKey` int(11) DEFAULT NULL,
   PRIMARY KEY (`ClientID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `ClientAuthorization`
---
-
-CREATE TABLE IF NOT EXISTS `clientauthorization` (
+CREATE TABLE IF NOT EXISTS `prefix_clientauthorization` (
   `UniqueClientID` int(11) NOT NULL AUTO_INCREMENT,
   `StatusID` int(11) NOT NULL,
   `UserID` int(11) NOT NULL,
@@ -48,13 +23,7 @@ CREATE TABLE IF NOT EXISTS `clientauthorization` (
   KEY `UserID` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `Event`
---
-
-CREATE TABLE IF NOT EXISTS `event` (
+CREATE TABLE IF NOT EXISTS `prefix_event` (
   `EventID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
   `Type` int(11) NOT NULL,
@@ -69,26 +38,14 @@ CREATE TABLE IF NOT EXISTS `event` (
   KEY `ItemID` (`ItemID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `Feed`
---
-
-CREATE TABLE IF NOT EXISTS `feed` (
+CREATE TABLE IF NOT EXISTS `prefix_feed` (
   `FeedID` int(11) NOT NULL AUTO_INCREMENT,
   `URL` text,
   `CrawlTS` int(11) NOT NULL,
   PRIMARY KEY (`FeedID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `FeedContent`
---
-
-CREATE TABLE IF NOT EXISTS `feedcontent` (
+CREATE TABLE IF NOT EXISTS `prefix_feedcontent` (
   `ContentID` int(11) NOT NULL AUTO_INCREMENT,
   `FeedID` int(11) NOT NULL,
   `Location` text NOT NULL,
@@ -100,24 +57,12 @@ CREATE TABLE IF NOT EXISTS `feedcontent` (
   KEY `ItemID` (`ItemID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `ItemID`
---
-
-CREATE TABLE IF NOT EXISTS `itemid` (
+CREATE TABLE IF NOT EXISTS `prefix_itemid` (
   `ItemID` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`ItemID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `Setting`
---
-
-CREATE TABLE IF NOT EXISTS `setting` (
+CREATE TABLE IF NOT EXISTS `prefix_setting` (
   `SettingID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
   `Setting` text NOT NULL,
@@ -128,13 +73,7 @@ CREATE TABLE IF NOT EXISTS `setting` (
   KEY `UserID` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `Subscription`
---
-
-CREATE TABLE IF NOT EXISTS `subscription` (
+CREATE TABLE IF NOT EXISTS `prefix_subscription` (
   `SubscriptionID` int(11) NOT NULL AUTO_INCREMENT,
   `FeedID` int(11) NOT NULL,
   `UserID` int(11) NOT NULL,
@@ -144,13 +83,7 @@ CREATE TABLE IF NOT EXISTS `subscription` (
   KEY `UserID` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
--- --------------------------------------------------------
-
---
--- Tabellstruktur for tabell `Users`
---
-
-CREATE TABLE IF NOT EXISTS `users` (
+CREATE TABLE IF NOT EXISTS `prefix_users` (
   `UserID` int(11) NOT NULL AUTO_INCREMENT,
   `UserLevel` int(11) NOT NULL,
   `Username` text NOT NULL,
@@ -161,43 +94,24 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
---
--- Begrensninger for dumpede tabeller
---
+ALTER TABLE `prefix_clientauthorization`
+  ADD CONSTRAINT `ClientAuthorization_ClientID` FOREIGN KEY (`ClientID`) REFERENCES `prefix_client` (`ClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `ClientAuthorization_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
---
--- Begrensninger for tabell `ClientAuthorization`
---
-ALTER TABLE `clientauthorization`
-  ADD CONSTRAINT `ClientAuthorization_ClientID` FOREIGN KEY (`ClientID`) REFERENCES `client` (`ClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `ClientAuthorization_UserID` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `prefix_event`
+  ADD CONSTRAINT `Event_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `Event_UniqueClientID` FOREIGN KEY (`UniqueClientID`) REFERENCES `prefix_clientauthorization` (`UniqueClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `Event_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `prefix_itemid` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
---
--- Begrensninger for tabell `Event`
---
-ALTER TABLE `event`
-  ADD CONSTRAINT `Event_UserID` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `Event_UniqueClientID` FOREIGN KEY (`UniqueClientID`) REFERENCES `clientauthorization` (`UniqueClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `Event_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `itemid` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `prefix_feedcontent`
+  ADD CONSTRAINT `FeedContent_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `prefix_feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `FeedContent_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `prefix_itemid` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
---
--- Begrensninger for tabell `FeedContent`
---
-ALTER TABLE `feedcontent`
-  ADD CONSTRAINT `FeedContent_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `FeedContent_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `itemid` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `prefix_setting`
+  ADD CONSTRAINT `Setting_ClientID` FOREIGN KEY (`ClientID`) REFERENCES `prefix_client` (`ClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `Setting_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
---
--- Begrensninger for tabell `Setting`
---
-ALTER TABLE `setting`
-  ADD CONSTRAINT `Setting_ClientID` FOREIGN KEY (`ClientID`) REFERENCES `client` (`ClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `Setting_UserID` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
---
--- Begrensninger for tabell `Subscription`
---
-ALTER TABLE `subscription`
-  ADD CONSTRAINT `Subscription_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `Subscription_UserID` FOREIGN KEY (`UserID`) REFERENCES `users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `prefix_subscription`
+  ADD CONSTRAINT `Subscription_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `prefix_feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `Subscription_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
