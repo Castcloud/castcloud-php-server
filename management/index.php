@@ -51,17 +51,30 @@ $app->post('/logout', function() use($app) {
 });
 
 $app->post('/install', function() use($app) {
+	$db_user = $app->request->params("db_username");
+	$db_pass = $app->request->params("db_password");
+	$db_host = $app->request->params("db_hostname");
+	$db_port = $app->request->params("db_port");
+	$db_name = $app->request->params("db_name");
+	$db_prefix = $app->request->params("db_prefix");
+
 	$file = fopen('../api/cc-settings.php', 'w');
-	fputs($file, "<?php\n\$db_user = '".$app->request->params("db_username")."';\n");
-	fputs($file, "\$db_pass = '".$app->request->params("db_password")."';\n");
-	fputs($file, "\$db_host = '".$app->request->params("db_hostname")."';\n");
-	fputs($file, "\$db_port = '".$app->request->params("db_port")."';\n");
-	fputs($file, "\$db_name = '".$app->request->params("db_name")."';\n");
-	fputs($file, "\$db_prefix = '".$app->request->params("db_prefix")."';\n");
-	fputs($file, '$dbh = new PDO("mysql:host=$db_host;port=$db_port;dbname=$db_name", $db_user, $db_pass);'."\n?>");
+	fputs($file, "<?php\n\$db_user = '$db_user';\n");
+	fputs($file, "\$db_pass = '$db_pass';\n");
+	fputs($file, "\$db_host = '$db_host';\n");
+	fputs($file, "\$db_port = '$db_port';\n");
+	fputs($file, "\$db_name = '$db_name';\n");
+	fputs($file, "\$db_prefix = '$db_prefix';\n");
+	fputs($file, "\$dbh = new PDO(\"mysql:host=\$db_host;port=\$db_port;dbname=\$db_name\", \$db_user, \$db_pass);\n?>");
 	fclose($file);
 
-	include '../api/cc-settings.php';
+	$dbh = new PDO("mysql:host=$db_host;port=$db_port", $db_user, $db_pass);
+	$dbh->exec("CREATE DATABASE IF NOT EXISTS $db_name");
+	$dbh->exec("USE $db_name");
+
+	$sql = file_get_contents('../api/db.sql');
+	$sql = str_replace("prefix_", $db_prefix, $sql);
+	$dbh->exec($sql);
 
 	$username = $app->request->params("cc_username");
 	$password = $app->request->params("cc_password");
