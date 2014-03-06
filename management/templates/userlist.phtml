@@ -2,27 +2,48 @@
 include('header.phtml');
 ?>
 <div class="row">
-<div class="small-12 medium-6 medium-offset-3 columns">
+<div class="small-12 medium-10 medium-offset-1 columns">
 	<table>
-		<thead>
-			<th>Username</th>
-			<th>Level</th>
-			<th>Actions</th>
-		</thead>
 		<tbody>
+			<!-- Lists all users if Administrator, only yourself if user -->
 			<tr>
-				<td><a href="edit/sjefen6">sjefen6</a></td>
+				<td><span class="inline"><a href="edit/sjefen6" class="button">sjefen6</a></span></td>
+				<!-- Only for Administrators -->
 				<td>
-					<label>Select Box
-						<select>
-							<option value="-1">Dsabeled</option>
-							<option value="0">User</option>
-							<option value="100">Administrator</option>
-						</select>
-					</label>
+					<select>
+						<option value="-1">Disabled</option>
+						<option value="0" selected>User</option>
+						<option value="100">Administrator</option>
+					</select>
+      			</td>
+      			<!-- end only -->
+      			<!-- Should only be shown and accessible for the signed in user -->
+      			<td>
+      				<a href="export/sjefen6" class="button">Clients</a>
       			</td>
       			<td>
-      				<a href="export/sjefen6">Export</a>
+      				<a href="export/sjefen6" class="button">Settings</a>
+      			</td>
+      			<!-- end only -->
+      			<td>
+      				<a href="export/sjefen6" class="button">Export</a>
+      			</td>
+			</tr>
+			<tr>
+				<td><span class="inline"><a href="edit/sjefen6" class="button">basso</a></span></td>
+				<!-- Only for Administrators -->
+				<td>
+					<select>
+						<option value="-1">Disabled</option>
+						<option value="0" selected>User</option>
+						<option value="100">Administrator</option>
+					</select>
+      			</td>
+      			<!-- end only -->
+      			<td></td>
+      			<td></td>
+      			<td>
+      				<a href="export/sjefen6" class="button">Export</a>
       			</td>
 			</tr>
 		</tbody>
