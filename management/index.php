@@ -35,9 +35,6 @@ $app->post('/login', function() use($app) {
 		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 			$userid = $result['UserID'];
 			$salt = $result['Salt'];
-			echo $salt."\n";
-			echo md5($password.$salt)."\n";
-			echo $result['Password']."\n";
 			if ($result['Password'] == md5($password.$salt)) {
 				$_SESSION['login'] = true;
 				$_SESSION['username'] = $username;
