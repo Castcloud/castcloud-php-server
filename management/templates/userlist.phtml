@@ -9,8 +9,14 @@ include('nav.phtml');
 	</div>
 	<table>
 		<tbody>
+<?php if ($userlevel >= 100) { ?>
+			<tr>
+				<td colspan="5">
+					<a href="adduser" class="button expand">+ Add new user</a>
+      			</td>
+      		</tr>
+<?php } ?>
 <?php foreach ($usernames as $value) { ?>
-
 			<tr>
 				<td><span class="inline"><a href="edit/<?=$value["username"]?>" class="button"><?=$value["username"]?></a></span></td>
 <?php if ($userlevel >= 100) { ?>
