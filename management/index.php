@@ -20,9 +20,27 @@ $app->add(new InstallMiddleware());
 
 $app->get('/', function() {
 	if (isset($_SESSION['login'])) {
-		$status = "Hai ".$_SESSION['username'];
+		$username = $_SESSION['username'];
+		
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> query("SELECT * FROM users WHERE username='$username'");
+		
+		if ($sth) {
+			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
+				$usernames = array(array("username" => $username));
+				$userlevel = $result['UserLevel'];
+				if ($userlevel >= 100) {
+					$sth = $dbh -> query("SELECT username, userlevel FROM users");
+					$usernames = $sth -> fetchAll();
+				}
+				include 'templates/userlist.phtml';
+			}
+		}
+
 	}
-	include 'templates/login.phtml';
+	else {
+		include 'templates/login.phtml';
+	}
 });
 
 $app->post('/login', function() use($app) {
@@ -44,6 +62,12 @@ $app->post('/login', function() use($app) {
 	}
 
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
+});
+
+$app->post('/edit/:username', function($username) use($app) {
+	$userlevel = $app->request->params("userlevel");
+
+	$GLOBALS['dbh']->exec("UPDATE users SET userlevel=$userlevel WHERE username='$username'");
 });
 
 $app->post('/logout', function() use($app) {

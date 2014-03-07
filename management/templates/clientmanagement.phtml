@@ -1,0 +1,42 @@
+<?php 
+include('header.phtml');
+include('nav.phtml');
+?>
+<div class="row">
+<div class="small-12 medium-10 medium-offset-1 columns">
+	<table>
+		<tbody>
+			<!-- Lists all users if Administrator, only yourself if user -->
+			<tr>
+				<td>
+					<h4><a href="edit/sjefen6" class="">Castcloud JS</a></h3>
+					<p class="subheader">En sjikkelig fancy JS klient</p>
+				</td>
+      			<!-- Should only be shown and accessible for the signed in user -->
+      			<td>
+      				<a href="export/sjefen6" class="button">Disable</a>
+      			</td>
+      			<td>
+      				<a class="button disabled" title="Disable to remove.">Remove</a>
+      			</td>
+			</tr>
+			<tr class="alert warning">
+				<td>
+					<h4><a href="edit/sjefen6" class="">Disabeled Client</a></h3>
+					<p class="subheader">En sjikkelig fancy JS klient</p>
+				</td>
+      			<!-- Should only be shown and accessible for the signed in user -->
+      			<td>
+      				<a href="export/sjefen6" class="button">Enable</a>
+      			</td>
+      			<td>
+      				<a href="export/sjefen6" class="button alert">Remove</a>
+      			</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+</div>
+<?php 
+include('footer.phtml'); 
+?>

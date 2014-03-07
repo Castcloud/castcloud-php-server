@@ -1,51 +1,42 @@
 <?php 
 include('header.phtml');
+include('nav.phtml');
 ?>
 <div class="row">
 <div class="small-12 medium-10 medium-offset-1 columns">
+	<div class="row">
+		<div class="left"><h3>Welcome <?php echo $_SESSION['username']; ?></h3></div>
+	</div>
 	<table>
 		<tbody>
-			<!-- Lists all users if Administrator, only yourself if user -->
+<?php foreach ($usernames as $value) { ?>
+
 			<tr>
-				<td><span class="inline"><a href="edit/sjefen6" class="button">sjefen6</a></span></td>
-				<!-- Only for Administrators -->
+				<td><span class="inline"><a href="edit/<?=$value["username"]?>" class="button"><?=$value["username"]?></a></span></td>
+<?php if ($userlevel >= 100) { ?>
 				<td>
-					<select>
-						<option value="-1">Disabled</option>
-						<option value="0" selected>User</option>
-						<option value="100">Administrator</option>
+					<select id="select-userlevel-<?=$value["username"]?>" class="select-userlevel">
+						<option value="-1" <?=$value["userlevel"] == -1 ? "selected":""?>>Disabled</option>
+						<option value="0" <?=$value["userlevel"] == 0 ? "selected":""?>>User</option>
+						<option value="100" <?=$value["userlevel"] == 100 ? "selected":""?>>Administrator</option>
 					</select>
       			</td>
-      			<!-- end only -->
-      			<!-- Should only be shown and accessible for the signed in user -->
+<?php } ?>
       			<td>
-      				<a href="export/sjefen6" class="button">Clients</a>
+<?php if ($_SESSION['username'] == $value["username"]){ ?>
+      				<a href="manageclients" class="button">Clients</a>
+<?php } ?>
       			</td>
       			<td>
-      				<a href="export/sjefen6" class="button">Settings</a>
+<?php if ($_SESSION['username'] == $value["username"]){ ?>
+      				<a href="settings" class="button">Settings</a>
+<?php } ?>
       			</td>
-      			<!-- end only -->
       			<td>
-      				<a href="export/sjefen6" class="button">Export</a>
+	  				<a href="export/<?php echo $value["username"]; ?>" class="button">Export</a>
       			</td>
 			</tr>
-			<tr>
-				<td><span class="inline"><a href="edit/sjefen6" class="button">basso</a></span></td>
-				<!-- Only for Administrators -->
-				<td>
-					<select>
-						<option value="-1">Disabled</option>
-						<option value="0" selected>User</option>
-						<option value="100">Administrator</option>
-					</select>
-      			</td>
-      			<!-- end only -->
-      			<td></td>
-      			<td></td>
-      			<td>
-      				<a href="export/sjefen6" class="button">Export</a>
-      			</td>
-			</tr>
+<?php } ?>
 		</tbody>
 	</table>
 </div>
