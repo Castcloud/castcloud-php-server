@@ -65,6 +65,10 @@ $app->post('/login', function() use($app) {
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
 });
 
+$app->get('/edit/:username', function($username) use($app) {
+	include 'templates/useredit.phtml';
+});
+
 $app->post('/edit/:username', function($username) use($app) {
 	$userlevel = $app->request->params("userlevel");
 
