@@ -20,7 +20,23 @@ $app->add(new InstallMiddleware());
 
 $app->get('/', function() {
 	if (isset($_SESSION['login'])) {
-		include 'templates/userlist.phtml';
+		$username = $_SESSION['username'];
+		
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> query("SELECT * FROM users WHERE username='$username'");
+		
+		if ($sth) {
+			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
+				$usernames = array("username" => $username);
+				$userlevel = $result['UserLevel'];
+				if ($userlevel <= 100) {
+					$sth = $dbh -> query("SELECT username FROM users");
+					$usernames = $sth -> fetchAll();
+				}
+				include 'templates/userlist.phtml';
+			}
+		}
+
 	}
 	else {
 		include 'templates/login.phtml';
