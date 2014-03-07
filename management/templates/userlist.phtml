@@ -13,12 +13,12 @@ include('nav.phtml');
 
 			<tr>
 				<td><span class="inline"><a href="edit/<?php echo $value["username"]; ?>" class="button"><?php echo $value["username"]; ?></a></span></td>
-<?php if ($userlevel <= 100){ ?>
+<?php if ($userlevel >= 100) { ?>
 				<td>
 					<select>
-						<option value="-1">Disabled</option>
-						<option value="0" selected>User</option>
-						<option value="100">Administrator</option>
+						<option value="-1" <?=$value["userlevel"] == -1 ? "selected":""?>>Disabled</option>
+						<option value="0" <?=$value["userlevel"] == 0 ? "selected":""?>>User</option>
+						<option value="100" <?=$value["userlevel"] == 100 ? "selected":""?>>Administrator</option>
 					</select>
       			</td>
 <?php } ?>
