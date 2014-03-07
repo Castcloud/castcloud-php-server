@@ -12,10 +12,10 @@ include('nav.phtml');
 <?php foreach ($usernames as $value) { ?>
 
 			<tr>
-				<td><span class="inline"><a href="edit/<?php echo $value["username"]; ?>" class="button"><?php echo $value["username"]; ?></a></span></td>
+				<td><span class="inline"><a href="edit/<?=$value["username"]?>" class="button"><?=$value["username"]?></a></span></td>
 <?php if ($userlevel >= 100) { ?>
 				<td>
-					<select>
+					<select id="select-userlevel-<?=$value["username"]?>" class="select-userlevel">
 						<option value="-1" <?=$value["userlevel"] == -1 ? "selected":""?>>Disabled</option>
 						<option value="0" <?=$value["userlevel"] == 0 ? "selected":""?>>User</option>
 						<option value="100" <?=$value["userlevel"] == 100 ? "selected":""?>>Administrator</option>

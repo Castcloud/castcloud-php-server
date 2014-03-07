@@ -63,6 +63,12 @@ $app->post('/login', function() use($app) {
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
 });
 
+$app->post('/edit/:username', function($username) use($app) {
+	$userlevel = $app->request->params("userlevel");
+
+	$GLOBALS['dbh']->exec("UPDATE users SET userlevel=$userlevel WHERE username='$username'");
+});
+
 $app->post('/logout', function() use($app) {
 	session_destroy();
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
