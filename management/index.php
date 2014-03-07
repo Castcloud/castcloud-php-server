@@ -20,9 +20,11 @@ $app->add(new InstallMiddleware());
 
 $app->get('/', function() {
 	if (isset($_SESSION['login'])) {
-		$status = "Hai ".$_SESSION['username'];
+		include 'templates/userlist.phtml';
 	}
-	include 'templates/login.phtml';
+	else {
+		include 'templates/login.phtml';
+	}
 });
 
 $app->post('/login', function() use($app) {
