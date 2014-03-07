@@ -13,7 +13,7 @@ GLOBAL $app;
 
 if (file_exists('../api/cc-settings.php')) {
 	include '../api/cc-settings.php';
-	GLOBAL $dbh;
+	GLOBAL $db_prefix,$dbh;
 }
 
 $app->add(new InstallMiddleware());
@@ -30,7 +30,8 @@ $app->post('/login', function() use($app) {
 	$password = $app->request->params('password');
 
 	$dbh = $GLOBALS['dbh'];
-	$sth = $dbh -> query("SELECT * FROM users WHERE username='$username'");
+	$db_prefix = $GLOBALS['db_prefix'];
+	$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
 	if ($sth) {
 		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 			$userid = $result['UserID'];
@@ -80,7 +81,7 @@ $app->post('/install', function() use($app) {
 	$password = $app->request->params("cc_password");
 	$salt = base64_encode(random_bytes(16));
 
-	$dbh->exec("INSERT INTO users (username, name, mail, password, salt) VALUES('$username', '', '', md5('$password$salt'), '$salt')");
+	$dbh->exec("INSERT INTO {$db_prefix}users (username, name, mail, password, salt) VALUES('$username', '', '', md5('$password$salt'), '$salt')");
 
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
 });

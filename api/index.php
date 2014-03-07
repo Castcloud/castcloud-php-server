@@ -6,7 +6,7 @@ $app = new \Slim\Slim();
 GLOBAL $app;
 
 include 'cc-settings.php';
-GLOBAL $dbh;
+GLOBAL $db_prefix,$dbh;
 
 include 'authmiddleware.php';
 include 'util.php';
@@ -26,7 +26,6 @@ $app -> add(new AuthMiddleware());
  * )
  */
 $app -> group('/account', function() use ($app) {
-
 	$app -> post('/login', function() use ($app) {
 		post_login($app);
 	});
@@ -74,9 +73,11 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/settings', function() use ($app) {
+		
+		$db_prefix = $GLOBALS['db_prefix'];
 		$settings = array();
 
-		$sth = $GLOBALS['dbh']->query("SELECT * FROM setting WHERE userid=$app->userid");
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}setting WHERE userid=$app->userid");
 		if ($sth) {
 			foreach ($sth as $row) {
 				$settings[$row['Setting']] = $row['Value'];
@@ -121,13 +122,14 @@ $app -> group('/account', function() use ($app) {
 		}
 
 		$dbh = $GLOBALS['dbh'];
+		$db_prefix = $GLOBALS['db_prefix'];
 		foreach($settings as $key => $value) {
-			$sth = $dbh->query("SELECT * FROM setting WHERE userid=$app->userid AND setting='$key'");
+			$sth = $dbh->query("SELECT * FROM {$db_prefix}setting WHERE userid=$app->userid AND setting='$key'");
 			if ($sth && $sth->rowCount() > 0) {
-				$dbh->exec("UPDATE setting SET value='$value' WHERE userid=$app->userid AND setting='$key'");				
+				$dbh->exec("UPDATE {$db_prefix}setting SET value='$value' WHERE userid=$app->userid AND setting='$key'");				
 			}
 			else {
-				$dbh->exec("INSERT INTO setting (userid, setting, value) VALUES($app->userid, '$key', '$value')");
+				$dbh->exec("INSERT INTO {$db_prefix}setting (userid, setting, value) VALUES($app->userid, '$key', '$value')");
 			}
 		}
 
@@ -279,9 +281,10 @@ $app -> group('/library', function() use ($app) {
 		$userid = $app -> userid;
 
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT * FROM subscription WHERE feedid=$feedid AND userid=$userid");
+		$db_prefix = $GLOBALS['db_prefix'];
+		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE feedid=$feedid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
-			$dbh -> exec("INSERT INTO subscription (feedid, tags, userid) VALUES($feedid, 'bjarne,nils', $userid)");
+			$dbh -> exec("INSERT INTO {$db_prefix}subscription (feedid, tags, userid) VALUES($feedid, 'bjarne,nils', $userid)");
 		}
 
 		json(array("status" => "success"));
@@ -362,8 +365,9 @@ $app -> group('/library', function() use ($app) {
 		90 => "deleted"
 	 */
 	$app -> get('/events', function() use ($app) {
+		$db_prefix = $GLOBALS['db_prefix'];
 		$events = array("timestamp" => time(), "events" => array());
-		$query = "SELECT * FROM event WHERE userid=$app->userid";
+		$query = "SELECT * FROM {$db_prefix}event WHERE userid=$app->userid";
 		$itemid = $app->request->params('itemid');
 		$since = $app->request->params('since');
 
@@ -419,6 +423,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/events', function() use ($app) {
+		$db_prefix = $GLOBALS['db_prefix'];
 		$receivedts = time();
 		if ($app->request->params('json') == null) {
 			$type = $app->request->params('type');
@@ -426,12 +431,12 @@ $app -> group('/library', function() use ($app) {
 			$positionts = $app->request->params('positionts');
 			$clientts = $app->request->params('clientts');
 
-			$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $type, $itemid, $positionts, $clientts, $receivedts, $app->uniqueclientid)");
+			$GLOBALS['dbh']->exec("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $type, $itemid, $positionts, $clientts, $receivedts, $app->uniqueclientid)");
 		}
 		else {			
 			$event = json_decode($app->request->params('json'));
 			foreach ($json as $event) {
-				$GLOBALS['dbh']->exec("INSERT INTO event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, $event->clientts, $receivedts, $app->uniqueclientid)");
+				$GLOBALS['dbh']->exec("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, $event->clientts, $receivedts, $app->uniqueclientid)");
 			}
 		}
 		
@@ -459,9 +464,10 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/tags', function() use ($app) {
 		$dbh = $GLOBALS['dbh'];
+		$db_prefix = $GLOBALS['db_prefix'];
 		$userid = $app -> userid;
 		$tags = array();
-		$sth = $dbh -> query("SELECT Tags FROM subscription WHERE UserID=$userid");
+		$sth = $dbh -> query("SELECT Tags FROM {$db_prefix}subscription WHERE UserID=$userid");
 		if ($sth){
 			foreach ($sth as $row){
 				$tag = $row['Tags'];

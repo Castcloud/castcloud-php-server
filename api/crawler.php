@@ -1,9 +1,11 @@
 <?php
 if (isset($_GET['t'])){
+
+	$db_prefix = $GLOBALS['db_prefix'];
 	include 'cc-settings.php';
 	if ($_GET['t'] == $crawl_token) {
 		include 'util.php';
-		$sth = $dbh->query("SELECT * FROM feed");
+		$sth = $dbh->query("SELECT * FROM {$db_prefix}feed");
 		if ($sth) {
 			foreach ($sth as $row) {
 				crawl($row['URL']);
@@ -13,18 +15,19 @@ if (isset($_GET['t'])){
 }
 
 function crawl($feedurl) {
-	$dbh = $GLOBALS['dbh'];
+	$dbh = $GLOBALS['dbh'];	
+	$db_prefix = $GLOBALS['db_prefix'];
 	$time = time();
 	$xml = simplexml_load_file($feedurl);
 
-	$sth = $dbh->query("SELECT * FROM feed WHERE url='$feedurl'");
+	$sth = $dbh->query("SELECT * FROM {$db_prefix}feed WHERE url='$feedurl'");
 	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 		$feedid = $result['FeedID'];
 		
-		$dbh->exec("UPDATE feed SET crawlts=$time");
+		$dbh->exec("UPDATE {$db_prefix}feed SET crawlts=$time");
 	}
 	else {
-		$dbh->exec("INSERT INTO feed (url, crawlts) VALUES('$feedurl', $time)");
+		$dbh->exec("INSERT INTO {$db_prefix}feed (url, crawlts) VALUES('$feedurl', $time)");
 		$feedid = $dbh->lastInsertId();
 	}
 	
@@ -50,7 +53,7 @@ function process_child($child, $ns, $url, $feedid, $time) {
 	static $buffer = array();
 	static $itemid = null;
 	$dbh = $GLOBALS['dbh'];
-
+	$db_prefix = $GLOBALS['db_prefix'];
 	if ($ns != null) {
 		$newurl = $url.$ns.":".$child->getName();
 	}
@@ -61,7 +64,7 @@ function process_child($child, $ns, $url, $feedid, $time) {
 	if (!startsWith($url, "channel/item")) {
 		$itemid = null;
 
-		$sth = $dbh->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND location='$newurl'");
+		$sth = $dbh->query("SELECT * FROM {$db_prefix}feedcontent WHERE feedid=$feedid AND location='$newurl'");
 		if ($sth && $sth->rowCount() > 0) {
 			return;
 		}
@@ -77,12 +80,12 @@ function process_child($child, $ns, $url, $feedid, $time) {
 		if ($child->getName() == "guid") {
 			$item = false;
 
-			$sth = $dbh->query("SELECT * FROM feedcontent WHERE location='channel/item/guid' AND content='$child' AND feedid=$feedid");
+			$sth = $dbh->query("SELECT * FROM {$db_prefix}feedcontent WHERE location='channel/item/guid' AND content='$child' AND feedid=$feedid");
 			if ($sth && $sth->rowCount() > 0) {
 				// Existing item
 			}
 			else {
-				$dbh->exec("INSERT INTO itemid () VALUES()");
+				$dbh->exec("INSERT INTO {$db_prefix}itemid () VALUES()");
 				$itemid = $dbh->lastInsertId();
 
 				foreach ($buffer as $line) {
@@ -112,15 +115,16 @@ function process_child($child, $ns, $url, $feedid, $time) {
 }
 
 function push_line($feedid, $location, $itemid, $content, $time) {
-	$sth = $GLOBALS['dbh']->prepare("INSERT INTO feedcontent (feedid, location, itemid, content, crawlts) VALUES($feedid, '$location', :itemid, '$content', $time)");
+	$db_prefix = $GLOBALS['db_prefix'];
+	$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}feedcontent (feedid, location, itemid, content, crawlts) VALUES($feedid, '$location', :itemid, '$content', $time)");
 	$sth->bindParam(':itemid', $itemid, PDO::PARAM_INT);
 	$sth->execute();
 }
 
 function crawler_get_cast($feedid) {
+	$db_prefix = $GLOBALS['db_prefix'];
 	$cast = array();
-
-	$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
+	$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}feedcontent WHERE feedid=$feedid");
 	if ($result = $sth->fetchAll()) {
 		foreach ($result as $row) {
 			if (!startsWith($row['Location'], "channel/item")) {
@@ -141,20 +145,20 @@ function crawler_get_cast($feedid) {
 function crawler_get_casts($tag = null) {
 	$casts = array();
 	$app = $GLOBALS['app'];
-
+	$db_prefix = $GLOBALS['db_prefix'];
 	$dbh = $GLOBALS['dbh'];
 	if ($tag == null) {
-		$sth = $dbh -> query("SELECT * FROM subscription WHERE userid=$app->userid");
+		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE userid=$app->userid");
 	}
 	else {
-		$sth = $dbh -> query("SELECT * FROM subscription WHERE find_in_set(binary '$tag', Tags) AND UserID=$app->userid");
+		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE find_in_set(binary '$tag', Tags) AND UserID=$app->userid");
 	}
 	if ($sth) {
 		foreach ($sth as $row) {
 			$feedid = $row['FeedID'];
 			$tags = explode(',', $row['Tags']);
 
-			$sth = $dbh->query("SELECT * FROM feed WHERE feedid=$feedid");
+			$sth = $dbh->query("SELECT * FROM {$db_prefix}feed WHERE feedid=$feedid");
 			if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 				array_push($casts, array_merge(array("castcloud" => array(
 					"id" => $feedid, 
@@ -173,11 +177,12 @@ function crawler_get_episodes($feedid, $since = null) {
 	$previtemid = null;
 	$i = -1;
 
+	$db_prefix = $GLOBALS['db_prefix'];
 	if ($since == null) {
-		$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid");
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}feedcontent WHERE feedid=$feedid");
 	}
 	else {
-		$sth = $GLOBALS['dbh']->query("SELECT * FROM feedcontent WHERE feedid=$feedid AND crawlts > $since");
+		$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}feedcontent WHERE feedid=$feedid AND crawlts > $since");
 	}
 	if ($result = $sth->fetchAll()) {
 		foreach ($result as $row) {
@@ -191,7 +196,7 @@ function crawler_get_episodes($feedid, $since = null) {
 					$episodes[$i]["castcloud"]["id"] = $itemid;
 					$episodes[$i]["castcloud"]["castid"] = $feedid;
 
-					$sth = $GLOBALS['dbh']->query("SELECT * FROM event WHERE itemid=$itemid ORDER BY clientts LIMIT 1");
+					$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}event WHERE itemid=$itemid ORDER BY clientts LIMIT 1");
 					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 						$episodes[$i]["castcloud"]["lastevent"]["type"] = $result["Type"];
 						$episodes[$i]["castcloud"]["lastevent"]["positionts"] = $result["PositionTS"];
@@ -228,7 +233,8 @@ function crawler_get_new_episodes($since) {
 	$episodes = array("timestamp" => time(), "episodes" => array());
 	$userid = $GLOBALS['app']->userid;
 
-	$sth = $GLOBALS['dbh']->query("SELECT * FROM subscription WHERE userid=$userid");
+	$db_prefix = $GLOBALS['db_prefix'];
+	$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}subscription WHERE userid=$userid");
 	if ($result = $sth->fetchAll()) {
 		foreach ($result as $row) {
 			$episodes["episodes"] = array_merge($episodes["episodes"], crawler_get_episodes($row['FeedID'], $since));
