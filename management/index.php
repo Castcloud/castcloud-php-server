@@ -2,6 +2,7 @@
 require '../lib/Slim/Slim.php';
 \Slim\Slim::registerAutoloader();
 
+include 'authmiddleware.php';
 include 'installmiddleware.php';
 include '../api/util.php';
 
@@ -17,6 +18,7 @@ if (file_exists('../api/cc-settings.php')) {
 }
 
 $app->add(new InstallMiddleware());
+$app->add(new AuthMiddleware());
 
 $app->get('/', function() {
 	if (isset($_SESSION['login'])) {
