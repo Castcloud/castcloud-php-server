@@ -29,7 +29,7 @@ $app->get('/', function() {
 			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 				$usernames = array("username" => $username);
 				$userlevel = $result['UserLevel'];
-				if ($userlevel <= 100) {
+				if ($userlevel >= 100) {
 					$sth = $dbh -> query("SELECT username, userlevel FROM users");
 					$usernames = $sth -> fetchAll();
 				}
