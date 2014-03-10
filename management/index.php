@@ -110,7 +110,7 @@ $app->post('/install', function() use($app) {
 	$password = $app->request->params("cc_password");
 	$salt = base64_encode(random_bytes(16));
 
-	$dbh->exec("INSERT INTO users (username, name, mail, password, salt) VALUES('$username', '', '', md5('$password$salt'), '$salt')");
+	$dbh->exec("INSERT INTO users (userlevel, username, name, mail, password, salt) VALUES(100, '$username', '', '', md5('$password$salt'), '$salt')");
 
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
 });
