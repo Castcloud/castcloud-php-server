@@ -24,8 +24,6 @@ class eventsresult
 			$query.=" AND event.receivedts >= ?";
 			$inputs[] = $since;
 		}
-		
-		$this->timestamp = $query;
 
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> prepare($query);
