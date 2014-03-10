@@ -290,6 +290,12 @@ $app -> group('/library', function() use ($app) {
 		json(array("status" => "success"));
 	});
 
+	$app->delete('/casts/:id', function($id) use($app) {
+		$userid = $app->userid;
+		$db_prefix = $GLOBALS['db_prefix'];
+		$GLOBALS['dbh']->exec("DELETE FROM {$db_prefix}subscription WHERE feedid=$id AND userid=$userid");
+	});
+
 	/**
 	 * @SWG\Api(
 	 * 	path="/library/casts/{tag}",
@@ -316,7 +322,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/casts/:tag', function($tag) use ($app) {
+	$app -> get('/casts/tagged/:tag', function($tag) use ($app) {
 		json(crawler_get_casts($tag));
 	});
 
