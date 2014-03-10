@@ -83,7 +83,10 @@
                     "method": "GET",
                     "summary": "Get all episodes",
                     "nickname": "Get all episodes",
-                    "type": "Herp",
+                    "type": "array",
+                    "items": {
+                        "$ref": "episode"
+                    },
                     "parameters": [
                         {
                             "paramType": "header",
@@ -139,7 +142,10 @@
                     "method": "GET",
                     "summary": "Get users tags",
                     "nickname": "Get users tags",
-                    "type": "Herp",
+                    "type": "array",
+                    "items": {
+                        "$ref": "event"
+                    },
                     "parameters": [
                         {
                             "paramType": "header",
@@ -154,13 +160,6 @@
                             "type": "integer",
                             "required": false,
                             "description": "timestamp of last call"
-                        },
-                        {
-                            "paramType": "query",
-                            "name": "CastID",
-                            "type": "integer",
-                            "required": false,
-                            "description": "filter by CastID"
                         },
                         {
                             "paramType": "query",
@@ -181,7 +180,7 @@
                     "method": "GET",
                     "summary": "Get new episodes",
                     "nickname": "Get new episodes",
-                    "type": "Herp",
+                    "type": "newepisodesresult",
                     "parameters": [
                         {
                             "paramType": "header",
@@ -223,6 +222,98 @@
             ]
         }
     ],
+    "models": {
+        "newepisodesresult": {
+            "id": "newepisodesresult",
+            "properties": {
+                "timestamp": {
+                    "description": "Timestamp for the request",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "episodes": {
+                    "description": "Array of all the episodes",
+                    "type": "array",
+                    "items": {
+                        "$ref": "episode"
+                    }
+                }
+            },
+            "required": [
+                "episodes",
+                "timestamp"
+            ]
+        },
+        "episode": {
+            "id": "episode",
+            "properties": {
+                "id": {
+                    "description": "Unique identifier for the episode",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "castid": {
+                    "description": "Unique identifier for the cast related to the episode",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "lastevent": {
+                    "description": "The episodes last event",
+                    "$ref": "event"
+                },
+                "feeddata": {
+                    "description": "All data available in the episodes item",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "castid",
+                "id"
+            ]
+        },
+        "event": {
+            "id": "event",
+            "properties": {
+                "type": {
+                    "description": "The event type",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "episodeid": {
+                    "description": "The id of the episode it relates to",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "positionts": {
+                    "description": "The position where the event occured",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "clientts": {
+                    "description": "The clients unix timestamp of when the event occured",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "clientname": {
+                    "description": "Name of the client that sent the event",
+                    "type": "string"
+                },
+                "clientdescription": {
+                    "description": "Description of the client that sent the event",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "clientts",
+                "episodeid",
+                "positionts",
+                "type"
+            ]
+        }
+    },
     "produces": [
         "application/json"
     ]

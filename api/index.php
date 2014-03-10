@@ -170,7 +170,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="GET",
 	 * 		nickname="Get new episodes",
 	 * 		summary="Get new episodes",
-	 * 		type="Herp",
+     * 		type="newepisodesresult",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -200,7 +200,8 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="GET",
 	 * 		nickname="Get all episodes",
 	 * 		summary="Get all episodes",
-	 * 		type="Herp",
+     * 		type="array",
+     * 		items="$ref:episode",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -328,7 +329,8 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="GET",
 	 * 		nickname="Get users tags",
 	 * 		summary="Get users tags",
-	 * 		type="Herp",
+     * 		type="array",
+     * 		items="$ref:event",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -424,22 +426,13 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> post('/events', function() use ($app) {
 		$db_prefix = $GLOBALS['db_prefix'];
-		$receivedts = time();
-		if ($app->request->params('json') == null) {
-			$type = $app->request->params('type');
-			$itemid = $app->request->params('itemid');
-			$positionts = $app->request->params('positionts');
-			$clientts = $app->request->params('clientts');
+		$receivedts = time();	
+				
+		$event = json_decode($app->request->params('json'));
+		foreach ($json as $event) {
+			$GLOBALS['dbh']->exec("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, $event->clientts, $receivedts, $app->uniqueclientid)");
+		}
 
-			$GLOBALS['dbh']->exec("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $type, $itemid, $positionts, $clientts, $receivedts, $app->uniqueclientid)");
-		}
-		else {			
-			$event = json_decode($app->request->params('json'));
-			foreach ($json as $event) {
-				$GLOBALS['dbh']->exec("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, $event->clientts, $receivedts, $app->uniqueclientid)");
-			}
-		}
-		
 		json(array("Status" => "Success"));
 	});
 
