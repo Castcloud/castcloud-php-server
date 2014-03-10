@@ -1,12 +1,8 @@
 <?php
-namespace Castcloud\Models;
-
-use Swagger\Annotations as SWG;
-
 /**
  * @SWG\Model(id="event",required="type, episodeid, positionts, clientts")
  */
-class Episode
+class event
 {
     /**
      * @SWG\Property(name="type",type="integer",format="int64",description="The event type")

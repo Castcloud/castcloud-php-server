@@ -1,8 +1,4 @@
 <?php
-namespace Castcloud\Models;
-
-use Swagger\Annotations as SWG;
-
 /**
  * @SWG\Model(id="newepisodesresult",required="timestamp, episodes")
  */

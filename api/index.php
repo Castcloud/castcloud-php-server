@@ -373,35 +373,36 @@ $app -> group('/library', function() use ($app) {
 		90 => "deleted"
 	 */
 	$app -> get('/events', function() use ($app) {
+		include 'models/eventsresult.php';
+		include 'models/event.php';
 		$db_prefix = $GLOBALS['db_prefix'];
-		$events = array("timestamp" => time(), "events" => array());
-		$query = "SELECT * FROM {$db_prefix}event WHERE userid=$app->userid";
+		$eventsresult = new eventsresult();
+		$eventsresult->timestamp = time();
+		$query = "SELECT event.type, event.itemid AS episodeid, event.positionts, event.clientts, " . 
+			"client.name AS clientname, clientauthorization.clientdescription " . 
+			"FROM {$db_prefix}event AS event, {$db_prefix}clientauthorization AS clientauthorization, {$db_prefix}client AS client " .
+			"WHERE event.userid=$app->userid ".
+			"AND event.UniqueClientID = clientauthorization.UniqueClientID " .
+			"AND clientauthorization.ClientID = client.ClientID";
+
 		$itemid = $app->request->params('itemid');
 		$since = $app->request->params('since');
 
 		if ($itemid != null) {
-			$query.=" AND itemid=$itemid";
+			$query.=" AND event.itemid=$itemid";
 		}
 		if ($since != null) {
-			$query.=" AND receivedts > $since";
+			$query.=" AND event.receivedts > $since";
 		}
 
 		$dbh = $GLOBALS['dbh'];
 		//Prepared query?
 		$sth = $dbh -> query($query);
 		if ($sth) {
-			foreach ($sth as $row) {
-				array_push($events["events"], array(
-					"type" => $row['Type'],
-					"itemid" => $row['ItemID'],
-					"positionts" => $row['PositionTS'],
-					"clientts" => $row['ClientTS'],
-					"clientname" => $app->clientname,
-					"clientdescription" => $app->clientdescription));
-			}
+			$eventsresult->events = $sth->fetchAll(PDO::FETCH_CLASS, "event");
 		}
 
-		json($events);
+		json($eventsresult);
 	});
 
 	/**
