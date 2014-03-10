@@ -25,14 +25,14 @@ $app->get('/', function() {
 		$username = $_SESSION['username'];
 		
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT * FROM users WHERE username='$username'");
+		$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
 		
 		if ($sth) {
 			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 				$usernames = array(array("username" => $username));
 				$userlevel = $result['UserLevel'];
 				if ($userlevel >= 100) {
-					$sth = $dbh -> query("SELECT username, userlevel FROM users");
+					$sth = $dbh -> query("SELECT username, userlevel FROM {$db_prefix}users");
 					$usernames = $sth -> fetchAll();
 				}
 				include 'templates/userlist.phtml';
@@ -73,7 +73,7 @@ $app->get('/edit/:username', function($username) use($app) {
 $app->post('/edit/:username', function($username) use($app) {
 	$userlevel = $app->request->params("userlevel");
 
-	$GLOBALS['dbh']->exec("UPDATE users SET userlevel=$userlevel WHERE username='$username'");
+	$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET userlevel=$userlevel WHERE username='$username'");
 });
 
 $app->post('/logout', function() use($app) {

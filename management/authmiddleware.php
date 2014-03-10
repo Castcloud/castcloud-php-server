@@ -2,7 +2,7 @@
 class AuthMiddleware extends \Slim\Middleware {
 	public function call() {
 		$doAuth = function() {
-			if ($this->app->request->getResourceUri() == '/login' || $this->app->request->getResourceUri() == '/') {
+			if ($this->app->request->getResourceUri() == '/install' || $this->app->request->getResourceUri() == '/login' || $this->app->request->getResourceUri() == '/') {
 				return;
 			}
 			else {
