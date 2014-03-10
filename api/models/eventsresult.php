@@ -1,9 +1,40 @@
 <?php
+include 'models/event.php';
 /**
  * @SWG\Model(id="eventsresult",required="timestamp, events")
  */
 class eventsresult
 {
+	function __construct($userid, $itemid, $since) {	
+		$db_prefix = $GLOBALS['db_prefix'];
+		$this->timestamp = time();
+		$query = "SELECT event.type, event.itemid AS episodeid, event.positionts, event.clientts, " . 
+			"client.name AS clientname, clientauthorization.clientdescription " . 
+			"FROM {$db_prefix}event AS event, {$db_prefix}clientauthorization AS clientauthorization, {$db_prefix}client AS client " .
+			"WHERE event.userid=? ".
+			"AND event.UniqueClientID = clientauthorization.UniqueClientID " .
+			"AND clientauthorization.ClientID = client.ClientID";
+		$inputs = array($userid);
+
+		if ($itemid != null) {
+			$query.=" AND event.itemid=?";
+			$inputs[] = $itemid;
+		}
+		if ($since != null) {
+			$query.=" AND event.receivedts >= ?";
+			$inputs[] = $since;
+		}
+		
+		$this->timestamp = $query;
+
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> prepare($query);
+		$sth->execute($inputs);
+		if ($sth) {
+			$this->events = $sth->fetchAll(PDO::FETCH_CLASS, "event");
+		}
+	}
+	
     /**
      * @SWG\Property(name="timestamp",type="integer",format="int64",description="Timestamp for the request")
      */

@@ -374,35 +374,11 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/events', function() use ($app) {
 		include 'models/eventsresult.php';
-		include 'models/event.php';
-		$db_prefix = $GLOBALS['db_prefix'];
-		$eventsresult = new eventsresult();
-		$eventsresult->timestamp = time();
-		$query = "SELECT event.type, event.itemid AS episodeid, event.positionts, event.clientts, " . 
-			"client.name AS clientname, clientauthorization.clientdescription " . 
-			"FROM {$db_prefix}event AS event, {$db_prefix}clientauthorization AS clientauthorization, {$db_prefix}client AS client " .
-			"WHERE event.userid=$app->userid ".
-			"AND event.UniqueClientID = clientauthorization.UniqueClientID " .
-			"AND clientauthorization.ClientID = client.ClientID";
 
-		$itemid = $app->request->params('itemid');
+		$itemid = $app->request->params('ItemID');
 		$since = $app->request->params('since');
 
-		if ($itemid != null) {
-			$query.=" AND event.itemid=$itemid";
-		}
-		if ($since != null) {
-			$query.=" AND event.receivedts > $since";
-		}
-
-		$dbh = $GLOBALS['dbh'];
-		//Prepared query?
-		$sth = $dbh -> query($query);
-		if ($sth) {
-			$eventsresult->events = $sth->fetchAll(PDO::FETCH_CLASS, "event");
-		}
-
-		json($eventsresult);
+		json(new eventsresult($app->userid, $itemid, $since));
 	});
 
 	/**
