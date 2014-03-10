@@ -126,19 +126,26 @@ function crawler_get_cast($feedid) {
 	$cast = array();
 	$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}feedcontent WHERE feedid=$feedid");
 	if ($result = $sth->fetchAll()) {
+		$needsLove = null;
 		foreach ($result as $row) {
 			if (!startsWith($row['Location'], "channel/item")) {
 				$exploded = explode("/", $row['Location']);
 				if (sizeof($exploded) > 2) {
+					if ($needsLove != null) {
+						if ($exploded[1] == $needsLove) {
+							$v = $cast[$needsLove];
+							$cast[$needsLove] = array();
+							$cast[$needsLove][$needsLove] = $v; 
+						}
+						$needsLove = null;
+					}
 					$cast[$exploded[1]][$exploded[2]] = $row['Content'];
 				}
 				else {
-					if ($exploded[1] == "scheme") {
-						$cast["scheme"]["scheme"] = $row['Content'];
+					if ($row["Content"] != "") {
+						$needsLove = $exploded[1];
 					}
-					else {
-						$cast[$exploded[1]] = $row['Content'];
-					}
+					$cast[$exploded[1]] = $row['Content'];
 				}
 			}
 		}
