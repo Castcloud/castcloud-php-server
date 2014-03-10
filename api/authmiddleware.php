@@ -2,13 +2,14 @@
 class AuthMiddleware extends \Slim\Middleware {
 	public function call() {
 		$doAuth = function() {
+			$db_prefix = $GLOBALS['db_prefix'];
 			if ($this->app->request->getResourceUri() == '/account/login') {
 				return;
 			}
 			else {
 				if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
 					$token = $_SERVER['HTTP_AUTHORIZATION'];
-					$sth = $GLOBALS['dbh']->query("SELECT * FROM clientauthorization WHERE token='$token'");
+					$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}clientauthorization WHERE token='$token'");
 					if ($sth && $sth->rowCount() < 1) {
 						json(array("status" => "Bad token"));
 						$this->app->stop();
@@ -21,12 +22,12 @@ class AuthMiddleware extends \Slim\Middleware {
 						$this->app->uniqueclientid = $result['UniqueClientID'];
 						$this->app->clientdescription = $result['ClientDescription'];
 
-						$sth = $GLOBALS['dbh']->query("SELECT * FROM client WHERE clientid=".$result['ClientID']);
+						$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}client WHERE clientid=".$result['ClientID']);
 						if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 							$this->app->clientname = $result['Name'];
 						}						
 
-						$sth = $GLOBALS['dbh'] -> prepare("UPDATE clientauthorization SET SeenTS=:time WHERE UniqueClientID=:UniqueClientID");
+						$sth = $GLOBALS['dbh'] -> prepare("UPDATE {$db_prefix}clientauthorization SET SeenTS=:time WHERE UniqueClientID=:UniqueClientID");
 						$sth -> bindParam(':time', $time, PDO::PARAM_INT);
 						$sth -> bindParam(':UniqueClientID', $result["UniqueClientID"], PDO::PARAM_INT);
 						$sth -> execute();
@@ -40,7 +41,7 @@ class AuthMiddleware extends \Slim\Middleware {
 		};
 
 		$this->app->hook('slim.before.dispatch', $doAuth);
-		
+
 		$this->next->call();
 	}
 }

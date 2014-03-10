@@ -92,40 +92,41 @@ function post_login($app) {
 		$app -> stop();
 	}
 
-	$dbh = $GLOBALS['dbh'];
-	$sth = $dbh -> query("SELECT * FROM users WHERE username='$username'");
+	$dbh = $GLOBALS['dbh'];	
+	$db_prefix = $GLOBALS['db_prefix'];
+	$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
 	if ($sth) {
 		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 			$userid = $result['UserID'];
 			$salt = $result['Salt'];
 			if ($result['Password'] == md5($password . $salt)) {
-				$sth = $dbh -> query("SELECT * FROM client WHERE Name='$clientname'");
+				$sth = $dbh -> query("SELECT * FROM {$db_prefix}client WHERE Name='$clientname'");
 				if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 					$clientid = $result['ClientID'];
 				}
 				else {
-					$sth = $dbh -> prepare("INSERT INTO client (name) VALUES(:clientname)");
+					$sth = $dbh -> prepare("INSERT INTO {$db_prefix}client (name) VALUES(:clientname)");
 					$sth -> bindParam(':clientname', $clientname, PDO::PARAM_STR);
 					$sth -> execute();
 
 					$clientid = $dbh->lastInsertId();
 				}
 
-				$sth = $dbh -> query("SELECT * FROM clientauthorization WHERE userid=$userid AND clientid=$clientid AND uuid='$uuid'");
+				$sth = $dbh -> query("SELECT * FROM {$db_prefix}clientauthorization WHERE userid=$userid AND clientid=$clientid AND uuid='$uuid'");
 				if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 					$token = $result['Token'];
 				}
 				else {
 					$token = base64_encode(random_bytes(32));
 
-					$sth = $dbh->query("SELECT token FROM clientauthorization");
+					$sth = $dbh->query("SELECT token FROM {$db_prefix}clientauthorization");
 					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 						while (in_array($token, $result)) {
 							$token = base64_encode(random_bytes(32));
 						}
 					}
 
-					$sth = $dbh -> prepare("INSERT INTO clientauthorization (userid, clientid, token, clientdescription, clientversion, uuid, seents) "
+					$sth = $dbh -> prepare("INSERT INTO {$db_prefix}clientauthorization (userid, clientid, token, clientdescription, clientversion, uuid, seents) "
 					 . "VALUES($userid, $clientid, '$token', :clientdescription, :clientversion, :uuid, " . time() . ")");
 					$sth -> bindParam(':clientdescription', $clientdescription, PDO::PARAM_STR);
 					$sth -> bindParam(':clientversion', $clientversion, PDO::PARAM_STR);
