@@ -24,6 +24,7 @@ $app->get('/', function() {
 	if (isset($_SESSION['login'])) {
 		$username = $_SESSION['username'];
 		
+		$db_prefix = $GLOBALS['db_prefix'];
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
 		
@@ -35,10 +36,9 @@ $app->get('/', function() {
 					$sth = $dbh -> query("SELECT username, userlevel FROM {$db_prefix}users");
 					$usernames = $sth -> fetchAll();
 				}
-				include 'templates/userlist.phtml';
 			}
 		}
-
+		include 'templates/userlist.phtml';
 	}
 	else {
 		include 'templates/login.phtml';
@@ -73,6 +73,7 @@ $app->get('/edit/:username', function($username) use($app) {
 $app->post('/edit/:username', function($username) use($app) {
 	$userlevel = $app->request->params("userlevel");
 
+	$db_prefix = $GLOBALS['db_prefix'];
 	$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET userlevel=$userlevel WHERE username='$username'");
 });
 
