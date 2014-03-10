@@ -133,7 +133,12 @@ function crawler_get_cast($feedid) {
 					$cast[$exploded[1]][$exploded[2]] = $row['Content'];
 				}
 				else {
-					$cast[$exploded[1]] = $row['Content'];
+					if ($exploded[1] == "scheme") {
+						$cast["scheme"]["scheme"] = $row['Content'];
+					}
+					else {
+						$cast[$exploded[1]] = $row['Content'];
+					}
 				}
 			}
 		}
