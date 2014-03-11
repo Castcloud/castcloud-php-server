@@ -140,14 +140,6 @@ $app -> group('/account', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
 
-	$app -> get('/takeout.opml', function() use ($app) {
-		json(array("Not" => "Implemented"));
-	});
-
-	$app -> post('/takeout.opml', function() use ($app) {
-		json(array("Not" => "Implemented"));
-	});
-
 });
 
 /**
@@ -249,6 +241,10 @@ $app -> group('/library', function() use ($app) {
 	$app->get('/casts.opml', function() use($app) {
 		json(array("Not" => "Implemented"));
 	});
+	
+	$app -> post('/casts.opml', function() use ($app) {
+		json(array("Not" => "Implemented"));
+	});
 
 	/**
 	 * @SWG\Api(
@@ -291,6 +287,33 @@ $app -> group('/library', function() use ($app) {
 		json(array("status" => "success"));
 	});
 
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/casts/{id}",
+	 * 	description="Unsubscribe from a cast",
+	 * 	@SWG\Operation(
+	 * 		method="DELETE",
+	 * 		nickname="Unsubscribe from a cast",
+	 * 		summary="Unsubscribe from a cast",
+     * 		type="array",
+     * 		items="$ref:episode",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="id",
+	 * 			description="The casts id",
+	 * 			paramType="path",
+	 * 			required=true,
+	 * 			type="integer"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app->delete('/casts/:id', function($id) use($app) {
 		$userid = $app->userid;
 		$db_prefix = $GLOBALS['db_prefix'];
