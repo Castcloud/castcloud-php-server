@@ -184,6 +184,8 @@ function crawler_get_casts($tag = null) {
 }
 
 function crawler_get_episodes($feedid, $since = null) {
+	include_once 'models/episode.php';
+
 	$episodes = array();
 	$itemid = null;	
 	$previtemid = null;
@@ -204,33 +206,30 @@ function crawler_get_episodes($feedid, $since = null) {
 			}
 
 			if (startsWith($row['Location'], "channel/item")) {
-				if (!isset($episodes[$i]["castcloud"]["id"])) {
-					$episodes[$i]["castcloud"]["id"] = $itemid;
-					$episodes[$i]["castcloud"]["castid"] = $feedid;
+				if (!isset($episodes[$i])) {
+					$episodes[$i] = new episode($itemid, $feedid, null, array());
 
 					$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}event WHERE itemid=$itemid ORDER BY clientts LIMIT 1");
 					if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-						$episodes[$i]["castcloud"]["lastevent"]["type"] = $result["Type"];
-						$episodes[$i]["castcloud"]["lastevent"]["positionts"] = $result["PositionTS"];
-						$episodes[$i]["castcloud"]["lastevent"]["clientts"] = $result["ClientTS"];
-						$episodes[$i]["castcloud"]["lastevent"]["clientname"] = $GLOBALS['app']->clientname;
-						$episodes[$i]["castcloud"]["lastevent"]["clientdescription"] = $GLOBALS['app']->clientdescription;
-					}
-					else {
-						$episodes[$i]["castcloud"]["lastevent"] = null;
+						$episodes[$i]->lastevent = array();
+						$episodes[$i]->lastevent["type"] = $result["Type"];
+						$episodes[$i]->lastevent["positionts"] = $result["PositionTS"];
+						$episodes[$i]->lastevent["clientts"] = $result["ClientTS"];
+						$episodes[$i]->lastevent["clientname"] = $GLOBALS['app']->clientname;
+						$episodes[$i]->lastevent["clientdescription"] = $GLOBALS['app']->clientdescription;
 					}
 				}
 
 				$exploded = explode("/", $row['Location']);
 				if (sizeof($exploded) > 3) {
-					$episodes[$i][$exploded[2]][$exploded[3]] = $row['Content'];
+					$episodes[$i]->feed[$exploded[2]][$exploded[3]] = $row['Content'];
 				}
 				else {
 					if ($exploded[2] == "guid") {
-						$episodes[$i]["guid"]["guid"] = $row['Content'];
+						$episodes[$i]->feed["guid"]["guid"] = $row['Content'];
 					}
 					else {
-						$episodes[$i][$exploded[2]] = $row['Content'];
+						$episodes[$i]->feed[$exploded[2]] = $row['Content'];
 					}
 				}
 			}
@@ -242,18 +241,17 @@ function crawler_get_episodes($feedid, $since = null) {
 }
 
 function crawler_get_new_episodes($since) {
-	$episodes = array("timestamp" => time(), "episodes" => array());
+	$episodes = array();
 	$userid = $GLOBALS['app']->userid;
 
 	$db_prefix = $GLOBALS['db_prefix'];
 	$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}subscription WHERE userid=$userid");
 	if ($result = $sth->fetchAll()) {
 		foreach ($result as $row) {
-			$episodes["episodes"] = array_merge($episodes["episodes"], crawler_get_episodes($row['FeedID'], $since));
+			$episodes = array_merge($episodes, crawler_get_episodes($row['FeedID'], $since));
 		}
 	}
 
-	include 'models/newepisodesresult.php';
-	return new newepisodesresult(time(), $episodes);
+	return $episodes;
 }
 ?>

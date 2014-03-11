@@ -189,7 +189,8 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/newepisodes', function() use ($app) {
-		json(crawler_get_new_episodes($app->request->params('since')));
+		include_once 'models/newepisodesresult.php';
+		json(new newepisodesresult(crawler_get_new_episodes($app->request->params('since'))));
 	});
 
 	/**
