@@ -8,21 +8,30 @@ class eventsresult
 	function __construct($userid, $itemid, $since) {	
 		$db_prefix = $GLOBALS['db_prefix'];
 		$this->timestamp = time();
-		$query = "SELECT event.type, event.itemid AS episodeid, event.positionts, event.clientts, " . 
-			"client.name AS clientname, clientauthorization.clientdescription " . 
-			"FROM {$db_prefix}event AS event, {$db_prefix}clientauthorization AS clientauthorization, {$db_prefix}client AS client " .
-			"WHERE event.userid=? ".
-			"AND event.UniqueClientID = clientauthorization.UniqueClientID " .
-			"AND clientauthorization.ClientID = client.ClientID";
-		$inputs = array($userid);
+		$query = "SELECT
+			event.type,
+			event.itemid AS episodeid,
+			event.positionts,
+			event.clientts, 
+			client.name AS clientname,
+			clientauthorization.clientdescription
+			FROM 
+			{$db_prefix}event AS event,
+			{$db_prefix}clientauthorization AS clientauthorization,
+			{$db_prefix}client AS client
+			WHERE
+			event.userid=:userid 
+			AND event.UniqueClientID = clientauthorization.UniqueClientID
+			AND clientauthorization.ClientID = client.ClientID";
+		$inputs = array(":userid" => $userid);
 
 		if ($itemid != null) {
-			$query.=" AND event.itemid=?";
-			$inputs[] = $itemid;
+			$query.=" AND event.itemid=:itemid";
+			$inputs[":itemid"] = $itemid;
 		}
 		if ($since != null) {
-			$query.=" AND event.receivedts >= ?";
-			$inputs[] = $since;
+			$query.=" AND event.receivedts >= :since";
+			$inputs[":since"] = $since;
 		}
 
 		$dbh = $GLOBALS['dbh'];
