@@ -1,7 +1,5 @@
 <?php
 include 'cc-settings.php';
-$insert_sth = $dbh->prepare("INSERT INTO {$db_prefix}feedcontent (feedid, location, itemid, content, crawlts) VALUES(:feedid, :location, :itemid, :content, :time)");
-GLOBAL $insert_sth;
 
 $push_this = array();
 GLOBAL $push_this;
@@ -17,6 +15,13 @@ if (isset($_GET['t'])){
 			}
 		}
 	}
+}
+
+function generateQuery($n) {
+	$db_prefix = $GLOBALS['db_prefix'];
+	$sql = "INSERT INTO {$db_prefix}feedcontent (feedid, location, itemid, content, crawlts) VALUES";
+	$sql.= implode(', ', array_fill(0, $n, '(?,?,?,?,?)'));
+	return $sql;
 }
 
 function crawl($feedurl) {
@@ -35,14 +40,23 @@ function crawl($feedurl) {
 		$dbh->exec("INSERT INTO {$db_prefix}feed (url, crawlts) VALUES('$feedurl', $time)");
 		$feedid = $dbh->lastInsertId();
 	}
-	
+
 	next_child($xml->channel, "channel/", $feedid, $time);
 
 	$push_this = $GLOBALS['push_this'];
 
+	$dbh->beginTransaction();
+	$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
+	$vals = array();
 	foreach ($push_this as $line) {
-		push_line($line["feedid"], $line["location"], $line["itemid"], $line["content"], $line["time"]);
+		array_push($vals, $line["feedid"]);
+		array_push($vals, $line["location"]);
+		array_push($vals, $line["itemid"]);
+		array_push($vals, $line["content"]);
+		array_push($vals, $line["time"]);
 	}
+	$sth->execute($vals);
+	$dbh->commit();
 
 	return $feedid;
 }
