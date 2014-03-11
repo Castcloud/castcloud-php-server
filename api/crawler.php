@@ -253,6 +253,7 @@ function crawler_get_new_episodes($since) {
 		}
 	}
 
-	return $episodes;
+	include 'models/newepisodesresult.php';
+	return new newepisodesresult(time(), $episodes);
 }
 ?>

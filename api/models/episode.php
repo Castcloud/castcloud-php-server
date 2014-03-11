@@ -4,6 +4,13 @@
  */
 class Episode
 {
+    function __construct($id, $castid, $lastevent, $feed) {
+        $this->id = $id;
+        $this->castid = $castid;
+        $this->lastevent = $lastevent;
+        $this->feed = $feed;
+    }
+
     /**
      * @SWG\Property(name="id",type="integer",format="int64",description="Unique identifier for the episode")
      */
@@ -22,6 +29,6 @@ class Episode
     /**
      * @SWG\Property(name="feeddata",type="array",@SWG\Items("string"),description="All data available in the episodes item")
      */
-    public $feeddata;
+    public $feed;
 
 }
