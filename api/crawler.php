@@ -1,7 +1,12 @@
 <?php
-if (isset($_GET['t'])){
+include 'cc-settings.php';
+$insert_sth = $dbh->prepare("INSERT INTO {$db_prefix}feedcontent (feedid, location, itemid, content, crawlts) VALUES(:feedid, :location, :itemid, :content, :time)");
+GLOBAL $insert_sth;
 
-	$db_prefix = $GLOBALS['db_prefix'];
+$push_this = array();
+GLOBAL $push_this;
+
+if (isset($_GET['t'])){
 	include 'cc-settings.php';
 	if ($_GET['t'] == $crawl_token) {
 		include 'util.php';
@@ -32,6 +37,12 @@ function crawl($feedurl) {
 	}
 	
 	next_child($xml->channel, "channel/", $feedid, $time);
+
+	$push_this = $GLOBALS['push_this'];
+
+	foreach ($push_this as $line) {
+		push_line($line["feedid"], $line["location"], $line["itemid"], $line["content"], $line["time"]);
+	}
 
 	return $feedid;
 }
@@ -89,11 +100,14 @@ function process_child($child, $ns, $url, $feedid, $time) {
 				$itemid = $dbh->lastInsertId();
 
 				foreach ($buffer as $line) {
-					push_line($feedid, $line["location"], $itemid, $line["content"], $time);
+					//push_line($feedid, $line["location"], $itemid, $line["content"], $time);
+					//array_push($push_this, array($feedid, $line["location"], $itemid, $line["content"], $time));
+					array_push($GLOBALS['push_this'], array("feedid" => $feedid, "location" => $line["location"], "itemid" => $itemid, "content" => $line["content"], "time" => $time));
 				}
 				$buffer = array();
 			}
 		}
+
 
 		if ($item) {
 			array_push($buffer, array("location" => $newurl, "content" => (string)$child));
@@ -104,10 +118,14 @@ function process_child($child, $ns, $url, $feedid, $time) {
 		}
 		else {
 			if (!($itemid == null && startsWith($newurl, "channel/item"))) {
-				push_line($feedid, $newurl, $itemid, (string)$child, $time);
+				//push_line($feedid, $newurl, $itemid, (string)$child, $time);
+				//array_push($push_this, array($feedid, $newurl, $itemid, (string)$child, $time));
+				array_push($GLOBALS['push_this'], array("feedid" => $feedid, "location" => $newurl, "itemid" => $itemid, "content" => (string)$child, "time" => $time));
 
 				foreach ($child->attributes() as $key => $value) {
-					push_line($feedid, "$newurl/$key", $itemid, $value, $time);
+					//push_line($feedid, "$newurl/$key", $itemid, $value, $time);
+					//array_push($push_this, array($feedid, "$newurl/$key", $itemid, $value, $time));
+					array_push($GLOBALS['push_this'], array("feedid" => $feedid, "location" => "$newurl/$key", "itemid" => $itemid, "content" => $value, "time" => $time));
 				}
 			}
 		}
@@ -115,9 +133,12 @@ function process_child($child, $ns, $url, $feedid, $time) {
 }
 
 function push_line($feedid, $location, $itemid, $content, $time) {
-	$db_prefix = $GLOBALS['db_prefix'];
-	$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}feedcontent (feedid, location, itemid, content, crawlts) VALUES($feedid, '$location', :itemid, '$content', $time)");
+	$sth = $GLOBALS['insert_sth'];
+	$sth->bindParam(':feedid', $feedid, PDO::PARAM_INT);
+	$sth->bindParam(':location', $location, PDO::PARAM_STR);
 	$sth->bindParam(':itemid', $itemid, PDO::PARAM_INT);
+	$sth->bindParam(':content', $content, PDO::PARAM_STR);
+	$sth->bindParam(':time', $time, PDO::PARAM_INT);
 	$sth->execute();
 }
 
