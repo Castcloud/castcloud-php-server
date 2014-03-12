@@ -12,6 +12,9 @@ include 'authmiddleware.php';
 include 'util.php';
 include 'crawler.php';
 include 'login.php';
+include 'db.php';
+
+$app->db = new DB($dbh);
 
 $app -> add(new AuthMiddleware());
 
@@ -182,7 +185,7 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/newepisodes', function() use ($app) {
 		include_once 'models/newepisodesresult.php';
-		json(new newepisodesresult(crawler_get_new_episodes($app->request->params('since'))));
+		json(new newepisodesresult($app->db->get_new_episodes($app->request->params('since'))));
 	});
 
 	/**
@@ -213,7 +216,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/episodes/:castid', function($castid) use ($app) {
-		json(crawler_get_episodes($castid));
+		json($app->db->get_episodes($castid));
 	});
 
 	/**
@@ -236,7 +239,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/casts', function() use ($app) {
-		json(crawler_get_casts());
+		json($app->db->get_casts());
 	});
 
 	$app->get('/casts.opml', function() use($app) {
@@ -348,7 +351,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/casts/tagged/:tag', function($tag) use ($app) {
-		json(crawler_get_casts($tag));
+		json($app->db->get_casts($tag));
 	});
 
 	/**
