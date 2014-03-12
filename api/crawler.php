@@ -45,18 +45,20 @@ function crawl($feedurl) {
 
 	$push_this = $GLOBALS['push_this'];
 
-	$dbh->beginTransaction();
-	$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
-	$vals = array();
-	foreach ($push_this as $line) {
-		array_push($vals, $line["feedid"]);
-		array_push($vals, $line["location"]);
-		array_push($vals, $line["itemid"]);
-		array_push($vals, $line["content"]);
-		array_push($vals, $line["time"]);
+	if (sizeof($push_this) > 0) {
+		$dbh->beginTransaction();
+		$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
+		$vals = array();
+		foreach ($push_this as $line) {
+			array_push($vals, $line["feedid"]);
+			array_push($vals, $line["location"]);
+			array_push($vals, $line["itemid"]);
+			array_push($vals, $line["content"]);
+			array_push($vals, $line["time"]);
+		}
+		$sth->execute($vals);
+		$dbh->commit();
 	}
-	$sth->execute($vals);
-	$dbh->commit();
 
 	return $feedid;
 }
