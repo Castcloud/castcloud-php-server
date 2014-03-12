@@ -413,7 +413,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="POST",
 	 * 		nickname="Add events",
 	 * 		summary="Add events",
-	 * 		type="Herp",
+	 * 		type="void",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -426,7 +426,8 @@ $app -> group('/library', function() use ($app) {
 	 * 			description="New events (TBD)",
 	 * 			paramType="body",
 	 * 			required=true,
-	 * 			type="string"
+	 * 			type="array",
+	 * 			items="$ref:event"
 	 * 		)
 	 * 	)
 	 * )

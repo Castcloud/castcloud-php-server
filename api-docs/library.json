@@ -48,6 +48,37 @@
             ]
         },
         {
+            "path": "/library/casts/{id}",
+            "description": "Unsubscribe from a cast",
+            "operations": [
+                {
+                    "method": "DELETE",
+                    "summary": "Unsubscribe from a cast",
+                    "nickname": "Unsubscribe from a cast",
+                    "type": "array",
+                    "items": {
+                        "$ref": "episode"
+                    },
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "path",
+                            "name": "id",
+                            "type": "integer",
+                            "required": true,
+                            "description": "The casts id"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "path": "/library/casts/{tag}",
             "description": "Get users subcriptions for spesific tag",
             "operations": [
@@ -114,7 +145,7 @@
                     "method": "POST",
                     "summary": "Add events",
                     "nickname": "Add events",
-                    "type": "Herp",
+                    "type": "void",
                     "parameters": [
                         {
                             "paramType": "header",
@@ -126,9 +157,12 @@
                         {
                             "paramType": "body",
                             "name": "json",
-                            "type": "string",
+                            "type": "array",
                             "required": true,
-                            "description": "New events (TBD)"
+                            "description": "New events (TBD)",
+                            "items": {
+                                "$ref": "event"
+                            }
                         }
                     ]
                 }

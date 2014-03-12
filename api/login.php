@@ -15,7 +15,7 @@
  * 		method="POST",
  * 		nickname="Login",
  * 		summary="Get access token",
- * 		type="Herp",
+ * 		type="array",
  * 		@SWG\Parameter(
  * 			name="username",
  * 			description="Users username",

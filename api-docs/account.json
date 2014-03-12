@@ -12,7 +12,7 @@
                     "method": "POST",
                     "summary": "Get access token",
                     "nickname": "Login",
-                    "type": "Herp",
+                    "type": "array",
                     "parameters": [
                         {
                             "paramType": "form",
