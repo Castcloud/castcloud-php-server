@@ -441,7 +441,9 @@ $app -> group('/library', function() use ($app) {
 				
 		$event = json_decode($app->request->params('json'));
 		foreach ($json as $event) {
-			$GLOBALS['dbh']->exec("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, $event->clientts, $receivedts, $app->uniqueclientid)");
+			$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, concurrentorder, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, :concurrentorder $event->clientts, $receivedts, $app->uniqueclientid)");
+			$sth->bindParam(":concurrentorder", $event->concurrentorder, PDO::PARAM_INT);
+			$sth->execute();
 		}
 
 		json(array("Status" => "Success"));
