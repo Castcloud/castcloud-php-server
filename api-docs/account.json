@@ -12,7 +12,7 @@
                     "method": "POST",
                     "summary": "Get access token",
                     "nickname": "Login",
-                    "type": "array",
+                    "type": "token",
                     "parameters": [
                         {
                             "paramType": "form",
@@ -63,6 +63,20 @@
                             "required": false,
                             "description": "Clients official apikey. Not yet implemented"
                         }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Invalid username and password combination"
+                        },
+                        {
+                            "code": 400,
+                            "message": "Missing parameters"
+                        },
+                        {
+                            "code": 500,
+                            "message": "Server error"
+                        }
                     ]
                 }
             ]
@@ -75,7 +89,7 @@
                     "method": "GET",
                     "summary": "Test token",
                     "nickname": "Ping",
-                    "type": "Herp",
+                    "type": "void",
                     "parameters": [
                         {
                             "paramType": "header",
@@ -83,6 +97,16 @@
                             "type": "string",
                             "required": true,
                             "description": "clients login token"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "All ok"
+                        },
+                        {
+                            "code": 400,
+                            "message": "Bad token"
                         }
                     ]
                 }
@@ -104,6 +128,12 @@
                             "type": "string",
                             "required": true,
                             "description": "clients login token"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
                         }
                     ]
                 },
@@ -127,11 +157,31 @@
                             "required": true,
                             "description": "New or modified settings (TBD)"
                         }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
                     ]
                 }
             ]
         }
     ],
+    "models": {
+        "token": {
+            "id": "token",
+            "properties": {
+                "token": {
+                    "description": "Clients autorization token",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "token"
+            ]
+        }
+    },
     "produces": [
         "application/json"
     ]

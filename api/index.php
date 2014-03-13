@@ -20,12 +20,12 @@ $app -> add(new AuthMiddleware());
 
 /**
  * @SWG\Resource(
- *   apiVersion="1.0.0",
- *   swaggerVersion="1.2",
- *   basePath="http://api.castcloud.org/api",
- *   resourcePath="/account",
- *   description="Account related operations",
- *   produces="['application/json']"
+ * 	apiVersion="1.0.0",
+ * 	swaggerVersion="1.2",
+ * 	basePath="http://api.castcloud.org/api",
+ * 	resourcePath="/account",
+ * 	description="Account related operations",
+ * 	produces="['application/json']"
  * )
  */
 $app -> group('/account', function() use ($app) {
@@ -41,19 +41,27 @@ $app -> group('/account', function() use ($app) {
 	 * 		method="GET",
 	 * 		nickname="Ping",
 	 * 		summary="Test token",
-	 * 		type="Herp",
+	 * 		type="void",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
 	 * 			paramType="header",
 	 * 			required=true,
 	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=200,
+	 * 			message="All ok"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
 	 */
 	$app -> get('/ping', function() use ($app) {
-		json(array("status" => "Logged in"));
+		$app -> halt(200);
 	});
 
 	/**
@@ -71,6 +79,10 @@ $app -> group('/account', function() use ($app) {
 	 * 			paramType="header",
 	 * 			required=true,
 	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -112,6 +124,10 @@ $app -> group('/account', function() use ($app) {
 	 * 			paramType="body",
 	 * 			required=true,
 	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -179,6 +195,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -211,6 +231,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			paramType="path",
 	 * 			required=true,
 	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -234,6 +258,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			paramType="header",
 	 * 			required=true,
 	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -272,6 +300,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -314,6 +346,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			paramType="path",
 	 * 			required=true,
 	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -346,6 +382,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			paramType="path",
 	 * 			required=false,
 	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -384,20 +424,13 @@ $app -> group('/library', function() use ($app) {
 	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
-	 * 
-	 * List of event types
-		10 => "start",
-		20 => "pause",
-		30 => "unpause",
-		40 => "slumber start",
-		50 => "slumber end",
-		60 => "seek start",
-		70 => "seek end",
-		80 => "end of track",
-		90 => "deleted"
 	 */
 	$app -> get('/events', function() use ($app) {
 		include 'models/eventsresult.php';
@@ -431,6 +464,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			required=true,
 	 * 			type="array",
 	 * 			items="$ref:event"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )
@@ -462,6 +499,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			paramType="header",
 	 * 			required=true,
 	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
 	 * 		)
 	 * 	)
 	 * )

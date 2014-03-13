@@ -1,4 +1,5 @@
 <?php
+include 'models/token.php';
 /**
  * @SWG\Resource(
  *   apiVersion="1.0.0",
@@ -15,7 +16,7 @@
  * 		method="POST",
  * 		nickname="Login",
  * 		summary="Get access token",
- * 		type="array",
+ * 		type="token",
  * 		@SWG\Parameter(
  * 			name="username",
  * 			description="Users username",
@@ -64,6 +65,18 @@
  * 			paramType="form",
  * 			required=false,
  * 			type="string"
+ * 		),
+ * 		@SWG\ResponseMessage(
+ * 			code=400,
+ * 			message="Invalid username and password combination"
+ * 		),
+ * 		@SWG\ResponseMessage(
+ * 			code=400,
+ * 			message="Missing parameters"
+ * 		),
+ * 		@SWG\ResponseMessage(
+ * 			code=500,
+ * 			message="Server error"
  * 		)
  * 	)
  * )
@@ -88,8 +101,7 @@ function post_login($app) {
 	}
 	$status = substr($status, 0, strlen($status) - 2);
 	if ($missing > 0) {
-		json(array("status" => $status));
-		$app -> stop();
+		$app -> halt(400, $status);
 	}
 
 	$dbh = $GLOBALS['dbh'];	
@@ -134,17 +146,17 @@ function post_login($app) {
 					$sth -> execute();
 				}
 
-				json(array("token" => $token));
+				json(new token($token));
 			} else {
-				json(array("status" => "Login failed"));
+				$app -> halt(400, 'Invalid username and password combination');
 			}
 		} else {
-			json(array("status" => "Login failed"));
+			$app -> halt(400, 'Invalid username and password combination');
 		}
 	} else {
 		$error = $dbh -> errorInfo();
 		error_log("Castcloud database error: " . $error[2], 0);
-		json(array("status" => "Database fail"));
+		$app -> halt(500, 'Server error');
 	}
 }
 ?>

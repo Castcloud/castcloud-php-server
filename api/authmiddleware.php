@@ -11,8 +11,7 @@ class AuthMiddleware extends \Slim\Middleware {
 					$token = $_SERVER['HTTP_AUTHORIZATION'];
 					$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}clientauthorization WHERE token='$token'");
 					if ($sth && $sth->rowCount() < 1) {
-						json(array("status" => "Bad token"));
-						$this->app->stop();
+						$this -> app -> halt(400, 'Bad token');
 					} else {
 						$time = time();
 						$result = $sth->fetch(PDO::FETCH_ASSOC);
@@ -34,8 +33,7 @@ class AuthMiddleware extends \Slim\Middleware {
 					}
 				}
 				else {
-					json(array("status" => "No token"));
-					$this->app->stop();
+					$this -> app -> halt(400, 'Bad token');
 				}
 			}
 		};

@@ -21,6 +21,12 @@
                             "required": true,
                             "description": "clients login token"
                         }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
                     ]
                 },
                 {
@@ -42,6 +48,12 @@
                             "type": "string",
                             "required": true,
                             "description": "URL of podcast feed"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
                         }
                     ]
                 }
@@ -74,6 +86,12 @@
                             "required": true,
                             "description": "The casts id"
                         }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
                     ]
                 }
             ]
@@ -101,6 +119,12 @@
                             "type": "string",
                             "required": false,
                             "description": "filter by tag"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
                         }
                     ]
                 }
@@ -133,6 +157,12 @@
                             "required": true,
                             "description": "The casts castid"
                         }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
                     ]
                 }
             ]
@@ -163,6 +193,12 @@
                             "items": {
                                 "$ref": "event"
                             }
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
                         }
                     ]
                 }
@@ -202,6 +238,12 @@
                             "required": false,
                             "description": "filter by ItemID"
                         }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
                     ]
                 }
             ]
@@ -230,6 +272,12 @@
                             "required": false,
                             "description": "timestamp of last call"
                         }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
                     ]
                 }
             ]
@@ -250,6 +298,12 @@
                             "type": "string",
                             "required": true,
                             "description": "clients login token"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
                         }
                     ]
                 }
@@ -328,6 +382,11 @@
                 },
                 "clientts": {
                     "description": "The clients unix timestamp of when the event occured",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "concurrentorder": {
+                    "description": "If multiple events occure on the same time, This wil decribe the order of the events.",
                     "type": "integer",
                     "format": "int64"
                 },
