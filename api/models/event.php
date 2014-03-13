@@ -25,6 +25,11 @@ class event
     public $clientts;
 	
 	/**
+     * @SWG\Property(name="concurrentorder",type="integer",format="int64",description="If multiple events occure on the same time, This wil decribe the order of the events.")
+     */
+    public $concurrentorder;
+	
+	/**
      * @SWG\Property(name="clientname",type="string",description="Name of the client that sent the event")
      */
     public $clientname;

@@ -12,13 +12,17 @@ class eventsresult
 			event.type,
 			event.itemid AS episodeid,
 			event.positionts,
-			event.clientts, 
+			event.clientts,
+			event.concurrentorder, 
 			client.name AS clientname,
 			clientauthorization.clientdescription
 			FROM 
 			{$db_prefix}event AS event,
 			{$db_prefix}clientauthorization AS clientauthorization,
 			{$db_prefix}client AS client
+			ORDER BY
+			event.clientts DESC,
+			event.concurrentorder DESC
 			WHERE
 			event.userid=:userid 
 			AND event.UniqueClientID = clientauthorization.UniqueClientID

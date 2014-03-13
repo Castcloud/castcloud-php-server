@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS `prefix_event` (
   `Type` int(11) NOT NULL,
   `ItemID` int(11) NOT NULL,
   `PositionTS` int(11) NOT NULL,
+  `ConcurrentOrder` int(11) NOT NULL,
   `ClientTS` int(11) NOT NULL,
   `ReceivedTS` int(11) NOT NULL,
   `UniqueClientID` int(11) NOT NULL,
