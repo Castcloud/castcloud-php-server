@@ -474,11 +474,12 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> post('/events', function() use ($app) {
 		$db_prefix = $GLOBALS['db_prefix'];
-		$receivedts = time();	
+		$receivedts = time();
 				
-		$event = json_decode($app->request->params('json'));
+		$json = json_decode(json_encode($app->request->params('json')));
+
 		foreach ($json as $event) {
-			$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, concurrentorder, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, :concurrentorder $event->clientts, $receivedts, $app->uniqueclientid)");
+			$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, concurrentorder, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, :concurrentorder, $event->clientts, $receivedts, $app->uniqueclientid)");
 			$sth->bindParam(":concurrentorder", $event->concurrentorder, PDO::PARAM_INT);
 			$sth->execute();
 		}
