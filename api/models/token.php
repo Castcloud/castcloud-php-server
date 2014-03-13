@@ -2,7 +2,7 @@
 /**
  * @SWG\Model(id="token",required="token")
  */
-class event
+class token
 {
 	function __construct($token) {
         $this->token = $token;
