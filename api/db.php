@@ -94,7 +94,7 @@ class DB {
 					if (!isset($episodes[$i])) {
 						$episodes[$i] = new episode($itemid, $feedid, null, array());
 
-						$sth = $this->dbh->query("SELECT * FROM {$db_prefix}event WHERE itemid=$itemid ORDER BY clientts LIMIT 1");
+						$sth = $this->dbh->query("SELECT * FROM {$db_prefix}event WHERE itemid=$itemid ORDER BY clientts DESC LIMIT 1");
 						if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 							$episodes[$i]->lastevent = array();
 							$episodes[$i]->lastevent["type"] = $result["Type"];
