@@ -23,11 +23,11 @@ $app->add(new AuthMiddleware());
 $app->get('/', function() {
 	if (isset($_SESSION['login'])) {
 		$username = $_SESSION['username'];
-		
+
 		$db_prefix = $GLOBALS['db_prefix'];
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
-		
+
 		if ($sth) {
 			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 				$usernames = array(array("username" => $username));
@@ -67,14 +67,50 @@ $app->post('/login', function() use($app) {
 });
 
 $app->get('/edit/:username', function($username) use($app) {
+
+	$username = $_SESSION['username'];
+	$db_prefix = $GLOBALS['db_prefix'];
+	$dbh = $GLOBALS['dbh'];
+	$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
+
+	if ($sth) {
+		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
+			$name = $result['Name'];
+			$mail = $result['Mail'];
+		}
+	}
 	include 'templates/useredit.phtml';
+
+
 });
 
 $app->post('/edit/:username', function($username) use($app) {
-	$userlevel = $app->request->params("userlevel");
+	$username = $_SESSION['username'];
+	if($userlevel = $app->request->params("userlevel")){
+		$db_prefix = $globals['db_prefix'];
+		$globals['dbh']->exec("update {$db_prefix}users set userlevel=$userlevel where username='$username'");
+	}	
+	if($name = $app->request->params("name")){
+		$db_prefix = $GLOBALS['db_prefix'];
+		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET Name='$name' WHERE username='$username'");
+	}
+	if($mail = $app->request->params("mail")){
+		$db_prefix = $GLOBALS['db_prefix'];
+		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET Mail='$mail' WHERE username='$username'");
+	}
+	if($password = $app->request->params("password")){
+		$db_prefix = $GLOBALS['db_prefix'];
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> query("SELECT salt FROM {$db_prefix}users WHERE username='$username'");
+		if ($sth) {
+			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
+				$salt = $result['salt'];
+			}
+		}
+		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET Password=md5('$password$salt') WHERE username='$username'");
 
-	$db_prefix = $GLOBALS['db_prefix'];
-	$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET userlevel=$userlevel WHERE username='$username'");
+	}
+
 });
 
 $app->post('/logout', function() use($app) {
