@@ -60,9 +60,7 @@ $app -> group('/account', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/ping', function() use ($app) {
-		$app -> halt(200);
-	});
+	$app -> get('/ping', function() use ($app) { });
 
 	/**
 	 * @SWG\Api(
@@ -89,17 +87,6 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/settings', function() use ($app) {
-		
-		$db_prefix = $GLOBALS['db_prefix'];
-		$settings = array();
-
-		$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}setting WHERE userid=$app->userid");
-		if ($sth) {
-			foreach ($sth as $row) {
-				$settings[$row['Setting']] = $row['Value'];
-			}
-		}
-
 		json($app->db->get_settings());
 	});
 
@@ -153,8 +140,6 @@ $app -> group('/account', function() use ($app) {
 				$dbh->exec("INSERT INTO {$db_prefix}setting (userid, setting, value) VALUES($app->userid, '$key', '$value')");
 			}
 		}
-
-		json(array("status" => "success"));
 	});
 	
 	/**
@@ -293,7 +278,8 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="GET",
 	 * 		nickname="Get users subcriptions",
 	 * 		summary="Get users subcriptions",
-	 * 		type="Herp",
+	 * 		type="array",
+	 * 		items="$ref:cast",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -343,6 +329,13 @@ $app -> group('/library', function() use ($app) {
 	 * 			required=true,
 	 * 			type="string"
 	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="tags",
+	 * 			description="Comma separated tags",
+	 * 			paramType="form",
+	 * 			required=false,
+	 * 			type="string"
+	 * 		),
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
 	 * 			message="Bad token"
@@ -352,17 +345,69 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
+		$tags = $app -> request -> params('tags');
+		
 		$feedid = crawl($feedurl);
+		
 		$userid = $app -> userid;
 
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE feedid=$feedid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
-			$dbh -> exec("INSERT INTO {$db_prefix}subscription (feedid, tags, userid) VALUES($feedid, 'bjarne,nils', $userid)");
+			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (feedid, tags, userid) VALUES($feedid, :tags, $userid)");
+			$sth -> bindParam(":tags",$tags);
+			$sth -> execute();
 		}
+	});
+	
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/casts/:id",
+	 * 	description="Get users subcriptions",
+	 * 	@SWG\Operation(
+	 * 		method="PUT",
+	 * 		nickname="Get users subcriptions",
+	 * 		summary="Get users subcriptions",
+	 * 		type="void",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="tags",
+	 * 			description="Comma separated tags",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
+	$app -> put('/casts/:id', function($id) use ($app) {
+		$tags = $app -> request -> params('tags');
 
-		json(array("status" => "success"));
+		$userid = $app -> userid;
+
+		$dbh = $GLOBALS['dbh'];
+		$db_prefix = $GLOBALS['db_prefix'];
+		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE feedid=$feedid AND userid=$userid");
+		if ($sth && $sth -> rowCount() < 1) {
+			$sth = $dbh -> prepare("UPDATE 
+				{$db_prefix}subscription 
+				SET tags=:tags 
+				WHERE FeedID = :id");
+			$sth -> bindParam(":tags",$tags);
+			$sth -> bindParam(":id",$id);
+			$sth -> execute();
+		}
 	});
 
 	/**

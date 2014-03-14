@@ -27,7 +27,7 @@ class Episode
     public $lastevent;
 
     /**
-     * @SWG\Property(name="feeddata",type="array",@SWG\Items("string"),description="All data available in the episodes item")
+     * @SWG\Property(name="feed",type="array",description="All data available in the episodes item")
      */
     public $feed;
 

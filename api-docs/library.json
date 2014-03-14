@@ -12,7 +12,10 @@
                     "method": "GET",
                     "summary": "Get users subcriptions",
                     "nickname": "Get users subcriptions",
-                    "type": "Herp",
+                    "type": "array",
+                    "items": {
+                        "$ref": "cast"
+                    },
                     "parameters": [
                         {
                             "paramType": "header",
@@ -48,6 +51,47 @@
                             "type": "string",
                             "required": true,
                             "description": "URL of podcast feed"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "tags",
+                            "type": "string",
+                            "required": false,
+                            "description": "Comma separated tags"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/casts/:id",
+            "description": "Get users subcriptions",
+            "operations": [
+                {
+                    "method": "PUT",
+                    "summary": "Get users subcriptions",
+                    "nickname": "Get users subcriptions",
+                    "type": "void",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "tags",
+                            "type": "string",
+                            "required": true,
+                            "description": "Comma separated tags"
                         }
                     ],
                     "responseMessages": [
@@ -349,12 +393,9 @@
                     "description": "The episodes last event",
                     "$ref": "event"
                 },
-                "feeddata": {
+                "feed": {
                     "description": "All data available in the episodes item",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "array"
                 }
             },
             "required": [
@@ -404,6 +445,36 @@
                 "episodeid",
                 "positionts",
                 "type"
+            ]
+        },
+        "cast": {
+            "id": "cast",
+            "properties": {
+                "id": {
+                    "description": "The casts individual ID",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "url": {
+                    "description": "The casts url",
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "All the casts tags",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "feed": {
+                    "description": "All feed related data from the feed",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "clientts",
+                "setting",
+                "value"
             ]
         }
     },
