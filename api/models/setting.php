@@ -24,4 +24,8 @@ class setting
      */
     public $clientspesific;
 
+    function __construct() {
+        $this->clientspesific = (bool)$this->clientspesific; // ;)
+    }
+
 }

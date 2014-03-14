@@ -200,7 +200,7 @@ class DB {
 			setting.settingid,
 			setting.setting,
 			setting.value,
-			IF(setting.ClientID IS NOT NULL, 'true', 'false') AS clientspesific
+			setting.ClientID IS NOT NULL AS clientspesific
 			FROM 
 			{$db_prefix}setting AS setting
 			WHERE
