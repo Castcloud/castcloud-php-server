@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS `prefix_subscription` (
 CREATE TABLE IF NOT EXISTS `prefix_users` (
   `UserID` int(11) NOT NULL AUTO_INCREMENT,
   `UserLevel` int(11) NOT NULL,
-  `Username` text NOT NULL,
+  `Username` text NOT NULL UNIQUE,
   `Name` text,
   `Mail` text NOT NULL,
   `Password` text NOT NULL,
