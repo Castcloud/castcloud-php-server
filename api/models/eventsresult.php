@@ -1,5 +1,4 @@
 <?php
-include 'models/event.php';
 /**
  * @SWG\Model(id="eventsresult",required="timestamp, events")
  */

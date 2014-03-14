@@ -93,16 +93,7 @@ class DB {
 				if (startsWith($row['Location'], "channel/item")) {
 					if (!isset($episodes[$i])) {
 						$episodes[$i] = new episode($itemid, $feedid, null, array());
-
-						$sth = $this->dbh->query("SELECT * FROM {$db_prefix}event WHERE itemid=$itemid ORDER BY clientts DESC LIMIT 1");
-						if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-							$episodes[$i]->lastevent = array();
-							$episodes[$i]->lastevent["type"] = $result["Type"];
-							$episodes[$i]->lastevent["positionts"] = $result["PositionTS"];
-							$episodes[$i]->lastevent["clientts"] = $result["ClientTS"];
-							$episodes[$i]->lastevent["clientname"] = $GLOBALS['app']->clientname;
-							$episodes[$i]->lastevent["clientdescription"] = $GLOBALS['app']->clientdescription;
-						}
+						$episodes[$i]->lastevent = $this->get_events($itemid, null, 1);
 					}
 
 					$exploded = explode("/", $row['Location']);
@@ -141,6 +132,7 @@ class DB {
 	}
 	
 	function get_events($itemid, $since, $limit = null) {
+		include_once 'models/event.php';
 		$userid = $GLOBALS['app']->userid;
 
 		$db_prefix = $GLOBALS['db_prefix'];
@@ -176,8 +168,10 @@ class DB {
 			event.concurrentorder DESC";
 		
 		if ($limit != null) {
-			$query.=" LIMIT :limit";
-			$inputs[":limit"] = $limit;
+			/*
+			 * May the heavens have mercy on the fool that gets limits from user imput
+			 */
+			$query.=" LIMIT {$limit}";
 		}
 		
 		$dbh = $GLOBALS['dbh'];
@@ -185,9 +179,11 @@ class DB {
 		$sth->execute($inputs);
 
 		if ($sth) {
-			if ($limit == "1" && $sth->rowCount() == "1"){
+			if ($limit == "1" && $sth->rowCount() == 1){
 				$events = $sth->fetchAll(PDO::FETCH_CLASS, "event");
 				return $events[0];
+			} elseif ($limit == "1" && $sth->rowCount() < 1){
+				return null;
 			} else {
 				return $sth->fetchAll(PDO::FETCH_CLASS, "event");
 			}
