@@ -120,7 +120,10 @@
                     "method": "GET",
                     "summary": "Get Settings",
                     "nickname": "Get Settings",
-                    "type": "Herp",
+                    "type": "array",
+                    "items": {
+                        "$ref": "setting"
+                    },
                     "parameters": [
                         {
                             "paramType": "header",
@@ -141,7 +144,7 @@
                     "method": "POST",
                     "summary": "Set Settings",
                     "nickname": "Set Settings",
-                    "type": "Herp",
+                    "type": "void",
                     "parameters": [
                         {
                             "paramType": "header",
@@ -153,9 +156,46 @@
                         {
                             "paramType": "body",
                             "name": "json",
+                            "type": "array",
+                            "required": true,
+                            "description": "New or modified settings (TBD)",
+                            "items": {
+                                "$ref": "setting"
+                            }
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/account/settings/{settingid}",
+            "description": "Settings",
+            "operations": [
+                {
+                    "method": "DELETE",
+                    "summary": "Delete Setting",
+                    "nickname": "Delete Setting",
+                    "type": "void",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
                             "type": "string",
                             "required": true,
-                            "description": "New or modified settings (TBD)"
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "path",
+                            "name": "settingid",
+                            "type": "integer",
+                            "required": true,
+                            "description": "ID of the setting that is to be removed"
                         }
                     ],
                     "responseMessages": [
@@ -169,6 +209,32 @@
         }
     ],
     "models": {
+        "setting": {
+            "id": "setting",
+            "properties": {
+                "settingid": {
+                    "description": "The settings individual ID. Used for deleting settings.",
+                    "type": "string"
+                },
+                "setting": {
+                    "description": "Setting string. Identifies what the setting relates to.",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "The value of the setting",
+                    "type": "string"
+                },
+                "clientspesific": {
+                    "description": "Whether the setting is clientspesific or not.",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "clientts",
+                "setting",
+                "value"
+            ]
+        },
         "token": {
             "id": "token",
             "properties": {

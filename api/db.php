@@ -189,5 +189,35 @@ class DB {
 			}
 		}
 	}
+	
+	function get_settings() {
+		include_once 'models/setting.php';
+		$userid = $GLOBALS['app']->userid;
+		$clientid = $GLOBALS['app']->clientid;
+
+		$db_prefix = $GLOBALS['db_prefix'];
+		$query = "SELECT
+			setting.settingid,
+			setting.setting,
+			setting.value,
+			IF(setting.ClientID IS NOT NULL, 'true', 'false') AS clientspesific
+			FROM 
+			{$db_prefix}setting AS setting
+			WHERE
+			setting.userid=:userid
+			AND (setting.ClientID = :clientid
+			OR setting.ClientID IS NULL)";
+		$inputs = array(":userid" => $userid,
+			":clientid" => $clientid);
+
+		
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> prepare($query);
+		$sth->execute($inputs);
+
+		if ($sth) {
+			return $sth->fetchAll(PDO::FETCH_CLASS, "setting");
+		}
+	}
 }
 ?>

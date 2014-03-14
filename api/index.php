@@ -72,7 +72,8 @@ $app -> group('/account', function() use ($app) {
 	 * 		method="GET",
 	 * 		nickname="Get Settings",
 	 * 		summary="Get Settings",
-	 * 		type="Herp",
+	 * 		type="array",
+	 * 		items="$ref:setting",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -99,7 +100,7 @@ $app -> group('/account', function() use ($app) {
 			}
 		}
 
-		json($settings);
+		json($app->db->get_settings());
 	});
 
 	/**
@@ -110,7 +111,7 @@ $app -> group('/account', function() use ($app) {
 	 * 		method="POST",
 	 * 		nickname="Set Settings",
 	 * 		summary="Set Settings",
-	 * 		type="Herp",
+	 * 		type="void",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -123,7 +124,8 @@ $app -> group('/account', function() use ($app) {
 	 * 			description="New or modified settings (TBD)",
 	 * 			paramType="body",
 	 * 			required=true,
-	 * 			type="string"
+	 * 			type="array",
+	 * 			items="$ref:setting"
 	 * 		),
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
@@ -153,6 +155,46 @@ $app -> group('/account', function() use ($app) {
 		}
 
 		json(array("status" => "success"));
+	});
+	
+	/**
+	 * @SWG\Api(
+	 * 	path="/account/settings/{settingid}",
+	 * 	description="Settings",
+	 * 	@SWG\Operation(
+	 * 		method="DELETE",
+	 * 		nickname="Delete Setting",
+	 * 		summary="Delete Setting",
+	 * 		type="void",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="settingid",
+	 * 			description="ID of the setting that is to be removed",
+	 * 			paramType="path",
+	 * 			required=true,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
+	$app -> post('/settings/:settingid', function($settingid) use ($app) {
+		$userid = $app->userid;
+		$db_prefix = $GLOBALS['db_prefix'];
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> prepare("DELETE FROM {$db_prefix}setting WHERE settingid=:settingid AND userid=:userid");
+		$sth->bindParam(":settingid",$settingid);
+		$sth->bindParam(":userid",$userid);
+		$sth->execute();
 	});
 
 	$app -> get('/takeout', function() use ($app) {
