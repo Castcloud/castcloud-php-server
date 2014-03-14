@@ -139,5 +139,59 @@ class DB {
 
 		return $episodes;
 	}
+	
+	function get_events($itemid, $since, $limit = null) {
+		$userid = $GLOBALS['app']->userid;
+
+		$db_prefix = $GLOBALS['db_prefix'];
+		$query = "SELECT
+			event.type,
+			event.itemid AS episodeid,
+			event.positionts,
+			event.clientts,
+			event.concurrentorder, 
+			client.name AS clientname,
+			clientauthorization.clientdescription
+			FROM 
+			{$db_prefix}event AS event,
+			{$db_prefix}clientauthorization AS clientauthorization,
+			{$db_prefix}client AS client
+			WHERE
+			event.userid=:userid 
+			AND event.UniqueClientID = clientauthorization.UniqueClientID
+			AND clientauthorization.ClientID = client.ClientID";
+		$inputs = array(":userid" => $userid);
+
+		if ($itemid != null) {
+			$query.=" AND event.itemid=:itemid";
+			$inputs[":itemid"] = $itemid;
+		}
+		if ($since != null) {
+			$query.=" AND event.receivedts >= :since";
+			$inputs[":since"] = $since;
+		}
+
+		$query.= " ORDER BY
+			event.clientts DESC,
+			event.concurrentorder DESC";
+		
+		if ($limit != null) {
+			$query.=" LIMIT :limit";
+			$inputs[":limit"] = $limit;
+		}
+		
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> prepare($query);
+		$sth->execute($inputs);
+
+		if ($sth) {
+			if ($limit == "1" && $sth->rowCount() == "1"){
+				$events = $sth->fetchAll(PDO::FETCH_CLASS, "event");
+				return $events[0];
+			} else {
+				return $sth->fetchAll(PDO::FETCH_CLASS, "event");
+			}
+		}
+	}
 }
 ?>

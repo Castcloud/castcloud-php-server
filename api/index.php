@@ -433,12 +433,12 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/events', function() use ($app) {
-		include 'models/eventsresult.php';
-
+		include_once 'models/eventsresult.php';
+		
 		$itemid = $app->request->params('ItemID');
 		$since = $app->request->params('since');
 
-		json(new eventsresult($app->userid, $itemid, $since));
+		json(new eventsresult($app->db->get_events($itemid, $since)));
 	});
 
 	/**
