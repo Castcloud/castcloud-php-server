@@ -36,7 +36,7 @@
                     "method": "POST",
                     "summary": "Get users subcriptions",
                     "nickname": "Get users subcriptions",
-                    "type": "Herp",
+                    "type": "void",
                     "parameters": [
                         {
                             "paramType": "header",
@@ -74,7 +74,7 @@
             "description": "Get users subcriptions",
             "operations": [
                 {
-                    "method": "PUT",
+                    "method": "POST",
                     "summary": "Get users subcriptions",
                     "nickname": "Get users subcriptions",
                     "type": "void",
@@ -111,10 +111,7 @@
                     "method": "DELETE",
                     "summary": "Unsubscribe from a cast",
                     "nickname": "Unsubscribe from a cast",
-                    "type": "array",
-                    "items": {
-                        "$ref": "episode"
-                    },
+                    "type": "void",
                     "parameters": [
                         {
                             "paramType": "header",
@@ -148,7 +145,10 @@
                     "method": "GET",
                     "summary": "Get users subcriptions for spesific tag",
                     "nickname": "Get users subcriptions for spesific tag",
-                    "type": "Herp",
+                    "type": "array",
+                    "items": {
+                        "$ref": "cast"
+                    },
                     "parameters": [
                         {
                             "paramType": "header",
@@ -334,7 +334,10 @@
                     "method": "GET",
                     "summary": "Get users tags",
                     "nickname": "Get users tags",
-                    "type": "Herp",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
                     "parameters": [
                         {
                             "paramType": "header",

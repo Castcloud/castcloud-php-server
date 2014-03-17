@@ -314,7 +314,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="POST",
 	 * 		nickname="Get users subcriptions",
 	 * 		summary="Get users subcriptions",
-	 * 		type="Herp",
+	 * 		type="void",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -366,7 +366,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	path="/library/casts/{id}",
 	 * 	description="Get users subcriptions",
 	 * 	@SWG\Operation(
-	 * 		method="PUT",
+	 * 		method="POST",
 	 * 		nickname="Get users subcriptions",
 	 * 		summary="Get users subcriptions",
 	 * 		type="void",
@@ -391,7 +391,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> put('/casts/:id', function($id) use ($app) {
+	$app -> post('/casts/:id', function($id) use ($app) {
 		$tags = $app -> request -> params('tags');
 
 		$userid = $app -> userid;
@@ -418,8 +418,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="DELETE",
 	 * 		nickname="Unsubscribe from a cast",
 	 * 		summary="Unsubscribe from a cast",
-     * 		type="array",
-     * 		items="$ref:episode",
+     * 		type="void",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -455,7 +454,8 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="GET",
 	 * 		nickname="Get users subcriptions for spesific tag",
 	 * 		summary="Get users subcriptions for spesific tag",
-	 * 		type="Herp",
+	 * 		type="array",
+	 * 		items="$ref:cast",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
@@ -582,7 +582,8 @@ $app -> group('/library', function() use ($app) {
 	 * 		method="GET",
 	 * 		nickname="Get users tags",
 	 * 		summary="Get users tags",
-	 * 		type="Herp",
+	 * 		type="array",
+	 * 		@SWG\Items("string"),
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
 	 * 			description="clients login token",
