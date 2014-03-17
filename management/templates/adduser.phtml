@@ -1,0 +1,57 @@
+<?php 
+include('header.phtml');
+include('nav.phtml');
+?>
+<div class="row">
+<div class="small-12 medium-6 medium-offset-3 columns">
+	<form id="adduser-form" action="adduser" method="POST">
+		<fieldset>
+			<?php if (isset($_SESSION['slim.flash']['adduser'])):?>
+			<span class="label"><?= $_SESSION['slim.flash']['adduser'] ?></span> 
+			<?php endif ?>
+
+			<?php if (isset($_SESSION['slim.flash']['error'])):?>
+			<span class="label"><?= $_SESSION['slim.flash']['error'] ?></span> 
+			<?php endif ?>
+			<legend>Add user</legend>
+			<div class="small-12">
+				<div class="row">
+					<div class="small-3 columns">
+						<label for="right-label" class="right inline">Username</label>
+					</div>
+					<div class="small-9 columns">
+						<input type="text" name="username">
+					</div>
+				</div>
+				<div class="row">
+					<div class="small-3 columns">
+						<label for="right-label" class="right inline">Name</label>
+					</div>
+					<div class="small-9 columns">
+					<input type="text" name="name">
+					</div>
+				</div>
+				<div class="row">
+					<div class="small-3 columns">
+						<label for="right-label" class="right inline">Mail</label>
+					</div>
+					<div class="small-9 columns">
+					<input type="email" name="mail">
+					</div>
+				</div>
+				<div class="row">
+					<div class="small-3 columns">
+						<label for="right-label" class="right inline">Password</label>
+					</div>
+					<div class="small-9 columns">
+						<input type="password" name="password">
+					</div>
+				</div>
+		</fieldset>
+		<input type="submit" class="button" value="Adduser"> 
+	</form>
+</div>
+</div>
+<?php 
+include('footer.phtml'); 
+?>
