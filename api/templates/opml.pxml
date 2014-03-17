@@ -1,0 +1,25 @@
+<?php echo '<?xml version="1.0" encoding="UTF-8"?>';?>
+<opml version="1.1">
+	<head>
+		<title><?php echo $opml->title; ?></title>
+		<dateCreated><?php echo $opml->dateCreated; ?></dateCreated>
+		<dateModified><?php echo $opml->dateCreated; ?></dateModified>
+		<ownerName><?php echo $opml->ownerName; ?></ownerName> 
+		<ownerEmail><?php echo $opml->ownerEmail; ?></ownerEmail>
+	</head>
+	<body>
+	<?php foreach ($opml->tags as $tag){ ?>
+		<outline text="<?php echo $tag->title; ?>">
+		<?php foreach ($tag->casts as $cast){ ?>
+			<outline
+				type="rss"
+				title="<?php echo $cast->title; ?>"
+				text="<?php echo $cast->title; ?>"
+				xmlUrl="<?php echo $cast->url; ?>"
+				description="<?php echo $cast->description; ?>"
+			/>
+		<?php } ?>
+		</outline>
+	<?php } ?>
+	</body>
+</opml>
