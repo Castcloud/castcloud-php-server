@@ -84,6 +84,29 @@ $app->get('/edit/:username', function($username) use($app) {
 
 });
 
+$app->get('/adduser', function() use($app) {
+	include 'templates/adduser.phtml';
+});
+
+$app->post('/adduser', function() use($app) {
+	if(($username = $app->request->params("username")) && 
+	   ($name = $app->request->params("name")) && 
+	   ($mail = $app->request->params("mail")) && 
+	   ($password = $app->request->params("password")) && 
+	   ($salt = base64_encode(random_bytes(16))) ){
+		   $dbh = $GLOBALS['dbh'];
+			$userlevel = 0;
+		$db_prefix = $GLOBALS['db_prefix'];
+		$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password, salt) VALUES (:userlevel, :username, :name, :mail, :password, :salt)");
+		$values = array(':userlevel'=>$userlevel, ':username'=>$username, ':name'=>$name,':mail'=>$mail,':password'=>$password, ':salt'=>$salt);
+		if ($stmt->execute($values)){
+			$app->flash('message', "Added User");
+			$app->response->redirect($_SERVER['HTTP_REFERER']);
+		}
+
+	   }
+});
+
 $app->post('/edit/:username', function($username) use($app) {
 	$username = $_SESSION['username'];
 	if($userlevel = $app->request->params("userlevel")){
@@ -110,6 +133,7 @@ $app->post('/edit/:username', function($username) use($app) {
 		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET Password=md5('$password$salt') WHERE username='$username'");
 
 	}
+	$app->response->redirect($_SERVER['HTTP_REFERER']);
 
 });
 
