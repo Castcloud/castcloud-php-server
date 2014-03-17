@@ -90,21 +90,27 @@ $app->get('/adduser', function() use($app) {
 
 $app->post('/adduser', function() use($app) {
 	if(($username = $app->request->params("username")) && 
-	   ($name = $app->request->params("name")) && 
-	   ($mail = $app->request->params("mail")) && 
-	   ($password = $app->request->params("password")) && 
-	   ($salt = base64_encode(random_bytes(16))) ){
-		   $dbh = $GLOBALS['dbh'];
+		($name = $app->request->params("name")) && 
+		($mail = $app->request->params("mail")) && 
+		($password = $app->request->params("password")) && 
+		($salt = base64_encode(random_bytes(16))) ){
+			$dbh = $GLOBALS['dbh'];
 			$userlevel = 0;
-		$db_prefix = $GLOBALS['db_prefix'];
-		$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password, salt) VALUES (:userlevel, :username, :name, :mail, :password, :salt)");
-		$values = array(':userlevel'=>$userlevel, ':username'=>$username, ':name'=>$name,':mail'=>$mail,':password'=>$password, ':salt'=>$salt);
-		if ($stmt->execute($values)){
-			$app->flash('message', "Added User");
-			$app->response->redirect($_SERVER['HTTP_REFERER']);
-		}
+			$db_prefix = $GLOBALS['db_prefix'];
+			$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password, salt) VALUES (:userlevel, :username, :name, :mail, :password, :salt)");
+			$values = array(':userlevel'=>$userlevel, ':username'=>$username, ':name'=>$name,':mail'=>$mail,':password'=>$password, ':salt'=>$salt);
+			if ($stmt->execute($values)){
+				$app->flash('adduser', "Added User");
+				$app->response->redirect($_SERVER['HTTP_REFERER']);
+			} else {
+				$app->flash('error', "Username taken");
+				$app->response->redirect($_SERVER['HTTP_REFERER']);
+			}
+		} else {
+		$app->flash('error', "Please insert into all fields");
+		$app->response->redirect($_SERVER['HTTP_REFERER']);
+	}
 
-	   }
 });
 
 $app->post('/edit/:username', function($username) use($app) {
