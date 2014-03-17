@@ -1,9 +1,13 @@
 <?php
 /**
- * @SWG\Model(id="cast",required="setting, value, clientts")
+ * @SWG\Model(id="cast",required="id, url, tags, feed")
  */
 class cast
 {
+    function __construct() {
+        $this->tags = explode(',', $this->tags);
+    }
+	
     /**
      * @SWG\Property(name="id",type="integer",format="int64",description="The casts individual ID")
      */
@@ -23,5 +27,4 @@ class cast
      * @SWG\Property(name="feed",type="array",description="All feed related data from the feed")
      */
     public $feed;
-
 }

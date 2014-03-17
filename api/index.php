@@ -363,7 +363,7 @@ $app -> group('/library', function() use ($app) {
 	
 	/**
 	 * @SWG\Api(
-	 * 	path="/library/casts/:id",
+	 * 	path="/library/casts/{id}",
 	 * 	description="Get users subcriptions",
 	 * 	@SWG\Operation(
 	 * 		method="PUT",

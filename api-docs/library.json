@@ -70,7 +70,7 @@
             ]
         },
         {
-            "path": "/library/casts/:id",
+            "path": "/library/casts/{id}",
             "description": "Get users subcriptions",
             "operations": [
                 {
@@ -472,9 +472,10 @@
                 }
             },
             "required": [
-                "clientts",
-                "setting",
-                "value"
+                "feed",
+                "id",
+                "tags",
+                "url"
             ]
         }
     },
