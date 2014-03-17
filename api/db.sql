@@ -87,12 +87,13 @@ CREATE TABLE IF NOT EXISTS `prefix_subscription` (
 CREATE TABLE IF NOT EXISTS `prefix_users` (
   `UserID` int(11) NOT NULL AUTO_INCREMENT,
   `UserLevel` int(11) NOT NULL,
-  `Username` text NOT NULL,
+  `Username` varchar(255) NOT NULL,
   `Name` text,
   `Mail` text NOT NULL,
   `Password` text NOT NULL,
   `Salt` text NOT NULL,
-  PRIMARY KEY (`UserID`)
+  PRIMARY KEY (`UserID`),
+  CONSTRAINT prefix_users UNIQUE (Username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 ALTER TABLE `prefix_clientauthorization`

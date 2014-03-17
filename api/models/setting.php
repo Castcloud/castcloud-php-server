@@ -4,6 +4,10 @@
  */
 class setting
 {
+    function __construct() {
+        $this->clientspesific = (bool)$this->clientspesific; // ;)
+    }
+	
     /**
      * @SWG\Property(name="settingid",type="string",description="The settings individual ID. Used for deleting settings.")
      */
@@ -23,9 +27,4 @@ class setting
      * @SWG\Property(name="clientspesific",type="boolean",description="Whether the setting is clientspesific or not.")
      */
     public $clientspesific;
-
-    function __construct() {
-        $this->clientspesific = (bool)$this->clientspesific; // ;)
-    }
-
 }

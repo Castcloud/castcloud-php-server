@@ -5,6 +5,44 @@ class DB {
 	function __construct($dbh) {
 		$this->dbh = $dbh;
 	}
+	
+	function get_casts($tag = null) {
+		include_once 'models/cast.php';
+		$userid = $GLOBALS['app']->userid;
+
+		$db_prefix = $GLOBALS['db_prefix'];
+		$query = "SELECT
+			cast.FeedID AS id,
+			cast.url,
+			subs.tags
+			FROM 
+			{$db_prefix}feed AS cast,
+			{$db_prefix}subscription AS subs
+			WHERE
+			subs.userid=:userid 
+			AND subs.FeedID = cast.FeedID";
+		$inputs = array(":userid" => $userid);
+
+		if ($tag != null) {
+			$query.=" AND find_in_set(binary ':tag', Tags)";
+			$inputs[":tag"] = $tag;
+		}
+		
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> prepare($query);
+		$sth->execute($inputs);
+
+		if (!$sth){
+			exit;
+		}
+		$casts = $sth->fetchAll(PDO::FETCH_CLASS, "cast");
+		
+		foreach ($casts as &$cast) {
+			$cast->feed = $this->get_cast($cast->id);
+		}
+		
+		return $casts;
+	}
 
 	function get_cast($feedid) {
 		$db_prefix = $GLOBALS['db_prefix'];
@@ -37,35 +75,6 @@ class DB {
 		}
 
 		return $cast;
-	}
-
-	function get_casts($tag = null) {
-		$casts = array();
-		$app = $GLOBALS['app'];
-		$db_prefix = $GLOBALS['db_prefix'];
-
-		if ($tag == null) {
-			$sth = $this->dbh->query("SELECT * FROM {$db_prefix}subscription WHERE userid=$app->userid");
-		}
-		else {
-			$sth = $this->dbh->query("SELECT * FROM {$db_prefix}subscription WHERE find_in_set(binary '$tag', Tags) AND UserID=$app->userid");
-		}
-		if ($sth) {
-			foreach ($sth as $row) {
-				$feedid = $row['FeedID'];
-				$tags = explode(',', $row['Tags']);
-
-				$sth = $this->dbh->query("SELECT * FROM {$db_prefix}feed WHERE feedid=$feedid");
-				if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-					array_push($casts, array_merge(array("castcloud" => array(
-						"id" => $feedid, 
-						"url" => $result['URL'], 
-						"tags" => $tags)), $this->get_cast($feedid)));
-				}
-			}
-		}
-
-		return $casts;
 	}
 
 	function get_episodes($feedid, $since = null) {
