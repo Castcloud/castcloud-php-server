@@ -9,7 +9,16 @@ class AuthMiddleware extends \Slim\Middleware {
 			else {
 				if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
 					$token = $_SERVER['HTTP_AUTHORIZATION'];
-					$sth = $GLOBALS['dbh']->query("SELECT * FROM {$db_prefix}clientauthorization WHERE token='$token'");
+					$sth = $GLOBALS['dbh']->query("SELECT
+						auth.*,
+						users.Username,
+						users.Mail
+						FROM
+						{$db_prefix}clientauthorization AS auth,
+						{$db_prefix}users AS users
+						WHERE
+						token='$token'
+						AND auth.UserID = users.UserID");
 					if ($sth && $sth->rowCount() < 1) {
 						$this -> app -> halt(400, 'Bad token');
 					} else {
@@ -18,8 +27,8 @@ class AuthMiddleware extends \Slim\Middleware {
 
 						$this->app->userid = $result['UserID'];
 						$this->app->clientid = $result['ClientID'];
-						//$this->app->username = $result['Username'];
-						//$this->app->mailaddress = $result['Mail'];
+						$this->app->username = $result['Username'];
+						$this->app->mailaddress = $result['Mail'];
 						$this->app->uniqueclientid = $result['UniqueClientID'];
 						$this->app->clientdescription = $result['ClientDescription'];
 
