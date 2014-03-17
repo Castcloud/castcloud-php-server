@@ -366,7 +366,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	path="/library/casts/{id}",
 	 * 	description="Get users subcriptions",
 	 * 	@SWG\Operation(
-	 * 		method="PUT",
+	 * 		method="POST",
 	 * 		nickname="Get users subcriptions",
 	 * 		summary="Get users subcriptions",
 	 * 		type="void",
@@ -391,7 +391,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> put('/casts/:id', function($id) use ($app) {
+	$app -> post('/casts/:id', function($id) use ($app) {
 		$tags = $app -> request -> params('tags');
 
 		$userid = $app -> userid;
