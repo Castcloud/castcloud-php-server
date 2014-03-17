@@ -12,6 +12,11 @@ function json($json) {
 	echo json_encode($json);
 }
 
+function opml($opml) {
+	$GLOBALS['app']->response->header('Content-Type', 'text/x-opml');
+	include 'templates/opml.pxml';
+}
+
 function startsWith($haystack, $needle)
 {
     return $needle === "" || strpos($haystack, $needle) === 0;

@@ -18,6 +18,8 @@ class AuthMiddleware extends \Slim\Middleware {
 
 						$this->app->userid = $result['UserID'];
 						$this->app->clientid = $result['ClientID'];
+						//$this->app->username = $result['Username'];
+						//$this->app->mailaddress = $result['Mail'];
 						$this->app->uniqueclientid = $result['UniqueClientID'];
 						$this->app->clientdescription = $result['ClientDescription'];
 

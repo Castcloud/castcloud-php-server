@@ -299,7 +299,7 @@ $app -> group('/library', function() use ($app) {
 	});
 
 	$app->get('/casts.opml', function() use($app) {
-		json(array("Not" => "Implemented"));
+		opml($app->db->get_opml());
 	});
 	
 	$app -> post('/casts.opml', function() use ($app) {

@@ -228,5 +228,34 @@ class DB {
 			return $sth->fetchAll(PDO::FETCH_CLASS, "setting");
 		}
 	}
+	
+	function get_opml(){
+		include_once 'models/opml.php';
+		$app = $GLOBALS['app'];
+		$casts = $this->get_casts();
+		$opml = new opml();
+		$tags = array();
+		$opml->title = "Castcloud opml export";
+		$opml->dateCreated = date(r, time());
+		$opml->ownerName = $app->username;
+		$opml->ownerEmail = $app->mailaddress;
+		foreach ($casts as &$cast){
+			if(empty($cast->tags)){
+				$cast->tags = array("Untagged");
+			}
+			$tags = array_merge($tags, $cast->tags);
+		}
+		$tags = array_unique($tags);
+		foreach ($tags as $tagName) {
+			$opmltag = &$opml->tags[];
+			$opmltag["title"] = $tagName;
+			foreach ($casts as $cast) {
+				$opmlcast = &$tag->casts[];
+				$opmlcast;
+				
+			}
+		}
+		
+	}
 }
 ?>
