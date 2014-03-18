@@ -76,9 +76,11 @@ CREATE TABLE IF NOT EXISTS `prefix_setting` (
 
 CREATE TABLE IF NOT EXISTS `prefix_subscription` (
   `SubscriptionID` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` text NOT NULL,
   `FeedID` int(11) NOT NULL,
   `UserID` int(11) NOT NULL,
-  `Tags` text NOT NULL,
+  `Tags` text NULL,
+  `Arrangement` int(11) NULL,
   PRIMARY KEY (`SubscriptionID`),
   KEY `FeedID` (`FeedID`),
   KEY `UserID` (`UserID`)

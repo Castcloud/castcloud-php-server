@@ -13,8 +13,10 @@ class DB {
 		$db_prefix = $GLOBALS['db_prefix'];
 		$query = "SELECT
 			cast.FeedID AS id,
+			subs.name,
 			cast.url,
-			subs.tags
+			subs.tags,
+			subs.arrangement
 			FROM 
 			{$db_prefix}feed AS cast,
 			{$db_prefix}subscription AS subs

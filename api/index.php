@@ -330,11 +330,25 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
+	 * 			name="name",
+	 * 			description="The displayname for the cast",
+	 * 			paramType="form",
+	 * 			required=false,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
 	 * 			name="tags",
 	 * 			description="Comma separated tags",
 	 * 			paramType="form",
 	 * 			required=false,
 	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="arrangement",
+	 * 			description="Integer describing where in the list the cast is to be located",
+	 * 			paramType="form",
+	 * 			required=false,
+	 * 			type="integer"
 	 * 		),
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
@@ -345,18 +359,42 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
+		$name = $app -> request -> params('name');
 		$tags = $app -> request -> params('tags');
+		$arrangement = $app -> request -> params('arrangement');
+		$userid = $app -> userid;
 		
 		$feedid = crawl($feedurl);
 		
-		$userid = $app -> userid;
-
+		if ($name == null){
+			$castinfo = $app->db->get_cast($feedid);
+			if (array_key_exists("title",$castinfo)){
+				$name = $castinfo["title"];
+			} else {
+				$name = $feedurl;
+			}
+		}
+		
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE feedid=$feedid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
-			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (feedid, tags, userid) VALUES($feedid, :tags, $userid)");
+			if($arrangement != null){
+				//SET id = 101 WHERE id = 80; SET id = id + 1 WHERE id BETWEEN 20 AND 79; SET id = 20 WHERE id = 101;
+				$sth = $dbh -> prepare("UPDATE {$db_prefix}subscription
+					SET arrangement = arrangement + 1 
+					WHERE arrangement >= :arrangement
+					AND userid=:userid
+					AND arrangement IS NOT NULL");
+				$sth -> bindParam(":arrangement",$arrangement);
+				$sth -> bindParam(":userid",$userid);
+				$sth -> execute();
+			}
+			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (feedid, name, tags, arrangement, userid) 
+			VALUES($feedid, :name, :tags, :arrangement, $userid)");
+			$sth -> bindParam(":name",$name);
 			$sth -> bindParam(":tags",$tags);
+			$sth -> bindParam(":arrangement",$arrangement);
 			$sth -> execute();
 		}
 	});
