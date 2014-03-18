@@ -54,10 +54,24 @@
                         },
                         {
                             "paramType": "form",
+                            "name": "name",
+                            "type": "string",
+                            "required": false,
+                            "description": "The displayname for the cast"
+                        },
+                        {
+                            "paramType": "form",
                             "name": "tags",
                             "type": "string",
                             "required": false,
                             "description": "Comma separated tags"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "arrangement",
+                            "type": "integer",
+                            "required": false,
+                            "description": "Integer describing where in the list the cast is to be located"
                         }
                     ],
                     "responseMessages": [
@@ -458,6 +472,10 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "name": {
+                    "description": "The casts display name",
+                    "type": "string"
+                },
                 "url": {
                     "description": "The casts url",
                     "type": "string"
@@ -469,6 +487,11 @@
                         "type": "string"
                     }
                 },
+                "arrangement": {
+                    "description": "The casts sorting arrangement",
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "feed": {
                     "description": "All feed related data from the feed",
                     "type": "array"
@@ -477,7 +500,7 @@
             "required": [
                 "feed",
                 "id",
-                "tags",
+                "name",
                 "url"
             ]
         }
