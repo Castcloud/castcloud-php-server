@@ -60,7 +60,7 @@ $app -> group('/account', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/ping', function() use ($app) { });
+	$app -> get('/ping', function() {});
 
 	/**
 	 * @SWG\Api(
