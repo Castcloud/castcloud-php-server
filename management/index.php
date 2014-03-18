@@ -113,7 +113,7 @@ $app->post('/adduser', function() use($app) {
 
 $app->post('/edit/:username', function($username) use($app) {
 	
-	if($userlevel = $app->request->params("userlevel")){
+	if(($userlevel = $app->request->params("userlevel")) != null) {
 		$db_prefix = $GLOBALS['db_prefix'];
 		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET UserLevel='$userlevel' WHERE Username='$username'");
 	}	
