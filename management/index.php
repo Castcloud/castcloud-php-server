@@ -67,8 +67,6 @@ $app->post('/login', function() use($app) {
 });
 
 $app->get('/edit/:username', function($username) use($app) {
-
-	$username = $_SESSION['username'];
 	$db_prefix = $GLOBALS['db_prefix'];
 	$dbh = $GLOBALS['dbh'];
 	$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
@@ -98,7 +96,7 @@ $app->post('/adduser', function() use($app) {
 			$userlevel = 0;
 			$db_prefix = $GLOBALS['db_prefix'];
 			$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password, salt) VALUES (:userlevel, :username, :name, :mail, :password, :salt)");
-			$values = array(':userlevel'=>$userlevel, ':username'=>$username, ':name'=>$name,':mail'=>$mail,':password'=>$password, ':salt'=>$salt);
+			$values = array(':userlevel'=>$userlevel, ':username'=>$username, ':name'=>$name,':mail'=>$mail,':password'=>md5($password.$salt), ':salt'=>$salt);
 			if ($stmt->execute($values)){
 				$app->flash('adduser', "Added User");
 				$app->response->redirect($_SERVER['HTTP_REFERER']);
@@ -114,10 +112,10 @@ $app->post('/adduser', function() use($app) {
 });
 
 $app->post('/edit/:username', function($username) use($app) {
-	$username = $_SESSION['username'];
+	
 	if($userlevel = $app->request->params("userlevel")){
-		$db_prefix = $globals['db_prefix'];
-		$globals['dbh']->exec("update {$db_prefix}users set userlevel=$userlevel where username='$username'");
+		$db_prefix = $GLOBALS['db_prefix'];
+		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET UserLevel='$userlevel' WHERE Username='$username'");
 	}	
 	if($name = $app->request->params("name")){
 		$db_prefix = $GLOBALS['db_prefix'];
@@ -137,6 +135,7 @@ $app->post('/edit/:username', function($username) use($app) {
 			}
 		}
 		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET Password=md5('$password$salt') WHERE username='$username'");
+
 
 	}
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
