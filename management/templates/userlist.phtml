@@ -29,9 +29,7 @@ include('nav.phtml');
       			</td>
 <?php } ?>
       			<td>
-<?php if ($_SESSION['username'] == $value["username"]){ ?>
-      				<a href="manageclients" class="button">Clients</a>
-<?php } ?>
+	<a href="clients/<?= $value['username']?>" class="button">Clients</a>
       			</td>
       			<td>
 <?php if ($_SESSION['username'] == $value["username"]){ ?>
