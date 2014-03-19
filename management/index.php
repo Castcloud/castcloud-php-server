@@ -26,9 +26,9 @@ $app->get('/', function() {
 
 		$db_prefix = $GLOBALS['db_prefix'];
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
+		$sth = $dbh->prepare("SELECT * FROM {$db_prefix}users WHERE username = ?");
 
-		if ($sth) {
+		if ($sth->execute(array($username))) {
 			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 				$usernames = array(array("username" => $username));
 				$userlevel = $result['UserLevel'];
@@ -51,8 +51,8 @@ $app->post('/login', function() use($app) {
 
 	$dbh = $GLOBALS['dbh'];
 	$db_prefix = $GLOBALS['db_prefix'];
-	$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
-	if ($sth) {
+	$sth = $dbh->prepare("SELECT * FROM {$db_prefix}users WHERE username = ?");
+	if ($sth->execute(array($username))) {
 		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 			$userid = $result['UserID'];
 			$salt = $result['Salt'];
@@ -69,16 +69,42 @@ $app->post('/login', function() use($app) {
 $app->get('/edit/:username', function($username) use($app) {
 	$db_prefix = $GLOBALS['db_prefix'];
 	$dbh = $GLOBALS['dbh'];
-	$sth = $dbh -> query("SELECT * FROM {$db_prefix}users WHERE username='$username'");
-
-	if ($sth) {
+	$sth = $dbh->prepare("SELECT * FROM {$db_prefix}users WHERE username = ?");
+	if ($sth->execute(array($username))) {
 		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 			$name = $result['Name'];
 			$mail = $result['Mail'];
 		}
 	}
 	include 'templates/useredit.phtml';
+});
 
+$app->post('/edit/:username', function($username) use($app) {
+	$db_prefix = $GLOBALS['db_prefix'];
+	$dbh = $GLOBALS['dbh'];
+	if(($userlevel = $app->request->params("userlevel")) != null) {
+		$sth = $dbh->prepare("UPDATE {$db_prefix}users SET UserLevel = :userlevel WHERE Username = :username");
+		$sth->execute(array(':userlevel'=>$userlevel, ':username'=>$username));
+	}	
+	if($name = $app->request->params("name")){
+		$sth = $dbh->prepare("UPDATE {$db_prefix}users SET Name = :name WHERE Username = :username");
+		$sth->execute(array(':name'=>$name, ':username'=>$username));
+	}
+	if($mail = $app->request->params("mail")){
+		$sth = $dbh->prepare("UPDATE {$db_prefix}users SET Mail = :mail WHERE Username = :username");
+		$sth->execute(array(':mail'=>$mail, ':username'=>$username));
+	}
+	if($password = $app->request->params("password")){
+		$sth = $dbh->prepare("SELECT salt FROM {$db_prefix}users WHERE username = ?");
+		if ($sth->execute(array($username))) {
+			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
+				$salt = $result['salt'];
+			}
+		}
+		$sth = $dbh->prepare("UPDATE {$db_prefix}users SET Password = :password WHERE Username = :username");
+		$sth->execute(array(':password'=>md5($password.$salt), ':username'=>$username));
+	}
+	$app->response->redirect($_SERVER['HTTP_REFERER']);
 
 });
 
@@ -105,42 +131,12 @@ $app->post('/adduser', function() use($app) {
 				$app->response->redirect($_SERVER['HTTP_REFERER']);
 			}
 		} else {
-		$app->flash('error', "Please insert into all fields");
-		$app->response->redirect($_SERVER['HTTP_REFERER']);
-	}
-
-});
-
-$app->post('/edit/:username', function($username) use($app) {
-	
-	if(($userlevel = $app->request->params("userlevel")) != null) {
-		$db_prefix = $GLOBALS['db_prefix'];
-		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET UserLevel='$userlevel' WHERE Username='$username'");
-	}	
-	if($name = $app->request->params("name")){
-		$db_prefix = $GLOBALS['db_prefix'];
-		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET Name='$name' WHERE username='$username'");
-	}
-	if($mail = $app->request->params("mail")){
-		$db_prefix = $GLOBALS['db_prefix'];
-		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET Mail='$mail' WHERE username='$username'");
-	}
-	if($password = $app->request->params("password")){
-		$db_prefix = $GLOBALS['db_prefix'];
-		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> query("SELECT salt FROM {$db_prefix}users WHERE username='$username'");
-		if ($sth) {
-			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
-				$salt = $result['salt'];
-			}
+			$app->flash('error', "Please insert into all fields");
+			$app->response->redirect($_SERVER['HTTP_REFERER']);
 		}
-		$GLOBALS['dbh']->exec("UPDATE {$db_prefix}users SET Password=md5('$password$salt') WHERE username='$username'");
-
-
-	}
-	$app->response->redirect($_SERVER['HTTP_REFERER']);
 
 });
+
 
 $app->post('/logout', function() use($app) {
 	session_destroy();
@@ -177,8 +173,9 @@ $app->post('/install', function() use($app) {
 	$password = $app->request->params("cc_password");
 	$salt = base64_encode(random_bytes(16));
 
-	$dbh->exec("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password, salt) VALUES(100, '$username', '', '', md5('$password$salt'), '$salt')");
-
+	$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password, salt) VALUES (:userlevel, :username, :name, :mail, :password, :salt)");
+	$stmt->execute(array(':userlevel'=>100, ':username'=>$username, ':name'=>"",':mail'=>"",':password'=>md5($password.$salt), ':salt'=>$salt));
+	
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
 });
 
