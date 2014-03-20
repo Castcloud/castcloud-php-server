@@ -232,17 +232,17 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/newepisodes', function() use ($app) {
 		include_once 'models/newepisodesresult.php';
-		json(new newepisodesresult($app->db->get_new_episodes($app->request->params('since'))));
+		json(new newepisodesresult($app->db->get_episodes(null, null, "70", $app->request->params('since'))));
 	});
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/library/episodes/{castid}",
+	 * 	path="/library/episodes/cast/{id}",
 	 * 	description="Get all episodes of a cast",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
-	 * 		nickname="Get all episodes",
-	 * 		summary="Get all episodes",
+	 * 		nickname="Get all episodes of a cast",
+	 * 		summary="Get all episodes of a cast",
      * 		type="array",
      * 		items="$ref:episode",
 	 * 		@SWG\Parameter(
@@ -253,10 +253,17 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="castid",
-	 * 			description="The casts castid",
+	 * 			name="id",
+	 * 			description="The casts id",
 	 * 			paramType="path",
 	 * 			required=true,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="exclude",
+	 * 			description="Comma separated event ids to exclude. Default: 70",
+	 * 			paramType="form",
+	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
 	 * 		@SWG\ResponseMessage(
@@ -266,8 +273,60 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/episodes/:castid', function($castid) use ($app) {
-		json($app->db->get_episodes($castid));
+	$app -> get('/episodes/cast/:id', function($id) use ($app) {
+		$exclude = $app -> request -> params('exclude');
+		if ($exclude == null){
+			$exclude = "70";
+		}
+		
+		json($app->db->get_episodes($id, null, $exclude));
+	});
+	
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/episodes/tag/{tag}",
+	 * 	description="Get all episodes of a tag",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get episodes for tag",
+	 * 		summary="Get episodes for tag",
+     * 		type="array",
+     * 		items="$ref:episode",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="tag",
+	 * 			description="The tag",
+	 * 			paramType="path",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="exclude",
+	 * 			description="Comma separated event ids to exclude. Default: 70",
+	 * 			paramType="form",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
+	$app -> get('/episodes/tag/:tag', function($tag) use ($app) {
+		$exclude = $app -> request -> params('exclude');
+		if ($exclude != null){
+			json($app->db->get_episodes(null, $tag, $exclude));
+		} else {
+			json($app->db->get_episodes(null, $tag));
+		}
 	});
 
 	/**

@@ -79,21 +79,69 @@ class DB {
 		return $cast;
 	}
 
-	function get_episodes($feedid, $since = null) {
+	function get_episodes($castid, $tag, $exclude = "70", $since = null) {
 		include_once 'models/episode.php';
+		
+		$userid = $GLOBALS['app']->userid;
+		
+		// explode and clear " " and ""
+		$exclude = explode(',', $exclude);
+		$exclude = array_map('trim', $exclude);
+		$exclude = array_diff($exclude, array(''));
+		$inputs = array();
+		
+		$db_prefix = $GLOBALS['db_prefix'];
+		$query = "SELECT
+			feed.FeedID,
+			feed.Location,
+			feed.ItemID,
+			feed.Content
+			FROM
+			{$db_prefix}feedcontent AS feed
+			LEFT JOIN 
+				{$db_prefix}event AS event
+				ON feed.ItemID = event.ItemID";
+		if (!empty($exclude)){
+			$query .= " AND (";
+			for ($i = 0; $i < count($exclude); $i++) {
+				if ($i != 0){
+					$query .= " OR";
+				}
+				$query .= " event.TYPE = :exclude" . $i;
+				$inputs[":exclude" . $i] = $exclude[$i];
+			} 
+			$query .= " )";
+		}
+		$query .= " AND event.UserID = :userid
+			LEFT JOIN 
+				{$db_prefix}subscription AS subs
+				ON subs.FeedID = feed.FeedID
+			WHERE
+			event.ItemID IS NULL";
+		$inputs[":userid"] = $userid;
+		
+		if ($tag != null){
+			$query.= " AND find_in_set(binary :tag, subs.Tags)";
+			$inputs[":tag"] = $tag;
+		}
 
+		if ($since != null) {
+			$query.=" AND feed.crawlts > :since";
+			$inputs[":since"] = $since;
+		}
+
+		if ($castid != null) {
+			$query.=" AND feed.FeedID = :castid";
+			$inputs[":castid"] = $castid;
+		}
+		
+		$sth = $this->dbh->prepare($query);
+		$sth->execute($inputs);
+		
 		$episodes = array();
-		$itemid = null;	
+		$itemid = null;
 		$previtemid = null;
 		$i = -1;
-
-		$db_prefix = $GLOBALS['db_prefix'];
-		if ($since == null) {
-			$sth = $this->dbh->query("SELECT * FROM {$db_prefix}feedcontent WHERE feedid=$feedid");
-		}
-		else {
-			$sth = $this->dbh->query("SELECT * FROM {$db_prefix}feedcontent WHERE feedid=$feedid AND crawlts > $since");
-		}
 		if ($result = $sth->fetchAll()) {
 			foreach ($result as $row) {
 				$itemid = $row['ItemID'];
@@ -103,7 +151,7 @@ class DB {
 
 				if (startsWith($row['Location'], "channel/item")) {
 					if (!isset($episodes[$i])) {
-						$episodes[$i] = new episode($itemid, $feedid, null, array());
+						$episodes[$i] = new episode($itemid, $castid, null, array());
 						$episodes[$i]->lastevent = $this->get_events($itemid, null, 1);
 					}
 
@@ -127,7 +175,7 @@ class DB {
 		return $episodes;
 	}
 
-	function get_new_episodes($since) {
+	/*function get_new_episodes($since) {
 		$episodes = array();
 		$userid = $GLOBALS['app']->userid;
 
@@ -140,7 +188,7 @@ class DB {
 		}
 
 		return $episodes;
-	}
+	}*/
 	
 	function get_events($itemid, $since, $limit = null) {
 		include_once 'models/event.php';
