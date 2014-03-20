@@ -505,7 +505,7 @@ $app -> group('/library', function() use ($app) {
 	 * 			name="tag",
 	 * 			description="filter by tag",
 	 * 			paramType="path",
-	 * 			required=false,
+	 * 			required=true,
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\ResponseMessage(
@@ -515,7 +515,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/casts/tagged/:tag', function($tag) use ($app) {
+	$app -> get('/casts/:tag', function($tag) use ($app) {
 		json($app->db->get_casts($tag));
 	});
 

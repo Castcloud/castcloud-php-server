@@ -26,7 +26,7 @@ class DB {
 		$inputs = array(":userid" => $userid);
 
 		if ($tag != null) {
-			$query.=" AND find_in_set(binary ':tag', Tags)";
+			$query.=" AND find_in_set(binary :tag, Tags)";
 			$inputs[":tag"] = $tag;
 		}
 		
