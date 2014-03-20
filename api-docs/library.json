@@ -175,7 +175,7 @@
                             "paramType": "path",
                             "name": "tag",
                             "type": "string",
-                            "required": false,
+                            "required": true,
                             "description": "filter by tag"
                         }
                     ],

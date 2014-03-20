@@ -137,6 +137,19 @@ $app->post('/adduser', function() use($app) {
 
 });
 
+$app->get('/clients/:username', function($username) use($app) {
+	$db_prefix = $GLOBALS['db_prefix'];
+	$dbh = $GLOBALS['dbh'];
+	#$sth = $dbh->prepare("SELECT * FROM {$db_prefix}users WHERE username = ?");
+	#if ($sth->execute(array($username))) {
+	#	if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
+	#		$name = $result['Name'];
+	#		$mail = $result['Mail'];
+	#	}
+	#}
+	include 'templates/clientmanageement.phtml';
+});
+
 
 $app->post('/logout', function() use($app) {
 	session_destroy();
