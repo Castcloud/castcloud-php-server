@@ -237,7 +237,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/library/episodes/cast/{id}",
+	 * 	path="/library/episodes/{castid}",
 	 * 	description="Get all episodes of a cast",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
@@ -253,7 +253,7 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="id",
+	 * 			name="castid",
 	 * 			description="The casts id",
 	 * 			paramType="path",
 	 * 			required=true,
@@ -262,7 +262,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\Parameter(
 	 * 			name="exclude",
 	 * 			description="Comma separated event ids to exclude. Default: 70",
-	 * 			paramType="form",
+	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
@@ -273,13 +273,13 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/episodes/cast/:id', function($id) use ($app) {
+	$app -> get('/episodes/:castid', function($castid) use ($app) {
 		$exclude = $app -> request -> params('exclude');
 		if ($exclude == null){
 			$exclude = "70";
 		}
 		
-		json($app->db->get_episodes($id, null, $exclude));
+		json($app->db->get_episodes($castid, null, $exclude));
 	});
 	
 	/**
@@ -309,7 +309,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\Parameter(
 	 * 			name="exclude",
 	 * 			description="Comma separated event ids to exclude. Default: 70",
-	 * 			paramType="form",
+	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),

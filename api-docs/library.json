@@ -189,50 +189,6 @@
             ]
         },
         {
-            "path": "/library/episodes/cast/{id}",
-            "description": "Get all episodes of a cast",
-            "operations": [
-                {
-                    "method": "GET",
-                    "summary": "Get all episodes of a cast",
-                    "nickname": "Get all episodes of a cast",
-                    "type": "array",
-                    "items": {
-                        "$ref": "episode"
-                    },
-                    "parameters": [
-                        {
-                            "paramType": "header",
-                            "name": "Authorization",
-                            "type": "string",
-                            "required": true,
-                            "description": "clients login token"
-                        },
-                        {
-                            "paramType": "path",
-                            "name": "id",
-                            "type": "integer",
-                            "required": true,
-                            "description": "The casts id"
-                        },
-                        {
-                            "paramType": "form",
-                            "name": "exclude",
-                            "type": "integer",
-                            "required": false,
-                            "description": "Comma separated event ids to exclude. Default: 70"
-                        }
-                    ],
-                    "responseMessages": [
-                        {
-                            "code": 400,
-                            "message": "Bad token"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
             "path": "/library/episodes/tag/{tag}",
             "description": "Get all episodes of a tag",
             "operations": [
@@ -260,7 +216,51 @@
                             "description": "The tag"
                         },
                         {
-                            "paramType": "form",
+                            "paramType": "query",
+                            "name": "exclude",
+                            "type": "integer",
+                            "required": false,
+                            "description": "Comma separated event ids to exclude. Default: 70"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/episodes/{castid}",
+            "description": "Get all episodes of a cast",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get all episodes of a cast",
+                    "nickname": "Get all episodes of a cast",
+                    "type": "array",
+                    "items": {
+                        "$ref": "episode"
+                    },
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "path",
+                            "name": "castid",
+                            "type": "integer",
+                            "required": true,
+                            "description": "The casts id"
+                        },
+                        {
+                            "paramType": "query",
                             "name": "exclude",
                             "type": "integer",
                             "required": false,
