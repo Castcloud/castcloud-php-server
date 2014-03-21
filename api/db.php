@@ -145,6 +145,7 @@ class DB {
 		if ($result = $sth->fetchAll()) {
 			foreach ($result as $row) {
 				$itemid = $row['ItemID'];
+				$castid = $row['FeedID'];
 				if ($itemid != $previtemid) {
 					$i++;
 				}
