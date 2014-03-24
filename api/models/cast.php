@@ -5,7 +5,11 @@
 class cast
 {
     function __construct() {
-        $this->tags = explode(',', $this->tags);
+    	if ($this->tags == ""){
+    		$this->tags = null;
+    	} else {
+    		$this->tags = explode(',', $this->tags);
+		}
     }
 	
     /**

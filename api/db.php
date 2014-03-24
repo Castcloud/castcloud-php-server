@@ -176,21 +176,6 @@ class DB {
 		return $episodes;
 	}
 
-	/*function get_new_episodes($since) {
-		$episodes = array();
-		$userid = $GLOBALS['app']->userid;
-
-		$db_prefix = $GLOBALS['db_prefix'];
-		$sth = $this->dbh->query("SELECT * FROM {$db_prefix}subscription WHERE userid=$userid");
-		if ($result = $sth->fetchAll()) {
-			foreach ($result as $row) {
-				$episodes = array_merge($episodes, $this->get_episodes($row['FeedID'], $since));
-			}
-		}
-
-		return $episodes;
-	}*/
-	
 	function get_events($itemid, $since, $limit = null) {
 		include_once 'models/event.php';
 		$userid = $GLOBALS['app']->userid;
@@ -290,11 +275,11 @@ class DB {
 		$opml->dateCreated = date("r", time());
 		$opml->ownerName = $app->username;
 		$opml->ownerEmail = $app->mailaddress;
-		foreach ($casts as &$cast){
-			if(empty($cast->tags)){
-				$cast->tags = array("Untagged");
+		for ($i=0; $i < count($casts); $i++) {
+			if(empty($casts[$i]->tags)){
+				$casts[$i]->tags = array("Untagged");
 			}
-			$tags = array_merge($tags, $cast->tags);
+			$tags = array_merge($tags, $casts[$i]->tags);
 		}
 		$tags = array_unique($tags);
 		foreach ($tags as $tagName) {

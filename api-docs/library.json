@@ -84,6 +84,36 @@
             ]
         },
         {
+            "path": "/library/casts.opml",
+            "description": "Get users subcriptions",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get users subcriptions",
+                    "nickname": "Get users subcriptions",
+                    "type": "$ref:opml",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ],
+                    "produces": [
+                        "text/x-opml"
+                    ]
+                }
+            ]
+        },
+        {
             "path": "/library/casts/{id}",
             "description": "Get users subcriptions",
             "operations": [
@@ -552,6 +582,82 @@
                 "feed",
                 "id",
                 "name",
+                "url"
+            ]
+        },
+        "opml": {
+            "id": "opml",
+            "properties": {
+                "title": {
+                    "description": "The casts individual ID",
+                    "type": "string"
+                },
+                "dateCreated": {
+                    "description": "The casts url",
+                    "type": "string"
+                },
+                "tags": {
+                    "description": "All feed related data from the feed",
+                    "type": "array",
+                    "items": {
+                        "$ref": "opml_tag"
+                    }
+                },
+                "ownerEmail": {
+                    "description": "All feed related data from the feed",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "feed",
+                "id",
+                "tags",
+                "url"
+            ]
+        },
+        "opml_tag": {
+            "id": "opml_tag",
+            "properties": {
+                "title": {
+                    "description": "The casts individual ID",
+                    "type": "string"
+                },
+                "casts": {
+                    "description": "The casts url",
+                    "type": "array",
+                    "items": {
+                        "$ref": "opml_cast"
+                    }
+                }
+            },
+            "required": [
+                "feed",
+                "id",
+                "tags",
+                "url"
+            ]
+        },
+        "opml_cast": {
+            "id": "opml_cast",
+            "properties": {
+                "name": {
+                    "description": "The casts individual ID",
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "casts": {
+                    "description": "The casts url",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "The casts url",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "feed",
+                "id",
+                "tags",
                 "url"
             ]
         }
