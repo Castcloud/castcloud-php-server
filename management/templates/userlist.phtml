@@ -28,14 +28,16 @@ include('nav.phtml');
 					</select>
       			</td>
 <?php } ?>
-      			<td>
-	<a href="clients/<?= $value['username']?>" class="button">Clients</a>
-      			</td>
-      			<td>
 <?php if ($_SESSION['username'] == $value["username"]){ ?>
+      			<td>
+	<a href="clients" class="button">Clients</a>
+			</td>
+      			<td>
       				<a href="settings" class="button">Settings</a>
+			</td>
+
+
 <?php } ?>
-      			</td>
       			<td>
 	  				<a href="export/<?php echo $value["username"]; ?>" class="button">Export</a>
       			</td>
