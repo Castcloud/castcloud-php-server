@@ -356,7 +356,31 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/casts', function() use ($app) {
 		json($app->db->get_casts());
 	});
-
+	
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/casts.opml",
+	 * 	description="Get users subcriptions",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get users subcriptions",
+	 * 		summary="Get users subcriptions",
+	 * 		type="$ref:opml",
+	 * 		produces="['text/x-opml']",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app->get('/casts.opml', function() use($app) {
 		opml($app->db->get_opml());
 	});
