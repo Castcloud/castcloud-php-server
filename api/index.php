@@ -643,10 +643,11 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/events', function() use ($app) {
 		include_once 'models/eventsresult.php';
 		
-		$itemid = $app->request->params('ItemID');
+		$itemid = $app->request->params('itemid');
 		$since = $app->request->params('since');
+		$limit = $app->request->params('limit');
 
-		json(new eventsresult($app->db->get_events($itemid, $since)));
+		json(new eventsresult($app->db->get_events($itemid, $since, $limit)));
 	});
 
 	/**

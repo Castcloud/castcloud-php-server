@@ -216,10 +216,12 @@ class DB {
 			/*
 			 * May the heavens have mercy on the fool that gets limits from user imput
 			 */
-			$query.=" LIMIT {$limit}";
+			$query.=" LIMIT :limit";
+			$inputs[":limit"] = $limit;
 		}
 		
 		$dbh = $GLOBALS['dbh'];
+		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
 		$sth = $dbh -> prepare($query);
 		$sth->execute($inputs);
 
