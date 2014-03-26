@@ -135,7 +135,6 @@ ALTER TABLE `prefix_subscription`
   ADD CONSTRAINT `Subscription_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `prefix_feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Subscription_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-ALTER TABLE `prefix_arrangement`
-  ADD CONSTRAINT `Arrangement_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `Arrangement_CastID` FOREIGN KEY (`CastID`) REFERENCES `prefix_feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
+ALTER TABLE `prefix_subscriptiontag`
+  ADD CONSTRAINT `SubscriptionTag_TagID` FOREIGN KEY (`TagID`) REFERENCES `prefix_tag` (`TagID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `SubscriptionTag_SubscriptionID` FOREIGN KEY (`CastID`) REFERENCES `prefix_subscription` (`SubscriptionID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
