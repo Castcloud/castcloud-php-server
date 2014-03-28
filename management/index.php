@@ -113,7 +113,7 @@ $app->get('/adduser', function() use($app) {
 });
 
 $app->post('/adduser', function() use($app) {
-	if(($username = $app->request->params("username")) && 
+if(($username = $app->request->params("username")) && 
 		($name = $app->request->params("name")) && 
 		($mail = $app->request->params("mail")) && 
 		($password = $app->request->params("password")) && 
@@ -137,17 +137,21 @@ $app->post('/adduser', function() use($app) {
 
 });
 
-$app->get('/clients/:username', function($username) use($app) {
+$app->get('/clients', function() use($app) {
 	$db_prefix = $GLOBALS['db_prefix'];
 	$dbh = $GLOBALS['dbh'];
-	#$sth = $dbh->prepare("SELECT * FROM {$db_prefix}users WHERE username = ?");
-	#if ($sth->execute(array($username))) {
-	#	if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
-	#		$name = $result['Name'];
-	#		$mail = $result['Mail'];
-	#	}
-	#}
-	include 'templates/clientmanageement.phtml';
+	$sth = $dbh->prepare("SELECT {$db_prefix}client.Name, {$db_prefix}clientauthorization.ClientDescription, 
+			{$db_prefix}clientauthorization.StatusID, {$db_prefix}clientauthorization.SeenTS FROM 
+			{$db_prefix}clientauthorization, {$db_prefix}client, {$db_prefix}users WHERE 
+			{$db_prefix}users.Username = ? AND {$db_prefix}clientauthorization.UserID={$db_prefix}users.UserID ORDER BY 
+			{$db_prefix}clientauthorization.SeenTS DESC");
+	
+	if ($sth->execute(array($_SESSION['username']))) {
+		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
+			var_dump($result);
+		}
+	}
+	include 'templates/clientmanagement.phtml';
 });
 
 
