@@ -21,5 +21,14 @@
 		<?php } ?>
 		</outline>
 	<?php } ?>
+	<?php foreach ($opml->untagged as $cast){ ?>
+		<outline
+			type="rss"
+			title="<?php echo $cast->title; ?>"
+			text="<?php echo $cast->title; ?>"
+			xmlUrl="<?php echo $cast->url; ?>"
+			description="<?php echo $cast->description; ?>"
+		/>
+	<?php } ?>
 	</body>
 </opml>

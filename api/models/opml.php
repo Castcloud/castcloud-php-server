@@ -28,6 +28,11 @@ class opml
      * @SWG\Property(name="tags",type="array",items="$ref:opml_tag",description="All feed related data from the feed")
      */
     public $tags;
+	
+	/**
+     * @SWG\Property(name="untagged",type="array",items="$ref:opml_cast",description="The casts url")
+     */
+    public $untagged;
 }
 
 /**

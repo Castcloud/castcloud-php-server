@@ -79,7 +79,6 @@ CREATE TABLE IF NOT EXISTS `prefix_subscription` (
   `Name` text NOT NULL,
   `FeedID` int(11) NOT NULL,
   `UserID` int(11) NOT NULL,
-  `Tags` text NULL,
   `Arrangement` int(11) NULL,
   PRIMARY KEY (`SubscriptionID`),
   KEY `FeedID` (`FeedID`),
@@ -88,18 +87,10 @@ CREATE TABLE IF NOT EXISTS `prefix_subscription` (
 
 CREATE TABLE IF NOT EXISTS `prefix_tag` (
   `TagID` int(11) NOT NULL AUTO_INCREMENT,
-  `Tag` text NULL,
-  PRIMARY KEY (`TagID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
-
-CREATE TABLE IF NOT EXISTS `prefix_subscriptiontag` (
-  `SubTagID` int(11) NOT NULL AUTO_INCREMENT,
   `SubscriptionID` int(11) NOT NULL,
-  `Tag` int(11) NULL,
-  `Arrangement` int(11) NULL,
-  PRIMARY KEY (`SubTagID`),
-  KEY (`TagID`),
-  KEY (`SubscriptionID`)
+  `Name` text NOT NULL,
+  `Arrangement` int(11) NOT NULL,
+  PRIMARY KEY (`TagID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `prefix_users` (
@@ -135,6 +126,5 @@ ALTER TABLE `prefix_subscription`
   ADD CONSTRAINT `Subscription_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `prefix_feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Subscription_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-ALTER TABLE `prefix_subscriptiontag`
-  ADD CONSTRAINT `SubscriptionTag_TagID` FOREIGN KEY (`TagID`) REFERENCES `prefix_tag` (`TagID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `SubscriptionTag_SubscriptionID` FOREIGN KEY (`CastID`) REFERENCES `prefix_subscription` (`SubscriptionID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE `prefix_tag`
+  ADD CONSTRAINT `Tag_SubscriptionID` FOREIGN KEY (`SubscriptionID`) REFERENCES `prefix_subscription` (`SubscriptionID`) ON DELETE NO ACTION ON UPDATE NO ACTION;

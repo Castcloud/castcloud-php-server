@@ -1,33 +1,39 @@
 <?php
 class DB {
 	private $dbh;
+	private $db_prefix;
 
 	function __construct($dbh) {
 		$this->dbh = $dbh;
+		$this->db_prefix = $GLOBALS['db_prefix'];
 	}
 	
 	function get_casts($tag = null) {
 		include_once 'models/cast.php';
 		$userid = $GLOBALS['app']->userid;
 
-		$db_prefix = $GLOBALS['db_prefix'];
 		$query = "SELECT
 			cast.FeedID AS id,
 			subs.name,
 			cast.url,
-			subs.tags,
 			subs.arrangement
 			FROM 
-			{$db_prefix}feed AS cast,
-			{$db_prefix}subscription AS subs
-			WHERE
+			{$this->db_prefix}feed AS cast,
+			{$this->db_prefix}subscription AS subs";
+		if ($tag != null) {
+			$query.=" LEFT JOIN 
+				{$this->db_prefix}tag AS tag
+				ON subs.SubscriptionID = tag.SubscriptionID
+				AND tag.Name = :tag";
+			$inputs[":tag"] = $tag;
+		}
+		$query .= "	WHERE
 			subs.userid=:userid 
 			AND subs.FeedID = cast.FeedID";
 		$inputs = array(":userid" => $userid);
-
+		
 		if ($tag != null) {
-			$query.=" AND find_in_set(binary :tag, Tags)";
-			$inputs[":tag"] = $tag;
+			$query .= " AND tag.Name IS NOT NULL";
 		}
 		
 		$dbh = $GLOBALS['dbh'];
@@ -41,15 +47,15 @@ class DB {
 		
 		foreach ($casts as &$cast) {
 			$cast->feed = $this->get_cast($cast->id);
+			$cast->tag = $this->get_tag($cast->id);
 		}
 		
 		return $casts;
 	}
 
-	function get_cast($feedid) {
-		$db_prefix = $GLOBALS['db_prefix'];
+	function get_cast($feedid) {//
 		$cast = array();
-		$sth = $this->dbh->query("SELECT * FROM {$db_prefix}feedcontent WHERE feedid=$feedid");
+		$sth = $this->dbh->query("SELECT * FROM {$this->db_prefix}feedcontent WHERE feedid=$feedid");
 		if ($result = $sth->fetchAll()) {
 			$needsLove = null;
 			foreach ($result as $row) {
@@ -78,6 +84,29 @@ class DB {
 
 		return $cast;
 	}
+	
+	function get_tag($subscriptionid){
+		$inputs = array();
+		$query = "SELECT
+			tag.Arrangement,
+			tag.Name
+			FROM
+			{$this->db_prefix}tag AS tag
+			WHERE
+			tag.SubscriptionID = :subscriptionid";
+		$inputs[":subscriptionid"] = $subscriptionid;
+		
+		$sth = $this->dbh->prepare($query);
+		$sth->execute($inputs);
+		
+		$tag = array();
+		if ($result = $sth->fetchAll()) {
+			foreach ($result as $row) {
+				$tag[$row['Arrangement']] = $row['Name'];
+			}
+		}
+		return $tag;
+	}
 
 	function get_episodes($castid, $tag, $exclude = "70", $since = null) {
 		include_once 'models/episode.php';
@@ -90,16 +119,15 @@ class DB {
 		$exclude = array_diff($exclude, array(''));
 		$inputs = array();
 		
-		$db_prefix = $GLOBALS['db_prefix'];
 		$query = "SELECT
 			feed.FeedID,
 			feed.Location,
 			feed.ItemID,
 			feed.Content
 			FROM
-			{$db_prefix}feedcontent AS feed
+			{$this->db_prefix}feedcontent AS feed
 			LEFT JOIN 
-				{$db_prefix}event AS event
+				{$this->db_prefix}event AS event
 				ON feed.ItemID = event.ItemID";
 		if (!empty($exclude)){
 			$query .= " AND (";
@@ -114,15 +142,21 @@ class DB {
 		}
 		$query .= " AND event.UserID = :userid
 			LEFT JOIN 
-				{$db_prefix}subscription AS subs
-				ON subs.FeedID = feed.FeedID
-			WHERE
+				{$this->db_prefix}subscription AS subs
+				ON subs.FeedID = feed.FeedID";
+		if ($tag != null) {
+			$query.=" LEFT JOIN 
+				{$this->db_prefix}tag AS tag
+				ON subs.SubscriptionID = tag.SubscriptionID
+				AND tag.Name = :tag";
+			$inputs[":tag"] = $tag;
+		}
+		$query .= " WHERE
 			event.ItemID IS NULL";
 		$inputs[":userid"] = $userid;
 		
 		if ($tag != null){
-			$query.= " AND find_in_set(binary :tag, subs.Tags)";
-			$inputs[":tag"] = $tag;
+			$query.= " AND tag.Name IS NOT NULL";
 		}
 
 		if ($since != null) {
@@ -180,7 +214,6 @@ class DB {
 		include_once 'models/event.php';
 		$userid = $GLOBALS['app']->userid;
 
-		$db_prefix = $GLOBALS['db_prefix'];
 		$query = "SELECT
 			event.type,
 			event.itemid AS episodeid,
@@ -190,9 +223,9 @@ class DB {
 			client.name AS clientname,
 			clientauthorization.clientdescription
 			FROM 
-			{$db_prefix}event AS event,
-			{$db_prefix}clientauthorization AS clientauthorization,
-			{$db_prefix}client AS client
+			{$this->db_prefix}event AS event,
+			{$this->db_prefix}clientauthorization AS clientauthorization,
+			{$this->db_prefix}client AS client
 			WHERE
 			event.userid=:userid 
 			AND event.UniqueClientID = clientauthorization.UniqueClientID
@@ -242,14 +275,13 @@ class DB {
 		$userid = $GLOBALS['app']->userid;
 		$clientid = $GLOBALS['app']->clientid;
 
-		$db_prefix = $GLOBALS['db_prefix'];
 		$query = "SELECT
 			setting.settingid,
 			setting.setting,
 			setting.value,
 			setting.ClientID IS NOT NULL AS clientspesific
 			FROM 
-			{$db_prefix}setting AS setting
+			{$this->db_prefix}setting AS setting
 			WHERE
 			setting.userid=:userid
 			AND (setting.ClientID = :clientid
@@ -277,12 +309,13 @@ class DB {
 		$opml->dateCreated = date("r", time());
 		$opml->ownerName = $app->username;
 		$opml->ownerEmail = $app->mailaddress;
+		
 		for ($i=0; $i < count($casts); $i++) {
-			if(empty($casts[$i]->tags)){
-				$casts[$i]->tags = array("Untagged");
+			if(!empty($casts[$i]->tags)){
+				$tags = array_merge($tags, $casts[$i]->tags);
 			}
-			$tags = array_merge($tags, $casts[$i]->tags);
 		}
+		
 		$tags = array_unique($tags);
 		foreach ($tags as $tagName) {
 			$opmltag = new opml_tag();

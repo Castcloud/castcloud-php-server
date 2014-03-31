@@ -473,12 +473,18 @@ $app -> group('/library', function() use ($app) {
 				$sth -> bindParam(":userid",$userid);
 				$sth -> execute();
 			}
-			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (feedid, name, tags, arrangement, userid) 
-			VALUES($feedid, :name, :tags, :arrangement, $userid)");
+			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (feedid, name, arrangement, userid) 
+			VALUES($feedid, :name, :arrangement, $userid)");
 			$sth -> bindParam(":name",$name);
-			$sth -> bindParam(":tags",$tags);
 			$sth -> bindParam(":arrangement",$arrangement);
 			$sth -> execute();
+			if($tags != null){
+				$tags = superexplode($tags);
+				foreach ($tags as $tag) {
+					
+					
+				}
+			}
 		}
 	});
 	

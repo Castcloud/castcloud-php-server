@@ -17,6 +17,14 @@ function opml($opml) {
 	include 'templates/opml.pxml';
 }
 
+function superexplode($csv, $delimiter = ","){
+	// explode and clear " " and ""
+	$csv = explode($delimiter, $csv);
+	$csv = array_map('trim', $csv);
+	$csv = array_diff($csv, array(''));
+	return $csv;
+}
+
 function startsWith($haystack, $needle)
 {
     return $needle === "" || strpos($haystack, $needle) === 0;
