@@ -13,16 +13,16 @@ class DB {
 		$userid = $GLOBALS['app']->userid;
 
 		$query = "SELECT
-			cast.FeedID AS id,
+			cast.CastID AS id,
 			subs.name,
 			cast.url,
 			subs.arrangement
 			FROM 
-			{$this->db_prefix}feed AS cast,
+			{$this->db_prefix}cast AS cast,
 			{$this->db_prefix}subscription AS subs
 			WHERE
 			subs.userid=:userid 
-			AND subs.FeedID = cast.FeedID";
+			AND subs.CastID = cast.CastID";
 		$inputs = array(":userid" => $userid);
 		
 		$dbh = $GLOBALS['dbh'];
@@ -38,9 +38,9 @@ class DB {
 		return $casts;
 	}
 
-	function get_cast($feedid) {//
+	function get_cast($castid) {//
 		$cast = array();
-		$sth = $this->dbh->query("SELECT * FROM {$this->db_prefix}feedcontent WHERE feedid=$feedid");
+		$sth = $this->dbh->query("SELECT * FROM {$this->db_prefix}feedcontent WHERE CastID=$castid");
 		if ($result = $sth->fetchAll()) {
 			$needsLove = null;
 			foreach ($result as $row) {
@@ -105,7 +105,7 @@ class DB {
 		$inputs = array();
 		
 		$query = "SELECT
-			feed.FeedID,
+			feed.CastID,
 			feed.Location,
 			feed.ItemID,
 			feed.Content
@@ -128,7 +128,7 @@ class DB {
 		$query .= " AND event.UserID = :userid
 			LEFT JOIN 
 				{$this->db_prefix}subscription AS subs
-				ON subs.FeedID = feed.FeedID";
+				ON subs.CastID = feed.CastID";
 		if ($tag != null) {
 			$query.=" LEFT JOIN 
 				{$this->db_prefix}tag AS tag
@@ -150,7 +150,7 @@ class DB {
 		}
 
 		if ($castid != null) {
-			$query.=" AND feed.FeedID = :castid";
+			$query.=" AND feed.CastID = :castid";
 			$inputs[":castid"] = $castid;
 		}
 		
@@ -164,7 +164,7 @@ class DB {
 		if ($result = $sth->fetchAll()) {
 			foreach ($result as $row) {
 				$itemid = $row['ItemID'];
-				$castid = $row['FeedID'];
+				$castid = $row['CastID'];
 				if ($itemid != $previtemid) {
 					$i++;
 				}

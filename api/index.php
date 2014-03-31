@@ -275,11 +275,11 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/episodes/:castid', function($castid) use ($app) {
 		$exclude = $app -> request -> params('exclude');
-		if ($exclude == null){
-			$exclude = "70";
+		if ($exclude != null){
+			json($app->db->get_episodes($castid, null, $exclude));
+		} else {
+			json($app->db->get_episodes($castid, null));
 		}
-		
-		json($app->db->get_episodes($castid, null, $exclude));
 	});
 	
 	/**
@@ -392,11 +392,11 @@ $app -> group('/library', function() use ($app) {
 	/**
 	 * @SWG\Api(
 	 * 	path="/library/casts",
-	 * 	description="Get users subcriptions",
+	 * 	description="Subcribe to a cast",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
-	 * 		nickname="Get users subcriptions",
-	 * 		summary="Get users subcriptions",
+	 * 		nickname="Subcribe to a cast",
+	 * 		summary="Subcribe to a cast",
 	 * 		type="void",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
@@ -429,7 +429,6 @@ $app -> group('/library', function() use ($app) {
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
 		$name = $app -> request -> params('name');
-		$arrangement = $app -> request -> params('arrangement');
 		$userid = $app -> userid;
 		
 		$feedid = crawl($feedurl);
@@ -447,40 +446,22 @@ $app -> group('/library', function() use ($app) {
 		$db_prefix = $GLOBALS['db_prefix'];
 		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE feedid=$feedid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
-			if($arrangement != null){
-				//SET id = 101 WHERE id = 80; SET id = id + 1 WHERE id BETWEEN 20 AND 79; SET id = 20 WHERE id = 101;
-				$sth = $dbh -> prepare("UPDATE {$db_prefix}subscription
-					SET arrangement = arrangement + 1 
-					WHERE arrangement >= :arrangement
-					AND userid=:userid
-					AND arrangement IS NOT NULL");
-				$sth -> bindParam(":arrangement",$arrangement);
-				$sth -> bindParam(":userid",$userid);
-				$sth -> execute();
-			}
 			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (feedid, name, arrangement, userid) 
 			VALUES($feedid, :name, :arrangement, $userid)");
 			$sth -> bindParam(":name",$name);
 			$sth -> bindParam(":arrangement",$arrangement);
 			$sth -> execute();
-			if($tags != null){
-				$tags = superexplode($tags);
-				foreach ($tags as $tag) {
-					
-					
-				}
-			}
 		}
 	});
 	
 	/**
 	 * @SWG\Api(
 	 * 	path="/library/casts/{id}",
-	 * 	description="Get users subcriptions",
+	 * 	description="Edit a subcription",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
-	 * 		nickname="Get users subcriptions",
-	 * 		summary="Get users subcriptions",
+	 * 		nickname="Edit a subcription",
+	 * 		summary="Edit a subcription",
 	 * 		type="void",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
@@ -490,8 +471,15 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
+	 * 			name="id",
+	 * 			description="The casts id",
+	 * 			paramType="path",
+	 * 			required=true,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\Parameter(
 	 * 			name="name",
-	 * 			description="Comma separated tags",
+	 * 			description="The feeds display name",
 	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="string"
@@ -504,7 +492,13 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/casts/:id', function($id) use ($app) {
-		json(array("not" => "implemented"));
+		$db_prefix = $GLOBALS['db_prefix'];
+		$sth = $dbh -> prepare("UPDATE {$db_prefix}subscription
+			SET name=:name
+			WHERE CastID=:id");
+		$sth -> bindParam(":name",$name);
+		$sth -> bindParam(":id",$id);
+		$sth -> execute();
 	});
 
 	/**

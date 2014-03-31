@@ -39,22 +39,22 @@ CREATE TABLE IF NOT EXISTS `prefix_event` (
   KEY `ItemID` (`ItemID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `prefix_feed` (
-  `FeedID` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `prefix_cast` (
+  `CastID` int(11) NOT NULL AUTO_INCREMENT,
   `URL` text,
   `CrawlTS` int(11) NOT NULL,
-  PRIMARY KEY (`FeedID`)
+  PRIMARY KEY (`CastID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `prefix_feedcontent` (
   `ContentID` int(11) NOT NULL AUTO_INCREMENT,
-  `FeedID` int(11) NOT NULL,
+  `CastID` int(11) NOT NULL,
   `Location` text NOT NULL,
   `ItemID` int(11) DEFAULT NULL,
   `Content` text NOT NULL,
   `CrawlTS` int(11) NOT NULL,
   PRIMARY KEY (`ContentID`),
-  KEY `FeedID` (`FeedID`),
+  KEY `CastID` (`CastID`),
   KEY `ItemID` (`ItemID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -77,11 +77,11 @@ CREATE TABLE IF NOT EXISTS `prefix_setting` (
 CREATE TABLE IF NOT EXISTS `prefix_subscription` (
   `SubscriptionID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` text NOT NULL,
-  `FeedID` int(11) NOT NULL,
+  `CastID` int(11) NOT NULL,
   `UserID` int(11) NOT NULL,
   `Arrangement` int(11) NULL,
   PRIMARY KEY (`SubscriptionID`),
-  KEY `FeedID` (`FeedID`),
+  KEY `CastID` (`CastID`),
   KEY `UserID` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -115,7 +115,7 @@ ALTER TABLE `prefix_event`
   ADD CONSTRAINT `Event_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `prefix_itemid` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 ALTER TABLE `prefix_feedcontent`
-  ADD CONSTRAINT `FeedContent_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `prefix_feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `FeedContent_CastID` FOREIGN KEY (`CastID`) REFERENCES `prefix_cast` (`CastID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `FeedContent_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `prefix_itemid` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 ALTER TABLE `prefix_setting`
@@ -123,5 +123,5 @@ ALTER TABLE `prefix_setting`
   ADD CONSTRAINT `Setting_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 ALTER TABLE `prefix_subscription`
-  ADD CONSTRAINT `Subscription_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `prefix_feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `Subscription_CastID` FOREIGN KEY (`CastID`) REFERENCES `prefix_cast` (`CastID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Subscription_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
