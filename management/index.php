@@ -140,18 +140,39 @@ if(($username = $app->request->params("username")) &&
 $app->get('/clients', function() use($app) {
 	$db_prefix = $GLOBALS['db_prefix'];
 	$dbh = $GLOBALS['dbh'];
-	$sth = $dbh->prepare("SELECT {$db_prefix}client.Name, {$db_prefix}clientauthorization.ClientDescription, 
+	$sth = $dbh->prepare("SELECT {$db_prefix}clientauthorization.UniqueClientID,{$db_prefix}client.Name, {$db_prefix}clientauthorization.ClientDescription, 
 			{$db_prefix}clientauthorization.StatusID, {$db_prefix}clientauthorization.SeenTS FROM 
 			{$db_prefix}clientauthorization, {$db_prefix}client, {$db_prefix}users WHERE 
 			{$db_prefix}users.Username = ? AND {$db_prefix}clientauthorization.UserID={$db_prefix}users.UserID ORDER BY 
 			{$db_prefix}clientauthorization.SeenTS DESC");
 	
 	if ($sth->execute(array($_SESSION['username']))) {
-		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
-			var_dump($result);
+		if ($clients = $sth -> fetchAll(PDO::FETCH_ASSOC)) {
+			include 'templates/clientmanagement.phtml';
+		}else {
+			$app->flash('error', "You have no clients");
+			$app->response->redirect($_SERVER['HTTP_REFERER']);
 		}
 	}
-	include 'templates/clientmanagement.phtml';
+});
+
+
+$app->get('/clients/disable/:clientid', function($clientid) use($app) {
+	$db_prefix = $GLOBALS['db_prefix'];
+        $dbh = $GLOBALS['dbh'];
+	$username = $_SESSION['username'];
+	
+	$sth = $dbh->prepare("SELECT {$db_prefix}users.Username FROM {$db_prefix}users, {$db_prefix}clientauthorization WHERE 
+			{$db_prefix}users.Username = ? AND {$db_prefix}clientauthorization.UserID={$db_prefix}users.UserID AND {$db_prefix}clientauthorization.UniqueClientID = ?");
+	if ($sth->execute(array($username, $clientid))) {
+		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
+			if ($result['Username'] == $username){
+				$sth = $dbh->prepare("UPDATE {$db_prefix}clientauthorization SET Token='' WHERE UniqueClientID = ?");
+				$sth->execute(array($clientid));
+				$app->response->redirect($_SERVER['HTTP_REFERER']);
+			}
+		}
+	}
 });
 
 

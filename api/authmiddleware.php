@@ -12,13 +12,15 @@ class AuthMiddleware extends \Slim\Middleware {
 					$sth = $GLOBALS['dbh']->query("SELECT
 						auth.*,
 						users.Username,
-						users.Mail
+						users.Mail, 
+						StatusID
 						FROM
 						{$db_prefix}clientauthorization AS auth,
 						{$db_prefix}users AS users
 						WHERE
 						token='$token'
-						AND auth.UserID = users.UserID");
+						AND auth.UserID = users.UserID
+						AND StatusID = 0");
 					if ($sth && $sth->rowCount() < 1) {
 						$this -> app -> halt(400, 'Bad token');
 					} else {

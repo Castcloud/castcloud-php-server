@@ -7,32 +7,24 @@ include('nav.phtml');
 	<table class="small-12">
 		<tbody>
 			<!-- Lists all users if Administrator, only yourself if user -->
+			<?php foreach($clients as $client) { ?>	
 			<tr>
 				<td>
-					<h4><a href="edit/sjefen6" class="">Castcloud JS</a></h3>
-					<p class="subheader">En sjikkelig fancy JS klient</p>
+				<h4><span class="name"><?=$client['Name']?></a></h3>
+					<p class="description"><?=$client['ClientDescription']?></p>
 				</td>
-      			<!-- Should only be shown and accessible for the signed in user -->
-      			<td>
-      				<a href="export/sjefen6" class="button">Disable</a>
-      			</td>
-      			<td>
-      				<a class="button disabled" title="Disable to remove.">Remove</a>
-      			</td>
-			</tr>
-			<tr class="alert warning">
+      				<td>
+					<a href="clients/disable/<?=$client['UniqueClientID']?>" class="button">Disable</a>
+      				</td>
+      				<td>
+      					<a class="button disabled" title="Disable to remove.">Remove</a>
+      				</td>
+				
 				<td>
-					<h4><a href="edit/sjefen6" class="">Disabeled Client</a></h3>
-					<p class="subheader">En sjikkelig fancy JS klient</p>
-				</td>
-      			<!-- Should only be shown and accessible for the signed in user -->
-      			<td>
-      				<a href="export/sjefen6" class="button">Enable</a>
-      			</td>
-      			<td>
-      				<a href="export/sjefen6" class="button alert">Remove</a>
-      			</td>
+				<span class="round radius secondary label" title="Last Seen">Last seen </br><?=gmdate("Y-m-d\ H:i:s \ ", $client['SeenTS']) ?></a>
+      				</td>
 			</tr>
+			<?php } ?>
 		</tbody>
 	</table>
 </div>

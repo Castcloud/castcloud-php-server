@@ -123,7 +123,7 @@ function post_login($app) {
 					$clientid = $dbh->lastInsertId();
 				}
 
-				$sth = $dbh -> query("SELECT * FROM {$db_prefix}clientauthorization WHERE userid=$userid AND clientid=$clientid AND uuid='$uuid'");
+				$sth = $dbh -> query("SELECT * FROM {$db_prefix}clientauthorization WHERE userid=$userid AND clientid=$clientid AND uuid='$uuid' AND StatusID = 0");
 				if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 					$token = $result['Token'];
 				}

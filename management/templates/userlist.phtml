@@ -5,6 +5,8 @@ include('nav.phtml');
 <div class="row">
 <div class="small-12 medium-10 medium-offset-1 columns">
 	<div class="row">
+	
+
 		<div class="left"><h3>Welcome <?php echo $_SESSION['username']; ?></h3></div>
 	</div>
 	<table class="small-12">
@@ -29,8 +31,11 @@ include('nav.phtml');
       			</td>
 <?php } ?>
 <?php if ($_SESSION['username'] == $value["username"]){ ?>
-      			<td>
-	<a href="clients" class="button">Clients</a>
+				
+			<td>
+	
+				
+				<a href="clients" class="button">Clients</a><?php if (isset($_SESSION['slim.flash']['error'])):?></br> <span class="label alert"><?= $_SESSION['slim.flash']['error'] ?></span><?php endif ?>
 			</td>
       			<td>
       				<a href="settings" class="button">Settings</a>
