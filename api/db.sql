@@ -85,11 +85,11 @@ CREATE TABLE IF NOT EXISTS `prefix_subscription` (
   KEY `UserID` (`UserID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `prefix_tag` (
-  `TagID` int(11) NOT NULL AUTO_INCREMENT,
-  `SubscriptionID` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `prefix_label` (
+  `LabelID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` text NOT NULL,
-  `Arrangement` int(11) NOT NULL,
+  `Casts` text NOT NULL,
+  `Expanded` int(11) NOT NULL,
   PRIMARY KEY (`TagID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -125,6 +125,3 @@ ALTER TABLE `prefix_setting`
 ALTER TABLE `prefix_subscription`
   ADD CONSTRAINT `Subscription_FeedID` FOREIGN KEY (`FeedID`) REFERENCES `prefix_feed` (`FeedID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Subscription_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
-ALTER TABLE `prefix_tag`
-  ADD CONSTRAINT `Tag_SubscriptionID` FOREIGN KEY (`SubscriptionID`) REFERENCES `prefix_subscription` (`SubscriptionID`) ON DELETE NO ACTION ON UPDATE NO ACTION;

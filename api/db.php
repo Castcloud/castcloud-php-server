@@ -8,7 +8,7 @@ class DB {
 		$this->db_prefix = $GLOBALS['db_prefix'];
 	}
 	
-	function get_casts($tag = null) {
+	function get_casts() {
 		include_once 'models/cast.php';
 		$userid = $GLOBALS['app']->userid;
 
@@ -19,35 +19,20 @@ class DB {
 			subs.arrangement
 			FROM 
 			{$this->db_prefix}feed AS cast,
-			{$this->db_prefix}subscription AS subs";
-		if ($tag != null) {
-			$query.=" LEFT JOIN 
-				{$this->db_prefix}tag AS tag
-				ON subs.SubscriptionID = tag.SubscriptionID
-				AND tag.Name = :tag";
-			$inputs[":tag"] = $tag;
-		}
-		$query .= "	WHERE
+			{$this->db_prefix}subscription AS subs
+			WHERE
 			subs.userid=:userid 
 			AND subs.FeedID = cast.FeedID";
 		$inputs = array(":userid" => $userid);
 		
-		if ($tag != null) {
-			$query .= " AND tag.Name IS NOT NULL";
-		}
-		
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> prepare($query);
 		$sth->execute($inputs);
-
-		if (!$sth){
-			exit;
-		}
+		
 		$casts = $sth->fetchAll(PDO::FETCH_CLASS, "cast");
 		
 		foreach ($casts as &$cast) {
 			$cast->feed = $this->get_cast($cast->id);
-			$cast->tag = $this->get_tag($cast->id);
 		}
 		
 		return $casts;
@@ -85,7 +70,7 @@ class DB {
 		return $cast;
 	}
 	
-	function get_tag($subscriptionid){
+	function get_label(){
 		$inputs = array();
 		$query = "SELECT
 			tag.Arrangement,
