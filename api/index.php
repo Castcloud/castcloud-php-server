@@ -419,20 +419,6 @@ $app -> group('/library', function() use ($app) {
 	 * 			required=false,
 	 * 			type="string"
 	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="tags",
-	 * 			description="Comma separated tags",
-	 * 			paramType="form",
-	 * 			required=false,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="arrangement",
-	 * 			description="Integer describing where in the list the cast is to be located",
-	 * 			paramType="form",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
 	 * 			message="Bad token"
@@ -443,7 +429,6 @@ $app -> group('/library', function() use ($app) {
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
 		$name = $app -> request -> params('name');
-		$tags = $app -> request -> params('tags');
 		$arrangement = $app -> request -> params('arrangement');
 		$userid = $app -> userid;
 		
@@ -505,7 +490,7 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="tags",
+	 * 			name="name",
 	 * 			description="Comma separated tags",
 	 * 			paramType="form",
 	 * 			required=true,
@@ -519,22 +504,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/casts/:id', function($id) use ($app) {
-		$tags = $app -> request -> params('tags');
-
-		$userid = $app -> userid;
-
-		$dbh = $GLOBALS['dbh'];
-		$db_prefix = $GLOBALS['db_prefix'];
-		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE feedid=$feedid AND userid=$userid");
-		if ($sth && $sth -> rowCount() < 1) {
-			$sth = $dbh -> prepare("UPDATE 
-				{$db_prefix}subscription 
-				SET tags=:tags 
-				WHERE FeedID = :id");
-			$sth -> bindParam(":tags",$tags);
-			$sth -> bindParam(":id",$id);
-			$sth -> execute();
-		}
+		json(array("not" => "implemented"));
 	});
 
 	/**
@@ -571,41 +541,6 @@ $app -> group('/library', function() use ($app) {
 		$userid = $app->userid;
 		$db_prefix = $GLOBALS['db_prefix'];
 		$GLOBALS['dbh']->exec("DELETE FROM {$db_prefix}subscription WHERE feedid=$id AND userid=$userid");
-	});
-
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/casts/{tag}",
-	 * 	description="Get users subcriptions for spesific tag",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get users subcriptions for spesific tag",
-	 * 		summary="Get users subcriptions for spesific tag",
-	 * 		type="array",
-	 * 		items="$ref:cast",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="tag",
-	 * 			description="filter by tag",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
-	$app -> get('/casts/:tag', function($tag) use ($app) {
-		json($app->db->get_casts($tag));
 	});
 
 	/**
@@ -704,12 +639,12 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/library/tags",
-	 * 	description="Get users tags",
+	 * 	path="/library/label",
+	 * 	description="Get users labels",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
-	 * 		nickname="Get users tags",
-	 * 		summary="Get users tags",
+	 * 		nickname="Get users labels",
+	 * 		summary="Get users labels",
 	 * 		type="array",
 	 * 		@SWG\Items("string"),
 	 * 		@SWG\Parameter(
@@ -726,7 +661,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/tags', function() use ($app) {
+	$app -> get('/labels', function() use ($app) {
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 		$userid = $app -> userid;

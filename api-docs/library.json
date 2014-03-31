@@ -58,20 +58,6 @@
                             "type": "string",
                             "required": false,
                             "description": "The displayname for the cast"
-                        },
-                        {
-                            "paramType": "form",
-                            "name": "tags",
-                            "type": "string",
-                            "required": false,
-                            "description": "Comma separated tags"
-                        },
-                        {
-                            "paramType": "form",
-                            "name": "arrangement",
-                            "type": "integer",
-                            "required": false,
-                            "description": "Integer describing where in the list the cast is to be located"
                         }
                     ],
                     "responseMessages": [
@@ -132,7 +118,7 @@
                         },
                         {
                             "paramType": "form",
-                            "name": "tags",
+                            "name": "name",
                             "type": "string",
                             "required": true,
                             "description": "Comma separated tags"
@@ -170,43 +156,6 @@
                             "type": "integer",
                             "required": true,
                             "description": "The casts id"
-                        }
-                    ],
-                    "responseMessages": [
-                        {
-                            "code": 400,
-                            "message": "Bad token"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "path": "/library/casts/{tag}",
-            "description": "Get users subcriptions for spesific tag",
-            "operations": [
-                {
-                    "method": "GET",
-                    "summary": "Get users subcriptions for spesific tag",
-                    "nickname": "Get users subcriptions for spesific tag",
-                    "type": "array",
-                    "items": {
-                        "$ref": "cast"
-                    },
-                    "parameters": [
-                        {
-                            "paramType": "header",
-                            "name": "Authorization",
-                            "type": "string",
-                            "required": true,
-                            "description": "clients login token"
-                        },
-                        {
-                            "paramType": "path",
-                            "name": "tag",
-                            "type": "string",
-                            "required": true,
-                            "description": "filter by tag"
                         }
                     ],
                     "responseMessages": [
@@ -388,6 +337,36 @@
             ]
         },
         {
+            "path": "/library/label",
+            "description": "Get users labels",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get users labels",
+                    "nickname": "Get users labels",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "path": "/library/newepisodes",
             "description": "Get new episodes",
             "operations": [
@@ -410,36 +389,6 @@
                             "type": "integer",
                             "required": false,
                             "description": "timestamp of last call"
-                        }
-                    ],
-                    "responseMessages": [
-                        {
-                            "code": 400,
-                            "message": "Bad token"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "path": "/library/tags",
-            "description": "Get users tags",
-            "operations": [
-                {
-                    "method": "GET",
-                    "summary": "Get users tags",
-                    "nickname": "Get users tags",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "parameters": [
-                        {
-                            "paramType": "header",
-                            "name": "Authorization",
-                            "type": "string",
-                            "required": true,
-                            "description": "clients login token"
                         }
                     ],
                     "responseMessages": [
@@ -561,18 +510,6 @@
                     "description": "The casts url",
                     "type": "string"
                 },
-                "tags": {
-                    "description": "All the casts tags",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "arrangement": {
-                    "description": "The casts sorting arrangement",
-                    "type": "integer",
-                    "format": "int64"
-                },
                 "feed": {
                     "description": "All feed related data from the feed",
                     "type": "array"
@@ -606,6 +543,13 @@
                 "ownerEmail": {
                     "description": "All feed related data from the feed",
                     "type": "string"
+                },
+                "untagged": {
+                    "description": "The casts url",
+                    "type": "array",
+                    "items": {
+                        "$ref": "opml_cast"
+                    }
                 }
             },
             "required": [
