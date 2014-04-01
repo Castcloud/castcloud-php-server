@@ -70,27 +70,28 @@ class DB {
 		return $cast;
 	}
 	
-	function get_label(){
-		$inputs = array();
+	function get_label() {
+		include_once 'models/label.php';
+		$userid = $GLOBALS['app']->userid;
+
 		$query = "SELECT
-			tag.Arrangement,
-			tag.Name
-			FROM
-			{$this->db_prefix}tag AS tag
+			label.LabelID AS id,
+			label.name,
+			label.content,
+			label.Expanded
+			FROM 
+			{$this->db_prefix}label AS label
 			WHERE
-			tag.SubscriptionID = :subscriptionid";
-		$inputs[":subscriptionid"] = $subscriptionid;
+			label.userid=:userid";
+		$inputs = array(":userid" => $userid);
 		
-		$sth = $this->dbh->prepare($query);
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> prepare($query);
 		$sth->execute($inputs);
 		
-		$tag = array();
-		if ($result = $sth->fetchAll()) {
-			foreach ($result as $row) {
-				$tag[$row['Arrangement']] = $row['Name'];
-			}
-		}
-		return $tag;
+		$label = $sth->fetchAll(PDO::FETCH_CLASS, "label");
+		
+		return $label;
 	}
 
 	function get_episodes($castid, $tag, $exclude = "70", $since = null) {

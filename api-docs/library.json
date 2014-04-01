@@ -31,11 +31,17 @@
                             "message": "Bad token"
                         }
                     ]
-                },
+                }
+            ]
+        },
+        {
+            "path": "/library/casts",
+            "description": "Subcribe to a cast",
+            "operations": [
                 {
                     "method": "POST",
-                    "summary": "Get users subcriptions",
-                    "nickname": "Get users subcriptions",
+                    "summary": "Subcribe to a cast",
+                    "nickname": "Subcribe to a cast",
                     "type": "void",
                     "parameters": [
                         {
@@ -101,12 +107,12 @@
         },
         {
             "path": "/library/casts/{id}",
-            "description": "Get users subcriptions",
+            "description": "Edit a subcription",
             "operations": [
                 {
                     "method": "POST",
-                    "summary": "Get users subcriptions",
-                    "nickname": "Get users subcriptions",
+                    "summary": "Edit a subcription",
+                    "nickname": "Edit a subcription",
                     "type": "void",
                     "parameters": [
                         {
@@ -117,11 +123,18 @@
                             "description": "clients login token"
                         },
                         {
+                            "paramType": "path",
+                            "name": "id",
+                            "type": "integer",
+                            "required": true,
+                            "description": "The casts id"
+                        },
+                        {
                             "paramType": "form",
                             "name": "name",
                             "type": "string",
                             "required": true,
-                            "description": "Comma separated tags"
+                            "description": "The feeds display name"
                         }
                     ],
                     "responseMessages": [
@@ -325,6 +338,40 @@
                             "type": "integer",
                             "required": false,
                             "description": "filter by ItemID"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/label",
+            "description": "Create new labels",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Create new labels",
+                    "nickname": "Create new labels",
+                    "type": "void",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "name",
+                            "type": "string",
+                            "required": true,
+                            "description": "The name of the new label."
                         }
                     ],
                     "responseMessages": [

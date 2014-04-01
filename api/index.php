@@ -431,10 +431,10 @@ $app -> group('/library', function() use ($app) {
 		$name = $app -> request -> params('name');
 		$userid = $app -> userid;
 		
-		$feedid = crawl($feedurl);
+		$castid = crawl($feedurl);
 		
 		if ($name == null){
-			$castinfo = $app->db->get_cast($feedid);
+			$castinfo = $app->db->get_cast($castid);
 			if (array_key_exists("title",$castinfo)){
 				$name = $castinfo["title"];
 			} else {
@@ -444,12 +444,11 @@ $app -> group('/library', function() use ($app) {
 		
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
-		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE feedid=$feedid AND userid=$userid");
+		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE castid=$castid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
-			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (feedid, name, arrangement, userid) 
-			VALUES($feedid, :name, :arrangement, $userid)");
+			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (castid, name, userid) 
+			VALUES($castid, :name, $userid)");
 			$sth -> bindParam(":name",$name);
-			$sth -> bindParam(":arrangement",$arrangement);
 			$sth -> execute();
 		}
 	});
@@ -492,6 +491,8 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/casts/:id', function($id) use ($app) {
+		$name = $app -> request -> params('name');
+		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 		$sth = $dbh -> prepare("UPDATE {$db_prefix}subscription
 			SET name=:name
@@ -534,7 +535,7 @@ $app -> group('/library', function() use ($app) {
 	$app->delete('/casts/:id', function($id) use($app) {
 		$userid = $app->userid;
 		$db_prefix = $GLOBALS['db_prefix'];
-		$GLOBALS['dbh']->exec("DELETE FROM {$db_prefix}subscription WHERE feedid=$id AND userid=$userid");
+		$GLOBALS['dbh']->exec("DELETE FROM {$db_prefix}subscription WHERE castid=$id AND userid=$userid");
 	});
 
 	/**
@@ -655,25 +656,57 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/labels', function() use ($app) {
+	$app -> get('/labels', function() use ($app) {	
+		json($app->db->get_label());
+	});
+	
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/label",
+	 * 	description="Create new labels",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Create new labels",
+	 * 		summary="Create new labels",
+	 * 		type="void",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="name",
+	 * 			description="The name of the new label.",
+	 * 			paramType="query",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="content",
+	 * 			description="The name of the new label.",
+	 * 			paramType="query",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
+	$app -> post('/labels', function() use ($app) {
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 		$userid = $app -> userid;
-		$tags = array();
-		$sth = $dbh -> query("SELECT Tags FROM {$db_prefix}subscription WHERE UserID=$userid");
-		if ($sth){
-			foreach ($sth as $row){
-				$tag = $row['Tags'];
-				if ($tag != '' && !strpos($tag,',')){
-					array_push($tags, $tag);
-				}
-				if (strpos($tag,',')){
-					$tags = array_merge($tags, explode( ',', str_replace(' ','',$tag)));
-				}
-			}
-		}
-		asort($tags);	
-		json(array_values(array_unique($tags)));
+		$sth = $dbh -> prepare("INSERT INTO {$db_prefix}label
+			(name, arrangement, userid) 
+			VALUES($castid, :name, :arrangement, $userid)");
+		$sth -> bindParam(":name",$name);
+		$sth -> bindParam(":arrangement",$arrangement);
+		$sth -> execute();
 	});
 
 });
