@@ -70,7 +70,7 @@ class DB {
 		return $cast;
 	}
 	
-	function get_label() {
+	function get_label($name = null) {
 		include_once 'models/label.php';
 		$userid = $GLOBALS['app']->userid;
 
@@ -84,6 +84,10 @@ class DB {
 			WHERE
 			label.userid=:userid";
 		$inputs = array(":userid" => $userid);
+		if ($name != null){
+			$query .= "AND label.name = :name";
+			$inputs[":name"] = $name;
+		}
 		
 		$dbh = $GLOBALS['dbh'];
 		$sth = $dbh -> prepare($query);
@@ -92,6 +96,21 @@ class DB {
 		$label = $sth->fetchAll(PDO::FETCH_CLASS, "label");
 		
 		return $label;
+	}
+
+	function add_cast_to_label_root($castid){
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> prepare("SELECT
+			label.LabelID AS id,
+			label.name,
+			label.content,
+			label.Expanded
+			FROM 
+			{$this->db_prefix}label AS label
+			WHERE
+			label.userid=:userid");
+		$sth->execute($inputs);
+		
 	}
 
 	function get_episodes($castid, $tag, $exclude = "70", $since = null) {

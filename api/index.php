@@ -628,8 +628,6 @@ $app -> group('/library', function() use ($app) {
 			$sth->bindParam(":concurrentorder", $event->concurrentorder, PDO::PARAM_INT);
 			$sth->execute();
 		}
-
-		json(array("Status" => "Success"));
 	});
 
 	/**
@@ -656,18 +654,18 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/labels', function() use ($app) {	
+	$app -> get('/label', function() use ($app) {	
 		json($app->db->get_label());
 	});
 	
 	/**
 	 * @SWG\Api(
 	 * 	path="/library/label",
-	 * 	description="Create new labels",
+	 * 	description="Create a new label",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
-	 * 		nickname="Create new labels",
-	 * 		summary="Create new labels",
+	 * 		nickname="Create a new label",
+	 * 		summary="Create a new label",
 	 * 		type="void",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
@@ -678,16 +676,23 @@ $app -> group('/library', function() use ($app) {
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="name",
-	 * 			description="The name of the new label.",
-	 * 			paramType="query",
+	 * 			description="The name of the new label",
+	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="content",
-	 * 			description="The name of the new label.",
-	 * 			paramType="query",
+	 * 			description="The content of the label. See GET label for formatting",
+	 * 			paramType="form",
 	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="expanded",
+	 * 			description="Wether or not the label is expanded in the client UI. Default false. root is always true.",
+	 * 			paramType="form",
+	 * 			required=false,
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\ResponseMessage(
@@ -697,16 +702,136 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> post('/labels', function() use ($app) {
+	$app -> post('/label', function() use ($app) {
+		$name = $app -> request -> params('name');
+		$content = $app -> request -> params('content');
+		$expanded = $app -> request -> params('expanded');
+		
+		if (!(strpos($name,"label/") === 0)){
+			$name = "label/" . $name; 
+		}
+				
+		if($expanded != null){
+			$expanded = ($expanded == "true");
+		}
+		
+		if (($expanded == null) || ($name == "root")){
+			$expanded = ($name == "root");
+		}
+		
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 		$userid = $app -> userid;
-		$sth = $dbh -> prepare("INSERT INTO {$db_prefix}label
-			(name, arrangement, userid) 
-			VALUES($castid, :name, :arrangement, $userid)");
+		
+		$sth = $dbh -> prepare("SELECT count(*)
+			FROM {$db_prefix}label AS label
+			WHERE
+			label.name = :name
+			AND label.userid=$userid");
 		$sth -> bindParam(":name",$name);
-		$sth -> bindParam(":arrangement",$arrangement);
 		$sth -> execute();
+		
+		$result = $sth -> fetchAll();
+		
+		if ($result["0"]["0"] < 1){
+			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}label
+				(userid, name, content, expanded) 
+				VALUES($userid, :name, :content, :expanded)");
+			$sth -> bindParam(":name",$name);
+			$sth -> bindParam(":content",$content);
+			$sth -> bindParam(":expanded",$expanded);
+			$sth -> execute();
+		} else {
+			$app->halt(400, "Exsisting label");
+		}
+	});
+	
+		/**
+	 * @SWG\Api(
+	 * 	path="/library/label/{id}",
+	 * 	description="Edit a label",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Edit a label",
+	 * 		summary="Edit a label",
+	 * 		type="void",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="name",
+	 * 			description="The name of the new label",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="content",
+	 * 			description="The content of the label. See GET label for formatting",
+	 * 			paramType="form",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="expanded",
+	 * 			description="Wether or not the label is expanded in the client UI. Default false. root is always true.",
+	 * 			paramType="form",
+	 * 			required=false,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
+	$app -> post('/label/:id', function($id) use ($app) {
+		$name = $app -> request -> params('name');
+		$content = $app -> request -> params('content');
+		$expanded = $app -> request -> params('expanded');
+		
+		if (!(strpos($name,"label/") === 0) && !($name == "root")){
+			$name = "label/" . $name; 
+		}
+				
+		if($expanded != null){
+			$expanded = ($expanded == "true");
+		}
+		
+		if (($expanded == null) || ($name == "root")){
+			$expanded = ($name == "root");
+		}
+		
+		$dbh = $GLOBALS['dbh'];
+		$db_prefix = $GLOBALS['db_prefix'];
+		$userid = $app -> userid;
+		
+		$sth = $dbh -> prepare("SELECT *
+			FROM {$db_prefix}label AS label
+			WHERE
+			label.LabelID = :id
+			AND label.userid=$userid");
+		$sth -> bindParam(":id",$id);
+		$sth -> execute();
+		
+		$result = $sth -> fetchAll();
+		
+		if ($result["0"]["0"] < 1){
+			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}label
+				(userid, name, content, expanded) 
+				VALUES($userid, :name, :content, :expanded)");
+			$sth -> bindParam(":name",$name);
+			$sth -> bindParam(":content",$content);
+			$sth -> bindParam(":expanded",$expanded);
+			$sth -> execute();
+		} else {
+			$app->halt(400, "Exsisting label");
+		}
 	});
 
 });

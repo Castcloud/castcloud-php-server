@@ -351,12 +351,12 @@
         },
         {
             "path": "/library/label",
-            "description": "Create new labels",
+            "description": "Create a new label",
             "operations": [
                 {
                     "method": "POST",
-                    "summary": "Create new labels",
-                    "nickname": "Create new labels",
+                    "summary": "Create a new label",
+                    "nickname": "Create a new label",
                     "type": "void",
                     "parameters": [
                         {
@@ -367,11 +367,25 @@
                             "description": "clients login token"
                         },
                         {
-                            "paramType": "query",
+                            "paramType": "form",
                             "name": "name",
                             "type": "string",
                             "required": true,
-                            "description": "The name of the new label."
+                            "description": "The name of the new label"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "content",
+                            "type": "string",
+                            "required": true,
+                            "description": "The content of the label. See GET label for formatting"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "expanded",
+                            "type": "string",
+                            "required": false,
+                            "description": "Wether or not the label is expanded in the client UI. Default false. root is always true."
                         }
                     ],
                     "responseMessages": [
@@ -402,6 +416,54 @@
                             "type": "string",
                             "required": true,
                             "description": "clients login token"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/label/{id}",
+            "description": "Edit a label",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Edit a label",
+                    "nickname": "Edit a label",
+                    "type": "void",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "name",
+                            "type": "string",
+                            "required": true,
+                            "description": "The name of the new label"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "content",
+                            "type": "string",
+                            "required": true,
+                            "description": "The content of the label. See GET label for formatting"
+                        },
+                        {
+                            "paramType": "form",
+                            "name": "expanded",
+                            "type": "string",
+                            "required": false,
+                            "description": "Wether or not the label is expanded in the client UI. Default false. root is always true."
                         }
                     ],
                     "responseMessages": [
