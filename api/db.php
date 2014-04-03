@@ -95,21 +95,29 @@ class DB {
 		
 		$label = $sth->fetchAll(PDO::FETCH_CLASS, "label");
 		
+		if (($name != null) && (count($label) == 1)){
+			return $label[0];
+		}
 		return $label;
 	}
 
-	function add_cast_to_label_root($castid){
+	function add_to_label_root($castid){
 		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> prepare("SELECT
-			label.LabelID AS id,
-			label.name,
-			label.content,
-			label.Expanded
-			FROM 
-			{$this->db_prefix}label AS label
-			WHERE
-			label.userid=:userid");
-		$sth->execute($inputs);
+		
+		$root = $this->get_label("root");
+		
+		if(empty($root)){
+			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}label
+				(userid, name, content, expanded) 
+				VALUES($userid, :name, :content, :expanded)");
+			$sth -> bindParam(":name","root");
+			$sth -> bindParam(":content",$content);
+			$sth -> bindParam(":expanded",$expanded);
+			$sth -> execute();
+		}
+		
+		
+		
 		
 	}
 
