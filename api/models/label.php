@@ -2,7 +2,7 @@
 /**
  * @SWG\Model(id="cast",required="id, name, url, feed")
  */
-class cast
+class label
 {	
     /**
      * @SWG\Property(name="id",type="integer",format="int64",description="The labels individual ID")
