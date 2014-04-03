@@ -284,12 +284,12 @@ $app -> group('/library', function() use ($app) {
 	
 	/**
 	 * @SWG\Api(
-	 * 	path="/library/episodes/tag/{tag}",
-	 * 	description="Get all episodes of a tag",
+	 * 	path="/library/episodes/label/{label}",
+	 * 	description="Get all episodes of a label",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
-	 * 		nickname="Get episodes for tag",
-	 * 		summary="Get episodes for tag",
+	 * 		nickname="Get episodes for label",
+	 * 		summary="Get episodes for label",
      * 		type="array",
      * 		items="$ref:episode",
 	 * 		@SWG\Parameter(
@@ -300,10 +300,10 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="tag",
-	 * 			description="The tag",
+	 * 			name="label",
+	 * 			description="The labelid",
 	 * 			paramType="path",
-	 * 			required=true,
+	 * 			required=false,
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
@@ -320,12 +320,12 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/episodes/tag/:tag', function($tag) use ($app) {
+	$app -> get('/episodes/label/:label', function($label) use ($app) {
 		$exclude = $app -> request -> params('exclude');
 		if ($exclude != null){
-			json($app->db->get_episodes(null, $tag, $exclude));
+			json($app->db->get_episodes(null, $label, $exclude));
 		} else {
-			json($app->db->get_episodes(null, $tag));
+			json($app->db->get_episodes(null, $label));
 		}
 	});
 
@@ -385,6 +385,38 @@ $app -> group('/library', function() use ($app) {
 		opml($app->db->get_opml());
 	});
 	
+	
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/casts.opml",
+	 * 	description="Adds content of opml to users subscriptions",
+	 * 	@SWG\Operation(
+	 * 		method="POST",
+	 * 		nickname="Adds content of opml to users subscriptions",
+	 * 		summary="Adds content of opml to users subscriptions",
+     * 		type="void",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="json",
+	 * 			description="Content of a regular opml file",
+	 * 			paramType="body",
+	 * 			required=true,
+	 * 			type="array",
+	 * 			items="$ref:opml"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
 	$app -> post('/casts.opml', function() use ($app) {
 		json(array("Not" => "Implemented"));
 	});
@@ -743,6 +775,9 @@ $app -> group('/library', function() use ($app) {
 			$sth -> bindParam(":content",$content);
 			$sth -> bindParam(":expanded",$expanded);
 			$sth -> execute();
+			$labelid = $sth->lastInsertId();
+			
+			$app->db->add_to_label_root("label/" . $labelid);
 		} else {
 			$app->halt(400, "Exsisting label");
 		}
@@ -788,6 +823,10 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
 	 * 			message="Bad token"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Existing label"
 	 * 		)
 	 * 	)
 	 * )
@@ -832,7 +871,7 @@ $app -> group('/library', function() use ($app) {
 			$sth -> bindParam(":expanded",$expanded);
 			$sth -> execute();
 		} else {
-			$app->halt(400, "Exsisting label");
+			$app->halt(400, "Existing label");
 		}
 	});
 

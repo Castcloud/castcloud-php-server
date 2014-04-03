@@ -77,6 +77,43 @@
         },
         {
             "path": "/library/casts.opml",
+            "description": "Adds content of opml to users subscriptions",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Adds content of opml to users subscriptions",
+                    "nickname": "Adds content of opml to users subscriptions",
+                    "type": "void",
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "json",
+                            "type": "array",
+                            "required": true,
+                            "description": "Content of a regular opml file",
+                            "items": {
+                                "$ref": "opml"
+                            }
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/library/casts.opml",
             "description": "Get users subcriptions",
             "operations": [
                 {
@@ -181,13 +218,13 @@
             ]
         },
         {
-            "path": "/library/episodes/tag/{tag}",
-            "description": "Get all episodes of a tag",
+            "path": "/library/episodes/label/{label}",
+            "description": "Get all episodes of a label",
             "operations": [
                 {
                     "method": "GET",
-                    "summary": "Get episodes for tag",
-                    "nickname": "Get episodes for tag",
+                    "summary": "Get episodes for label",
+                    "nickname": "Get episodes for label",
                     "type": "array",
                     "items": {
                         "$ref": "episode"
@@ -202,10 +239,10 @@
                         },
                         {
                             "paramType": "path",
-                            "name": "tag",
+                            "name": "label",
                             "type": "string",
-                            "required": true,
-                            "description": "The tag"
+                            "required": false,
+                            "description": "The labelid"
                         },
                         {
                             "paramType": "query",
@@ -470,6 +507,10 @@
                         {
                             "code": 400,
                             "message": "Bad token"
+                        },
+                        {
+                            "code": 400,
+                            "message": "Existing label"
                         }
                     ]
                 }

@@ -70,7 +70,7 @@ class DB {
 		return $cast;
 	}
 	
-	function get_label($name = null) {
+	function get_label($name = null, $labelid = null) {
 		include_once 'models/label.php';
 		$userid = $GLOBALS['app']->userid;
 
@@ -88,6 +88,11 @@ class DB {
 		if ($name != null){
 			$query .= " AND label.name = :name";
 			$inputs[":name"] = $name;
+		}
+		
+		if ($name != null){
+			$query .= " AND label.labelid = :labelid";
+			$inputs[":labelid"] = $labelid;
 		}
 		
 		$dbh = $GLOBALS['dbh'];
@@ -126,15 +131,22 @@ class DB {
 		$sth -> execute();
 	}
 
-	function get_episodes($castid, $tag, $exclude = "70", $since = null) {
+	function get_episodes($castid, $labelid, $exclude = "70", $since = null) {
 		include_once 'models/episode.php';
 		
+		$label = null;
 		$userid = $GLOBALS['app']->userid;
 		
-		// explode and clear " " and ""
-		$exclude = explode(',', $exclude);
-		$exclude = array_map('trim', $exclude);
-		$exclude = array_diff($exclude, array(''));
+		if ($labelid != null){
+			$label = $this->get_label(null, $labelid);
+			if($label < 1){
+				// Label most likely unvalid labelid
+				return array();
+			}
+			$label = superexplode($label[0]->content);
+		}
+		
+		$exclude = superexplode($exclude);
 		$inputs = array();
 		
 		$query = "SELECT
@@ -161,20 +173,23 @@ class DB {
 		$query .= " AND event.UserID = :userid
 			LEFT JOIN 
 				{$this->db_prefix}subscription AS subs
-				ON subs.CastID = feed.CastID";
-		if ($tag != null) {
-			$query.=" LEFT JOIN 
-				{$this->db_prefix}tag AS tag
-				ON subs.SubscriptionID = tag.SubscriptionID
-				AND tag.Name = :tag";
-			$inputs[":tag"] = $tag;
-		}
-		$query .= " WHERE
+				ON subs.CastID = feed.CastID
+			WHERE
 			event.ItemID IS NULL";
 		$inputs[":userid"] = $userid;
 		
-		if ($tag != null){
-			$query.= " AND tag.Name IS NOT NULL";
+		if ($label != null){
+			$query .= " AND (";
+			for ($i = 0; $i < count($label); $i++) {
+				if (startsWith($label[$i], "cast/")){
+					if ($i != 0){
+						$query .= " OR";
+					}
+					$query .= " feed.castid = :castid" . $i;
+					$inputs[":castid" . $i] = substr($label[$i], strlen("cast/"));;
+				}
+			} 
+			$query .= " )";
 		}
 
 		if ($since != null) {
