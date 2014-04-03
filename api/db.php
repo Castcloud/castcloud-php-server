@@ -82,10 +82,11 @@ class DB {
 			FROM 
 			{$this->db_prefix}label AS label
 			WHERE
-			label.userid=:userid";
+			label.userid = :userid";
 		$inputs = array(":userid" => $userid);
+		
 		if ($name != null){
-			$query .= "AND label.name = :name";
+			$query .= " AND label.name = :name";
 			$inputs[":name"] = $name;
 		}
 		
@@ -101,24 +102,30 @@ class DB {
 		return $label;
 	}
 
-	function add_to_label_root($castid){
+	function add_to_label_root($value){
 		$dbh = $GLOBALS['dbh'];
 		
 		$root = $this->get_label("root");
 		
-		if(empty($root)){
+		if($root = null){
 			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}label
 				(userid, name, content, expanded) 
 				VALUES($userid, :name, :content, :expanded)");
 			$sth -> bindParam(":name","root");
-			$sth -> bindParam(":content",$content);
-			$sth -> bindParam(":expanded",$expanded);
+			$sth -> bindParam(":content",$value);
+			$sth -> bindParam(":expanded",TRUE);
 			$sth -> execute();
+			return;
 		}
 		
+		$root->content .= $value;
 		
-		
-		
+		$sth = $dbh -> prepare("UPDATE {$db_prefix}label
+			SET content = :value
+			WHERE LabelID = :id");
+		$sth -> bindParam(":content",$root->content);
+		$sth -> bindParam(":id",$root->id);
+		$sth -> execute();
 	}
 
 	function get_episodes($castid, $tag, $exclude = "70", $since = null) {

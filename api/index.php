@@ -433,6 +433,8 @@ $app -> group('/library', function() use ($app) {
 		
 		$castid = crawl($feedurl);
 		
+		$app->db->add_to_label_root("cast/" . $castid);
+		
 		if ($name == null){
 			$castinfo = $app->db->get_cast($castid);
 			if (array_key_exists("title",$castinfo)){
