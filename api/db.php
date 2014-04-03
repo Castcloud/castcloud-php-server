@@ -96,32 +96,30 @@ class DB {
 		
 		$label = $sth->fetchAll(PDO::FETCH_CLASS, "label");
 		
-		if (($name != null) && (count($label) == 1)){
-			return $label[0];
-		}
 		return $label;
 	}
 
 	function add_to_label_root($value){
 		$dbh = $GLOBALS['dbh'];
+		$userid = $GLOBALS['app']->userid;
 		
 		$root = $this->get_label("root");
 		
-		if($root = null){
-			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}label
+		if(empty($root)){
+			$sth = $dbh -> prepare("INSERT INTO {$this->db_prefix}label
 				(userid, name, content, expanded) 
-				VALUES($userid, :name, :content, :expanded)");
-			$sth -> bindParam(":name","root");
+				VALUES($userid, 'root', :content, TRUE)");
 			$sth -> bindParam(":content",$value);
-			$sth -> bindParam(":expanded",TRUE);
 			$sth -> execute();
 			return;
 		}
 		
-		$root->content .= $value;
+		$root = $root[0];
+				
+		$root->content .= "," . $value;
 		
-		$sth = $dbh -> prepare("UPDATE {$db_prefix}label
-			SET content = :value
+		$sth = $dbh -> prepare("UPDATE {$this->db_prefix}label
+			SET content = :content
 			WHERE LabelID = :id");
 		$sth -> bindParam(":content",$root->content);
 		$sth -> bindParam(":id",$root->id);
