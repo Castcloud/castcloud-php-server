@@ -213,11 +213,11 @@ class DB {
 			foreach ($result as $row) {
 				$itemid = $row['ItemID'];
 				$castid = $row['CastID'];
-				if ($itemid != $previtemid) {
-					$i++;
-				}
-
 				if (startsWith($row['Location'], "channel/item")) {
+					if ($itemid != $previtemid) {
+						$i++;
+					}
+				
 					if (!isset($episodes[$i])) {
 						$episodes[$i] = new episode($itemid, $castid, null, array());
 						$episodes[$i]->lastevent = $this->get_events($itemid, null, 1);
