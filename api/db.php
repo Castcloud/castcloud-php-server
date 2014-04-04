@@ -1,4 +1,11 @@
 <?php
+date_default_timezone_set('utc');
+$current;
+GLOBAL $current;
+function cmp($a, $b) {
+	return strtotime($GLOBALS['current'][$a]->feed["pubDate"]) < strtotime($GLOBALS['current'][$b]->feed["pubDate"]);
+}
+
 class DB {
 	private $dbh;
 	private $db_prefix;
@@ -240,8 +247,11 @@ class DB {
 			}
 		}
 
-		return $episodes;
-	}
+		$GLOBALS['current'] = $episodes;
+		uksort($episodes, 'cmp');
+
+		return array_values($episodes);
+	}	
 
 	function get_events($itemid, $since, $limit = null) {
 		include_once 'models/event.php';
