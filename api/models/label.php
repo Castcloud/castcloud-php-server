@@ -3,7 +3,12 @@
  * @SWG\Model(id="cast",required="id, name, url, feed")
  */
 class label
-{	
+{
+	function __construct()
+	{
+		$this->expanded = (bool)$this->expanded;
+	}
+	
     /**
      * @SWG\Property(name="id",type="integer",format="int64",description="The labels individual ID")
      */

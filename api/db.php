@@ -85,7 +85,7 @@ class DB {
 			label.LabelID AS id,
 			label.name,
 			label.content,
-			label.Expanded
+			label.expanded
 			FROM 
 			{$this->db_prefix}label AS label
 			WHERE
