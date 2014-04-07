@@ -97,7 +97,7 @@ class DB {
 			$inputs[":name"] = $name;
 		}
 		
-		if ($name != null){
+		if ($labelid != null){
 			$query .= " AND label.labelid = :labelid";
 			$inputs[":labelid"] = $labelid;
 		}

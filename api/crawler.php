@@ -4,15 +4,13 @@ include 'cc-settings.php';
 $push_this = array();
 GLOBAL $push_this;
 
-if (isset($_GET['t'])){
+if (php_sapi_name() == "cli"){
 	include 'cc-settings.php';
-	if ($_GET['t'] == $crawl_token) {
-		include 'util.php';
-		$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
-		if ($sth) {
-			foreach ($sth as $row) {
-				crawl($row['URL']);
-			}
+	include 'util.php';
+	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
+	if ($sth) {
+		foreach ($sth as $row) {
+			crawl($row['URL']);
 		}
 	}
 }
