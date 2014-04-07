@@ -688,7 +688,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/label', function() use ($app) {	
+	$app -> get('/labels', function() use ($app) {	
 		json($app->db->get_label());
 	});
 	
@@ -736,7 +736,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> post('/label', function() use ($app) {
+	$app -> post('/labels', function() use ($app) {
 		$name = $app -> request -> params('name');
 		$content = $app -> request -> params('content');
 		$expanded = $app -> request -> params('expanded');
@@ -831,7 +831,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> post('/label/:id', function($id) use ($app) {
+	$app -> post('/labels/:id', function($id) use ($app) {
 		$name = $app -> request -> params('name');
 		$content = $app -> request -> params('content');
 		$expanded = $app -> request -> params('expanded');
