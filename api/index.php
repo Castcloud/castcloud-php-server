@@ -524,7 +524,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> post('/casts/:id', function($id) use ($app) {
+	$app -> put('/casts/:id', function($id) use ($app) {
 		$name = $app -> request -> params('name');
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
@@ -831,7 +831,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> post('/labels/:id', function($id) use ($app) {
+	$app -> put('/labels/:id', function($id) use ($app) {
 		$name = $app -> request -> params('name');
 		$content = $app -> request -> params('content');
 		$expanded = $app -> request -> params('expanded');

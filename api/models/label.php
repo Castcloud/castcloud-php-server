@@ -7,6 +7,13 @@ class label
 	function __construct()
 	{
 		$this->expanded = (bool)$this->expanded;
+        if (strpos($this->name,"label/") === 0) {
+            $this->name = substr($this->name, 6);
+            $this->root = false;
+        }
+        else {
+            $this->root = true;
+        }
 	}
 	
     /**
@@ -28,4 +35,6 @@ class label
      * @SWG\Property(name="expanded",type="boolean",description="If the label is open or closed")
      */
     public $expanded;
+
+    public $root;
 }
