@@ -36,5 +36,8 @@ class label
      */
     public $expanded;
 
+    /**
+     * @SWG\Property(name="root",type="boolean",description="If this is the root directory")
+     */
     public $root;
 }

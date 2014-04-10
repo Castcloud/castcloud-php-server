@@ -788,7 +788,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	path="/library/label/{id}",
 	 * 	description="Edit a label",
 	 * 	@SWG\Operation(
-	 * 		method="POST",
+	 * 		method="PUT",
 	 * 		nickname="Edit a label",
 	 * 		summary="Edit a label",
 	 * 		type="void",
