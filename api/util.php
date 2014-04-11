@@ -34,4 +34,9 @@ function endsWith($haystack, $needle)
 {
     return $needle === "" || substr($haystack, -strlen($needle)) === $needle;
 }
+
+function contentAfter($haystack, $needle)
+{
+    return substr($haystack, strlen($needle));
+}
 ?>

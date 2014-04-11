@@ -77,6 +77,77 @@ class DB {
 		return $cast;
 	}
 	
+	function clean_Labels(){
+		$labels = $this->get_label(null, null);
+		$subs = $this->get_casts();
+		
+		$allcastsinsubs = array();
+		foreach ($subs as $cast) {
+			$allcastsinsubs[] = $cast->id;
+		}
+		$alllabelids = array();
+		$labelsinroot = array();
+		$allcastsinlabel = array();
+		foreach ($labels as $label) {
+			$content = superexplode($label->content);
+			foreach ($content as $contentitem) {
+				if (startsWith($contentitem, "cast/")){
+					$allcastsinlabel[] = contentAfter($contentitem, "cast/");
+				}
+			}
+			if($label->root){
+				foreach ($content as $contentitem) {
+					if (startsWith($contentitem, "label/")){
+						$labelsinroot[] = contentAfter($contentitem, "label/");
+					}
+				}
+			} else {
+				$alllabelids[] = $label->id;
+			}
+		}
+		
+		$castsnotinlabels = array_diff($allcastsinsubs,$allcastsinlabel);
+		foreach ($castsnotinlabels as $castid) {
+			$this->add_to_label_root("cast/" . $castid);
+		}
+		$labelssnotinrootlabel = array_diff($alllabelids,$labelsinroot);
+		foreach ($labelssnotinrootlabel as $labelid) {
+			$this->add_to_label_root("label/" . $labelid);
+		}
+		$removefromlabels = array();
+		$nonexsistingcasts = array_diff($allcastsinlabel,$allcastsinsubs);
+		foreach ($nonexsistingcasts as $castid) {
+			$removefromlabels[] = "cast/" . $castid;
+		}
+		$nonexsistinglables = array_diff($labelsinroot,$alllabelids);
+		foreach ($nonexsistinglables as $labelid) {
+			$removefromlabels[] = "label/" . $labelid;
+		}
+		// We need to refresh the labels
+		$labels = $this->get_label(null, null);
+		$query = "UPDATE {$this->db_prefix}label
+			SET content = :content
+			WHERE labelid = :id
+			AND userid = :userid";
+		$dbh = $GLOBALS['dbh'];
+		$sth = $dbh -> prepare($query);
+		$userid = $GLOBALS['app']->userid;
+		foreach ($labels as $label) {
+			$content = $label->content;
+			foreach ($removefromlabels as $removee) {
+				$content = str_replace($removee, "", $content);
+			}
+			$content = implode(",",superexplode($content));
+			
+			$inputs = array();
+			$inputs[":content"] = $content;
+			$inputs[":id"] = $label->id;
+			$inputs[":userid"] = $userid;
+			
+			$sth -> execute($inputs);
+		}
+	}
+	
 	function get_label($name = null, $labelid = null) {
 		include_once 'models/label.php';
 		$userid = $GLOBALS['app']->userid;
@@ -193,7 +264,7 @@ class DB {
 						$query .= " OR";
 					}
 					$query .= " feed.castid = :castid" . $i;
-					$inputs[":castid" . $i] = substr($label[$i], strlen("cast/"));;
+					$inputs[":castid" . $i] = substr($label[$i], strlen("cast/"));
 				}
 			} 
 			$query .= " )";
