@@ -666,7 +666,7 @@ $app -> group('/library', function() use ($app) {
 
 	/**
 	 * @SWG\Api(
-	 * 	path="/library/label",
+	 * 	path="/library/labels",
 	 * 	description="Get users labels",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
@@ -694,7 +694,7 @@ $app -> group('/library', function() use ($app) {
 	
 	/**
 	 * @SWG\Api(
-	 * 	path="/library/label",
+	 * 	path="/library/labels",
 	 * 	description="Create a new label",
 	 * 	@SWG\Operation(
 	 * 		method="POST",
@@ -783,9 +783,9 @@ $app -> group('/library', function() use ($app) {
 		}
 	});
 	
-		/**
+	/**
 	 * @SWG\Api(
-	 * 	path="/library/label/{id}",
+	 * 	path="/library/labels/{id}",
 	 * 	description="Edit a label",
 	 * 	@SWG\Operation(
 	 * 		method="PUT",
@@ -800,17 +800,24 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
+	 * 			name="id",
+	 * 			description="The id of the label you want to edit",
+	 * 			paramType="path",
+	 * 			required=true,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\Parameter(
 	 * 			name="name",
 	 * 			description="The name of the new label",
 	 * 			paramType="form",
-	 * 			required=true,
+	 * 			required=false,
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="content",
 	 * 			description="The content of the label. See GET label for formatting",
 	 * 			paramType="form",
-	 * 			required=true,
+	 * 			required=false,
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
@@ -823,10 +830,6 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
 	 * 			message="Bad token"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Existing label"
 	 * 		)
 	 * 	)
 	 * )
@@ -836,7 +839,21 @@ $app -> group('/library', function() use ($app) {
 		$content = $app -> request -> params('content');
 		$expanded = $app -> request -> params('expanded');
 		
-		if (!(strpos($name,"label/") === 0) && !($name == "root")){
+		$dbh = $GLOBALS['dbh'];
+		$db_prefix = $GLOBALS['db_prefix'];
+		$userid = $app -> userid;
+		
+		$sth = $dbh -> prepare("SELECT count(*)
+			FROM {$db_prefix}label AS label
+			WHERE
+			label.labelid = :id
+			AND label.name=\"root\"");
+		$sth -> bindParam(":id",$id);
+		$sth -> execute();
+		$result = $sth -> fetchAll();
+		$isroot = ($result["0"]["0"] >= 1);
+				
+		if ($name != null && !(strpos($name,"label/") === 0)){
 			$name = "label/" . $name; 
 		}
 				
@@ -844,35 +861,42 @@ $app -> group('/library', function() use ($app) {
 			$expanded = ($expanded == "true");
 		}
 		
-		if (($expanded == null) || ($name == "root")){
-			$expanded = ($name == "root");
+		$query = "UPDATE {$db_prefix}label
+				SET";
+		$inputs = array();
+		
+		$wheres = 0;
+		
+		if(!$isroot && $name != null){
+			$query .= " name = :name";
+			$inputs[":name"] = $name;
+			$wheres++;
 		}
 		
-		$dbh = $GLOBALS['dbh'];
-		$db_prefix = $GLOBALS['db_prefix'];
-		$userid = $app -> userid;
-		
-		$sth = $dbh -> prepare("SELECT *
-			FROM {$db_prefix}label AS label
-			WHERE
-			label.LabelID = :id
-			AND label.userid=$userid");
-		$sth -> bindParam(":id",$id);
-		$sth -> execute();
-		
-		$result = $sth -> fetchAll();
-		
-		if ($result["0"]["0"] < 1){
-			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}label
-				(userid, name, content, expanded) 
-				VALUES($userid, :name, :content, :expanded)");
-			$sth -> bindParam(":name",$name);
-			$sth -> bindParam(":content",$content);
-			$sth -> bindParam(":expanded",$expanded);
-			$sth -> execute();
-		} else {
-			$app->halt(400, "Existing label");
+		if($content != null){
+			if($wheres > 0){
+				$query .= ",";
+			}
+			$query .= " content = :content";
+			$inputs[":content"] = $content;
+			$wheres++;
 		}
+
+		if(!$isroot && ($expanded !== null)){
+			if($wheres > 0){ 
+				$query .= ",";
+			}
+			$query .= " expanded = :expanded";
+			$inputs[":expanded"] = $expanded;
+		}
+		
+		$query .= " WHERE labelid = :id
+			AND userid = :userid";
+		$inputs[":id"] = $id;
+		$inputs[":userid"] = $app->userid;
+		
+		$sth = $dbh -> prepare($query);
+		$sth -> execute($inputs);
 	});
 
 });

@@ -387,7 +387,7 @@
             ]
         },
         {
-            "path": "/library/label",
+            "path": "/library/labels",
             "description": "Create a new label",
             "operations": [
                 {
@@ -435,7 +435,7 @@
             ]
         },
         {
-            "path": "/library/label",
+            "path": "/library/labels",
             "description": "Get users labels",
             "operations": [
                 {
@@ -465,11 +465,11 @@
             ]
         },
         {
-            "path": "/library/label/{id}",
+            "path": "/library/labels/{id}",
             "description": "Edit a label",
             "operations": [
                 {
-                    "method": "POST",
+                    "method": "PUT",
                     "summary": "Edit a label",
                     "nickname": "Edit a label",
                     "type": "void",
@@ -482,17 +482,24 @@
                             "description": "clients login token"
                         },
                         {
+                            "paramType": "path",
+                            "name": "id",
+                            "type": "integer",
+                            "required": true,
+                            "description": "The id of the label you want to edit"
+                        },
+                        {
                             "paramType": "form",
                             "name": "name",
                             "type": "string",
-                            "required": true,
+                            "required": false,
                             "description": "The name of the new label"
                         },
                         {
                             "paramType": "form",
                             "name": "content",
                             "type": "string",
-                            "required": true,
+                            "required": false,
                             "description": "The content of the label. See GET label for formatting"
                         },
                         {
@@ -507,10 +514,6 @@
                         {
                             "code": 400,
                             "message": "Bad token"
-                        },
-                        {
-                            "code": 400,
-                            "message": "Existing label"
                         }
                     ]
                 }
