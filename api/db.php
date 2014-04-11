@@ -77,74 +77,117 @@ class DB {
 		return $cast;
 	}
 	
+	/**
+	 * Cleans up all the users labels
+	 * Generate first to get all the info we need
+	 * Delete second since the information from the begunning is still fresh
+	 * Add third since this affects the information we have generate irreversably
+	 */
 	function clean_Labels(){
-		$labels = $this->get_label(null, null);
+		// Lets gather up all the stuff
+		$labels = $this->get_label();
 		$subs = $this->get_casts();
 		
+		/*
+		 * GENERATE
+		 */
+		// All the CastIDs from the subscriptions 
 		$allcastsinsubs = array();
 		foreach ($subs as $cast) {
 			$allcastsinsubs[] = $cast->id;
 		}
+		// All the true LabelIDs
 		$alllabelids = array();
+		// All the LabelIDs from root
 		$labelsinroot = array();
+		// All the casts that is in any label
 		$allcastsinlabel = array();
+		// Look throug all labels to fill up the arrays
 		foreach ($labels as $label) {
+			// All the individual enteries inside the label
 			$content = superexplode($label->content);
 			foreach ($content as $contentitem) {
+				// If it is a cast, but them in the array
 				if (startsWith($contentitem, "cast/")){
 					$allcastsinlabel[] = contentAfter($contentitem, "cast/");
 				}
 			}
 			if($label->root){
+				// Lets get the labels inside the root label
 				foreach ($content as $contentitem) {
 					if (startsWith($contentitem, "label/")){
 						$labelsinroot[] = contentAfter($contentitem, "label/");
 					}
 				}
 			} else {
+				// Take note of all LabelIDs that are not root
 				$alllabelids[] = $label->id;
 			}
 		}
 		
-		$castsnotinlabels = array_diff($allcastsinsubs,$allcastsinlabel);
-		foreach ($castsnotinlabels as $castid) {
-			$this->add_to_label_root("cast/" . $castid);
-		}
-		$labelssnotinrootlabel = array_diff($alllabelids,$labelsinroot);
-		foreach ($labelssnotinrootlabel as $labelid) {
-			$this->add_to_label_root("label/" . $labelid);
-		}
+		/*
+		 * DELETE
+		 */
+		// Anything inside any labels that does not actually exist
 		$removefromlabels = array();
+		// Casts that are inside a label but not subscribed too
 		$nonexsistingcasts = array_diff($allcastsinlabel,$allcastsinsubs);
 		foreach ($nonexsistingcasts as $castid) {
 			$removefromlabels[] = "cast/" . $castid;
 		}
+		// Labels that are inside root but does not exsist
 		$nonexsistinglables = array_diff($labelsinroot,$alllabelids);
 		foreach ($nonexsistinglables as $labelid) {
 			$removefromlabels[] = "label/" . $labelid;
 		}
-		// We need to refresh the labels
-		$labels = $this->get_label(null, null);
-		$query = "UPDATE {$this->db_prefix}label
-			SET content = :content
-			WHERE labelid = :id
-			AND userid = :userid";
-		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> prepare($query);
-		$userid = $GLOBALS['app']->userid;
-		foreach ($labels as $label) {
-			$content = $label->content;
-			foreach ($removefromlabels as $removee) {
-				$content = str_replace($removee, "", $content);
+		
+		// No need to bother the database unless there are actuall changes
+		if (!empty($removefromlabels)){
+			// Now its time to rewrite all the labels while removing nonexsisten stuff
+			$query = "UPDATE {$this->db_prefix}label
+				SET content = :content
+				WHERE labelid = :id
+				AND userid = :userid";
+			$dbh = $GLOBALS['dbh'];
+			$sth = $dbh -> prepare($query);
+			$userid = $GLOBALS['app']->userid;
+			foreach ($labels as $label) {
+				$content = $label->content;
+				foreach ($removefromlabels as $removee) {
+					$content = str_replace($removee, "", $content);
+				}
+				$content = implode(",",superexplode($content));
+				
+				$inputs = array();
+				$inputs[":content"] = $content;
+				$inputs[":id"] = $label->id;
+				$inputs[":userid"] = $userid;
+				
+				$sth -> execute($inputs);
 			}
-			$content = implode(",",superexplode($content));
-			
-			$inputs = array();
-			$inputs[":content"] = $content;
-			$inputs[":id"] = $label->id;
-			$inputs[":userid"] = $userid;
-			
-			$sth -> execute($inputs);
+		}
+		
+		/*
+		 * ADD
+		 */
+		// What root is missing
+		$addtoroot = "";
+		// Lets find casts that are not in any label
+		$castsnotinlabels = array_diff($allcastsinsubs,$allcastsinlabel);
+		if (!empty($castsnotinlabels)){
+			$addtoroot .= "cast/" . implode(",cast/", $castsnotinlabels);
+		}
+		// Lets find labels that are not in root
+		$labelssnotinrootlabel = array_diff($alllabelids,$labelsinroot);
+		if (!empty($labelssnotinrootlabel)){
+			if($addtoroot != ""){
+				$addtoroot .= ",";
+			}
+			$addtoroot .= "label/" . implode(",label/", $labelssnotinrootlabel);
+		}
+		if($addtoroot != ""){
+			// Put them into root
+			$this->add_to_label_root($addtoroot);
 		}
 	}
 	
