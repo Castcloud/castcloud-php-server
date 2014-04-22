@@ -4,7 +4,6 @@ include 'models/token.php';
  * @SWG\Resource(
  *   apiVersion="1.0.0",
  *   swaggerVersion="1.2",
- *   basePath="http://api.castcloud.org/api",
  *   resourcePath="/account",
  *   description="Account related operations",
  *   produces="['application/json','application/xml']"

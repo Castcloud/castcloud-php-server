@@ -22,7 +22,6 @@ $app -> add(new AuthMiddleware());
  * @SWG\Resource(
  * 	apiVersion="1.0.0",
  * 	swaggerVersion="1.2",
- * 	basePath="http://api.castcloud.org/api",
  * 	resourcePath="/account",
  * 	description="Account related operations",
  * 	produces="['application/json']"
@@ -192,7 +191,6 @@ $app -> group('/account', function() use ($app) {
  * @SWG\Resource(
  *   apiVersion="1.0.0",
  *   swaggerVersion="1.2",
- *   basePath="http://api.castcloud.org/api",
  *   resourcePath="/library",
  *   description="Library related operations",
  *   produces="['application/json']"
