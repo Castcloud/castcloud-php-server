@@ -46,7 +46,7 @@
                             "paramType": "form",
                             "name": "clientversion",
                             "type": "string",
-                            "required": true,
+                            "required": false,
                             "description": "Client Version"
                         },
                         {

@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `prefix_clientauthorization` (
   `ClientID` int(11) NOT NULL,
   `Token` text NOT NULL,
   `ClientDescription` text NOT NULL,
-  `ClientVersion` text NOT NULL,
+  `ClientVersion` text NULL,
   `UUID` text NOT NULL,
   `SeenTS` int(11) NOT NULL,
   PRIMARY KEY (`UniqueClientID`),

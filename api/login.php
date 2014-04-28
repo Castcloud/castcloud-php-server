@@ -48,7 +48,7 @@ include 'models/token.php';
  * 			name="clientversion",
  * 			description="Client Version",
  * 			paramType="form",
- * 			required=true,
+ * 			required=false,
  * 			type="string"
  * 		),
  * 		@SWG\Parameter(
@@ -89,7 +89,7 @@ function post_login($app) {
 	$uuid = $app -> request -> params('uuid');
 	$apikey = $app -> request -> params('apikey');
 
-	$required = array("username", "password", "clientname", "clientdescription", "clientversion", "uuid");
+	$required = array("username", "password", "clientname", "clientdescription", "uuid");
 	$status = "The following parameters are missing: ";
 	$missing = 0;
 	foreach ($required as $key) {
@@ -140,7 +140,7 @@ function post_login($app) {
 					$sth = $dbh -> prepare("INSERT INTO {$db_prefix}clientauthorization (userid, clientid, token, clientdescription, clientversion, uuid, seents) "
 					 . "VALUES($userid, $clientid, '$token', :clientdescription, :clientversion, :uuid, " . time() . ")");
 					$sth -> bindParam(':clientdescription', $clientdescription, PDO::PARAM_STR);
-					$sth -> bindParam(':clientversion', $clientversion, PDO::PARAM_STR);
+					$sth -> bindParam(':clientversion', $clientversion, PDO::PARAM_STR|PDO::PARAM_NULL);
 					$sth -> bindParam(':uuid', $uuid, PDO::PARAM_STR);
 					$sth -> execute();
 				}
