@@ -39,6 +39,8 @@ function crawl($casturl) {
 		$castid = $dbh->lastInsertId();
 	}
 
+	$GLOBALS['push_this'] = array();
+
 	next_child($xml->channel, "channel/", $castid, $time);
 
 	$push_this = $GLOBALS['push_this'];
