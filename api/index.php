@@ -301,7 +301,7 @@ $app -> group('/library', function() use ($app) {
 	 * 			name="label",
 	 * 			description="The labelid",
 	 * 			paramType="path",
-	 * 			required=false,
+	 * 			required=true,
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
