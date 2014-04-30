@@ -278,6 +278,10 @@ class DB {
 			FROM
 			{$this->db_prefix}feedcontent AS feed
 			LEFT JOIN 
+				{$this->db_prefix}subscription AS subs
+				ON subs.CastID = feed.CastID
+				AND subs.UserID = :userid
+			LEFT JOIN 
 				{$this->db_prefix}event AS event
 				ON feed.ItemID = event.ItemID";
 		if (!empty($exclude)){
@@ -288,15 +292,17 @@ class DB {
 				}
 				$query .= " event.TYPE = :exclude" . $i;
 				$inputs[":exclude" . $i] = $exclude[$i];
+				
+				$query .= " AND ReceivedTS = (SELECT MAX(ReceivedTS)
+          			FROM {$this->db_prefix}event AS ev2
+         			WHERE ev2.ItemID = event.ItemID
+         			AND ev2.UserID = :userid)";
 			} 
 			$query .= " )";
 		}
 		$query .= " AND event.UserID = :userid
-			LEFT JOIN 
-				{$this->db_prefix}subscription AS subs
-				ON subs.CastID = feed.CastID
-			WHERE
-			event.ItemID IS NULL";
+			WHERE event.ItemID IS NULL
+			AND subs.CastID IS NOT NULL";
 		$inputs[":userid"] = $userid;
 		
 		if ($label != null){
