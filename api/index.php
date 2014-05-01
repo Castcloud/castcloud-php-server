@@ -396,9 +396,9 @@ $app -> group('/library', function() use ($app) {
 	 * 	description="Get users subcriptions",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
-	 * 		nickname="Get users subcriptions",
-	 * 		summary="Get users subcriptions",
-	 * 		type="$ref:opml",
+	 * 		nickname="Get users subcriptions as opml",
+	 * 		summary="Get users subcriptions as opml",
+	 * 		type="array",
 	 * 		produces="['text/x-opml']",
 	 * 		@SWG\Parameter(
 	 * 			name="Authorization",
@@ -415,7 +415,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app->get('/casts.opml', function() use($app) {
-		opml($app->db->get_opml());
+		opml($app->db->get_label(), $app->db->get_casts());
 	});
 	
 	

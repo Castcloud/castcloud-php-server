@@ -1,34 +1,44 @@
 <?php echo '<?xml version="1.0" encoding="UTF-8"?>';?>
 <opml version="1.1">
 	<head>
-		<title><?php echo $opml->title; ?></title>
-		<dateCreated><?php echo $opml->dateCreated; ?></dateCreated>
-		<dateModified><?php echo $opml->dateCreated; ?></dateModified>
-		<ownerName><?php echo $opml->ownerName; ?></ownerName> 
-		<ownerEmail><?php echo $opml->ownerEmail; ?></ownerEmail>
+		<title>Castcloud opml export</title>
+		<dateCreated><?= htmlspecialchars(date("r", time())); ?></dateCreated>
+		<dateModified><?= htmlspecialchars(date("r", time())); ?></dateModified>
+		<ownerName><?= htmlspecialchars($GLOBALS['app']->username); ?></ownerName> 
+		<ownerEmail><?= htmlspecialchars($GLOBALS['app']->mailaddress); ?></ownerEmail>
 	</head>
 	<body>
-	<?php foreach ($opml->tags as $tag){ ?>
-		<outline text="<?php echo $tag->title; ?>">
-		<?php foreach ($tag->casts as $cast){ ?>
+	<?php
+function output_label($label, $labels, $casts){
+	$labelcontent = superexplode($label->content);
+	foreach ($labelcontent as $item) {
+		if(startsWith($item, "label/")){
+			$next_label = get_unit_with_id(contentAfter($item, "label/"),$labels);
+			?>
+			<outline text="<?= htmlspecialchars($next_label->name); ?>">
+				<?php output_label($next_label,$labels, $casts); ?>
+			</outline><?php
+		} elseif(startsWith($item, "cast/")) {
+			$cast = get_unit_with_id(contentAfter($item, "cast/"), $casts);
+			?>
 			<outline
 				type="rss"
-				title="<?php echo $cast->title; ?>"
-				text="<?php echo $cast->title; ?>"
-				xmlUrl="<?php echo $cast->url; ?>"
-				description="<?php echo $cast->description; ?>"
-			/>
-		<?php } ?>
-		</outline>
-	<?php } ?>
-	<?php foreach ($opml->untagged as $cast){ ?>
-		<outline
-			type="rss"
-			title="<?php echo $cast->title; ?>"
-			text="<?php echo $cast->title; ?>"
-			xmlUrl="<?php echo $cast->url; ?>"
-			description="<?php echo $cast->description; ?>"
-		/>
-	<?php } ?>
+				title="<?= htmlspecialchars($cast->name); ?>"
+				text="<?= htmlspecialchars($cast->name); ?>"
+				xmlUrl="<?= htmlspecialchars($cast->url); ?>"
+				description="<?= htmlspecialchars($cast->feed["description"]); ?>"
+			/><?php
+		}
+	}
+}
+$root_labelid = -1;
+foreach($labels as $label){
+	if ($label->root){
+		$root_labelid = $label->id;
+	}
+}
+output_label(get_unit_with_id($root_labelid,$labels), $labels, $casts);
+
+?>
 	</body>
 </opml>

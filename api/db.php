@@ -473,44 +473,5 @@ class DB {
 			return $sth->fetchAll(PDO::FETCH_CLASS, "setting");
 		}
 	}
-	
-	function get_opml(){
-		include_once 'models/opml.php';
-		$app = $GLOBALS['app'];
-		$casts = $this->get_casts();
-		$opml = new opml();
-		$tags = array();
-		$opml->title = "Castcloud opml export";
-		$opml->dateCreated = date("r", time());
-		$opml->ownerName = $app->username;
-		$opml->ownerEmail = $app->mailaddress;
-		
-		for ($i=0; $i < count($casts); $i++) {
-			if(!empty($casts[$i]->tags)){
-				$tags = array_merge($tags, $casts[$i]->tags);
-			}
-		}
-		
-		$tags = array_unique($tags);
-		foreach ($tags as $tagName) {
-			$opmltag = new opml_tag();
-			$opmltag->title = $tagName;
-			foreach ($casts as $cast) {
-				if (in_array($tagName, $cast->tags)){
-					$opmlcast = new opml_cast();
-					$opmlcast->title = $cast->feed["title"];
-					$opmlcast->url = $cast->url;
-					if (!empty($cast->feed["description"])){
-						$opmlcast->description = $cast->feed["description"];
-					} else {
-						$opmlcast->description = "";
-					}
-					$opmltag->casts[]=$opmlcast;
-				}
-			}
-			$opml->tags[] = $opmltag;
-		}
-		return $opml;
-	}
 }
 ?>

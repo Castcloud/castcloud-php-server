@@ -12,7 +12,7 @@ function json($json) {
 	echo json_encode($json);
 }
 
-function opml($opml) {
+function opml($labels, $casts) {
 	$GLOBALS['app']->response->header('Content-Type', 'text/x-opml');
 	include 'templates/opml.pxml';
 }
@@ -38,5 +38,13 @@ function endsWith($haystack, $needle)
 function contentAfter($haystack, $needle)
 {
     return substr($haystack, strlen($needle));
+}
+
+function get_unit_with_id($id, $array){
+	foreach ($array AS $unit){
+		if ($unit->id == $id){
+			return $unit;
+		}
+	}
 }
 ?>
