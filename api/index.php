@@ -280,6 +280,41 @@ $app -> group('/library', function() use ($app) {
 		}
 	});
 	
+		/**
+	 * @SWG\Api(
+	 * 	path="/library/episode/{itemid}",
+	 * 	description="Get a spesific episode",
+	 * 	@SWG\Operation(
+	 * 		method="GET",
+	 * 		nickname="Get a spesific episode",
+	 * 		summary="Get a spesific episode",
+     * 		type="array",
+     * 		items="$ref:episode",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="itemid",
+	 * 			description="The episodes itemid",
+	 * 			paramType="path",
+	 * 			required=true,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
+	$app -> get('/episode/:itemid', function($itemid) use ($app) {
+		json($app->db->get_episodes(null, null, "", null, $itemid)[0]);
+	});
+	
 	/**
 	 * @SWG\Api(
 	 * 	path="/library/episodes/label/{label}",

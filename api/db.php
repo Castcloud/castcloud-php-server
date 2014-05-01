@@ -1,5 +1,5 @@
 <?php
-date_default_timezone_set('utc');
+date_default_timezone_set('UTC');
 $current;
 GLOBAL $current;
 function cmp($a, $b) {
@@ -252,7 +252,7 @@ class DB {
 		$sth -> execute();
 	}
 
-	function get_episodes($castid, $labelid, $exclude = "70", $since = null) {
+	function get_episodes($castid, $labelid, $exclude = "70", $since = null, $episode = null) {
 		include_once 'models/episode.php';
 		
 		$label = null;
@@ -301,8 +301,7 @@ class DB {
 			$query .= " )";
 		}
 		$query .= " AND event.UserID = :userid
-			WHERE event.ItemID IS NULL
-			AND subs.CastID IS NOT NULL";
+			WHERE subs.CastID IS NOT NULL";
 		$inputs[":userid"] = $userid;
 		
 		if ($label != null){
@@ -318,6 +317,10 @@ class DB {
 			} 
 			$query .= " )";
 		}
+		
+		if (!empty($exclude)) {
+			$query.=" AND event.ItemID IS NULL";
+		}
 
 		if ($since != null) {
 			$query.=" AND feed.crawlts > :since";
@@ -329,8 +332,17 @@ class DB {
 			$inputs[":castid"] = $castid;
 		}
 		
+		if ($episode != null) {
+			$query.=" AND feed.ItemID = :itemid";
+			$inputs[":itemid"] = $episode;
+		}
+		
+		//var_dump($query,$inputs);
+		
 		$sth = $this->dbh->prepare($query);
 		$sth->execute($inputs);
+		
+		//var_dump($sth->errorInfo());
 		
 		$episodes = array();
 		$itemid = null;
