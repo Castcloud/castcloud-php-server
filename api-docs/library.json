@@ -218,6 +218,43 @@
             ]
         },
         {
+            "path": "/library/episode/{itemid}",
+            "description": "Get a spesific episode",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get a spesific episode",
+                    "nickname": "Get a spesific episode",
+                    "type": "array",
+                    "items": {
+                        "$ref": "episode"
+                    },
+                    "parameters": [
+                        {
+                            "paramType": "header",
+                            "name": "Authorization",
+                            "type": "string",
+                            "required": true,
+                            "description": "clients login token"
+                        },
+                        {
+                            "paramType": "path",
+                            "name": "itemid",
+                            "type": "integer",
+                            "required": true,
+                            "description": "The episodes itemid"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 400,
+                            "message": "Bad token"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "path": "/library/episodes/label/{label}",
             "description": "Get all episodes of a label",
             "operations": [
