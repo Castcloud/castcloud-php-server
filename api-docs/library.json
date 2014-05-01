@@ -94,13 +94,10 @@
                         },
                         {
                             "paramType": "body",
-                            "name": "json",
-                            "type": "array",
+                            "name": "opml",
+                            "type": "string",
                             "required": true,
-                            "description": "Content of a regular opml file",
-                            "items": {
-                                "$ref": "opml"
-                            }
+                            "description": "Content of a regular opml file"
                         }
                     ],
                     "responseMessages": [

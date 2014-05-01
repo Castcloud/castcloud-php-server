@@ -436,12 +436,11 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="json",
+	 * 			name="opml",
 	 * 			description="Content of a regular opml file",
 	 * 			paramType="body",
 	 * 			required=true,
-	 * 			type="array",
-	 * 			items="$ref:opml"
+	 * 			type="string"
 	 * 		),
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
@@ -451,7 +450,9 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/casts.opml', function() use ($app) {
-		json(array("Not" => "Implemented"));
+		$opml = $app->request->params('opml');
+		$opml = simplexml_load_string($opml);
+		var_dump($opml);
 	});
 
 	/**
