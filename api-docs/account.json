@@ -154,11 +154,11 @@
                             "description": "clients login token"
                         },
                         {
-                            "paramType": "body",
+                            "paramType": "form",
                             "name": "json",
                             "type": "array",
                             "required": true,
-                            "description": "New or modified settings (TBD)",
+                            "description": "New or modified settings",
                             "items": {
                                 "$ref": "setting"
                             }

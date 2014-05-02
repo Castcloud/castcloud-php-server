@@ -226,28 +226,33 @@ class DB {
 	}
 
 	function add_to_label_root($value){
+		$this->add_to_label($value, "root");
+	}
+	
+	function add_to_label($value, $labelname){
 		$dbh = $GLOBALS['dbh'];
 		$userid = $GLOBALS['app']->userid;
 		
-		$root = $this->get_label("root");
+		$label = $this->get_label($labelname);
 		
 		if(empty($root)){
 			$sth = $dbh -> prepare("INSERT INTO {$this->db_prefix}label
 				(userid, name, content, expanded) 
-				VALUES($userid, 'root', :content, TRUE)");
+				VALUES($userid, :labelname, :content, TRUE)");
 			$sth -> bindParam(":content",$value);
+			$sth -> bindParam(":labelname",$labelname);
 			$sth -> execute();
 			return;
 		}
 		
-		$root = $root[0];
-				
-		$root->content .= "," . $value;
+		$label = $label[0];
+		
+		$label->content .= "," . $value;
 		
 		$sth = $dbh -> prepare("UPDATE {$this->db_prefix}label
 			SET content = :content
 			WHERE LabelID = :id");
-		$sth -> bindParam(":content",$root->content);
+		$sth -> bindParam(":content",$label->content);
 		$sth -> bindParam(":id",$root->id);
 		$sth -> execute();
 	}
@@ -471,6 +476,59 @@ class DB {
 
 		if ($sth) {
 			return $sth->fetchAll(PDO::FETCH_CLASS, "setting");
+		}
+	}
+	
+	function import_opml($opml, $label = null){
+		foreach ($opml->outline as $outline) {
+			
+			$title = null;
+			
+			if (isset($outline["title"])){
+				$title = $outline["title"];
+			} else if (isset($outline["text"])){
+				$title = $outline["text"];
+			}
+			
+			if($outline["xmlUrl"] == null){
+				if ($label == null){
+					$label = $title;
+				}
+				$this->import_opml($outline, $label);
+			} else {
+				$this->subscribe_to((string) $outline["xmlUrl"],(string) $title,(string) $label);
+			}
+		}
+	}
+	
+	function subscribe_to($feedurl, $name = null, $label = null){
+		$userid = $GLOBALS['app'] -> userid;
+		
+		$castid = crawl($feedurl);
+		
+		if ($label == null){
+			$label = "root";
+		}
+		
+		$this->add_to_label("cast/" . $castid, $label);
+		
+		if ($name == null){
+			$castinfo = $app->db->get_cast($castid);
+			if (array_key_exists("title",$castinfo)){
+				$name = $castinfo["title"];
+			} else {
+				$name = $feedurl;
+			}
+		}
+		
+		$dbh = $GLOBALS['dbh'];
+		$db_prefix = $GLOBALS['db_prefix'];
+		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE castid=$castid AND userid=$userid");
+		if ($sth && $sth -> rowCount() < 1) {
+			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (castid, name, userid) 
+			VALUES($castid, :name, $userid)");
+			$sth -> bindParam(":name",$name);
+			$sth -> execute();
 		}
 	}
 }

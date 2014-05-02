@@ -107,8 +107,8 @@ $app -> group('/account', function() use ($app) {
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="json",
-	 * 			description="New or modified settings (TBD)",
-	 * 			paramType="body",
+	 * 			description="New or modified settings",
+	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="array",
 	 * 			items="$ref:setting"
@@ -217,7 +217,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\Parameter(
 	 * 			name="since",
 	 * 			description="timestamp of last call",
-	 * 			paramType="query",
+	 * 			paramType="form",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
@@ -260,7 +260,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\Parameter(
 	 * 			name="exclude",
 	 * 			description="Comma separated event ids to exclude. Default: 70",
-	 * 			paramType="query",
+	 * 			paramType="form",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
@@ -438,7 +438,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\Parameter(
 	 * 			name="opml",
 	 * 			description="Content of a regular opml file",
-	 * 			paramType="body",
+	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="string"
 	 * 		),
@@ -452,7 +452,8 @@ $app -> group('/library', function() use ($app) {
 	$app -> post('/casts.opml', function() use ($app) {
 		$opml = $app->request->params('opml');
 		$opml = simplexml_load_string($opml);
-		var_dump($opml);
+		$app->db->import_opml($opml->body);
+		
 	});
 
 	/**
@@ -495,30 +496,7 @@ $app -> group('/library', function() use ($app) {
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
 		$name = $app -> request -> params('name');
-		$userid = $app -> userid;
-		
-		$castid = crawl($feedurl);
-		
-		$app->db->add_to_label_root("cast/" . $castid);
-		
-		if ($name == null){
-			$castinfo = $app->db->get_cast($castid);
-			if (array_key_exists("title",$castinfo)){
-				$name = $castinfo["title"];
-			} else {
-				$name = $feedurl;
-			}
-		}
-		
-		$dbh = $GLOBALS['dbh'];
-		$db_prefix = $GLOBALS['db_prefix'];
-		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE castid=$castid AND userid=$userid");
-		if ($sth && $sth -> rowCount() < 1) {
-			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (castid, name, userid) 
-			VALUES($castid, :name, $userid)");
-			$sth -> bindParam(":name",$name);
-			$sth -> execute();
-		}
+		$app->db->subscribe_to($feedurl, $name);
 	});
 	
 	/**
@@ -626,14 +604,14 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\Parameter(
 	 * 			name="since",
 	 * 			description="timestamp of last call",
-	 * 			paramType="query",
+	 * 			paramType="form",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="ItemID",
 	 * 			description="filter by ItemID",
-	 * 			paramType="query",
+	 * 			paramType="form",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
@@ -672,8 +650,8 @@ $app -> group('/library', function() use ($app) {
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="json",
-	 * 			description="New events (TBD)",
-	 * 			paramType="body",
+	 * 			description="New events",
+	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="array",
 	 * 			items="$ref:event"

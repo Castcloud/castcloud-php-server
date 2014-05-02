@@ -93,7 +93,7 @@
                             "description": "clients login token"
                         },
                         {
-                            "paramType": "body",
+                            "paramType": "form",
                             "name": "opml",
                             "type": "string",
                             "required": true,
@@ -323,7 +323,7 @@
                             "description": "The casts id"
                         },
                         {
-                            "paramType": "query",
+                            "paramType": "form",
                             "name": "exclude",
                             "type": "integer",
                             "required": false,
@@ -357,11 +357,11 @@
                             "description": "clients login token"
                         },
                         {
-                            "paramType": "body",
+                            "paramType": "form",
                             "name": "json",
                             "type": "array",
                             "required": true,
-                            "description": "New events (TBD)",
+                            "description": "New events",
                             "items": {
                                 "$ref": "event"
                             }
@@ -397,14 +397,14 @@
                             "description": "clients login token"
                         },
                         {
-                            "paramType": "query",
+                            "paramType": "form",
                             "name": "since",
                             "type": "integer",
                             "required": false,
                             "description": "timestamp of last call"
                         },
                         {
-                            "paramType": "query",
+                            "paramType": "form",
                             "name": "ItemID",
                             "type": "integer",
                             "required": false,
@@ -571,7 +571,7 @@
                             "description": "clients login token"
                         },
                         {
-                            "paramType": "query",
+                            "paramType": "form",
                             "name": "since",
                             "type": "integer",
                             "required": false,
