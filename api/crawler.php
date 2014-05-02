@@ -26,39 +26,43 @@ function crawl($casturl) {
 	$dbh = $GLOBALS['dbh'];	
 	$db_prefix = $GLOBALS['db_prefix'];
 	$time = time();
-	$xml = simplexml_load_file($casturl);
+	$castid = null;
+	
+	try {
+		$xml = simplexml_load_file($casturl);
 
-	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
-	if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-		$castid = $result['CastID'];
-		
-		$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time");
-	}
-	else {
-		$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$casturl', $time)");
-		$castid = $dbh->lastInsertId();
-	}
-
-	$GLOBALS['push_this'] = array();
-
-	next_child($xml->channel, "channel/", $castid, $time);
-
-	$push_this = $GLOBALS['push_this'];
-
-	if (sizeof($push_this) > 0) {
-		$dbh->beginTransaction();
-		$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
-		$vals = array();
-		foreach ($push_this as $line) {
-			array_push($vals, $line["castid"]);
-			array_push($vals, $line["location"]);
-			array_push($vals, $line["itemid"]);
-			array_push($vals, $line["content"]);
-			array_push($vals, $line["time"]);
+		$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
+		if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+			$castid = $result['CastID'];
+			
+			$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time");
 		}
-		$sth->execute($vals);
-		$dbh->commit();
-	}
+		else {
+			$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$casturl', $time)");
+			$castid = $dbh->lastInsertId();
+		}
+
+		$GLOBALS['push_this'] = array();
+
+		next_child($xml->channel, "channel/", $castid, $time);
+
+		$push_this = $GLOBALS['push_this'];
+
+		if (sizeof($push_this) > 0) {
+			$dbh->beginTransaction();
+			$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
+			$vals = array();
+			foreach ($push_this as $line) {
+				array_push($vals, $line["castid"]);
+				array_push($vals, $line["location"]);
+				array_push($vals, $line["itemid"]);
+				array_push($vals, $line["content"]);
+				array_push($vals, $line["time"]);
+			}
+			$sth->execute($vals);
+			$dbh->commit();
+		}
+	} catch (Exception $e) {}
 
 	return $castid;
 }
