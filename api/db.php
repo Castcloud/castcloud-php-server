@@ -111,16 +111,14 @@ class DB {
 				if (startsWith($contentitem, "cast/")){
 					$allcastsinlabel[] = contentAfter($contentitem, "cast/");
 				}
-			}
-			if($label->root){
-				// Lets get the labels inside the root label
-				foreach ($content as $contentitem) {
-					if (startsWith($contentitem, "label/")){
-						$labelsinroot[] = contentAfter($contentitem, "label/");
-					}
+				
+				// If we are in root and we are finding labels, add them to the array
+				if($label->root && startsWith($contentitem, "label/")){
+					$labelsinroot[] = contentAfter($contentitem, "label/");
 				}
-			} else {
-				// Take note of all LabelIDs that are not root
+			}
+			// Take note of all LabelIDs that are not root
+			if(!$label->root){
 				$alllabelids[] = $label->id;
 			}
 		}
@@ -234,8 +232,7 @@ class DB {
 		$userid = $GLOBALS['app']->userid;
 		
 		$label = $this->get_label($labelname);
-		
-		if(empty($root)){
+		if(empty($label)){
 			$sth = $dbh -> prepare("INSERT INTO {$this->db_prefix}label
 				(userid, name, content, expanded) 
 				VALUES($userid, :labelname, :content, TRUE)");
@@ -253,7 +250,7 @@ class DB {
 			SET content = :content
 			WHERE LabelID = :id");
 		$sth -> bindParam(":content",$label->content);
-		$sth -> bindParam(":id",$root->id);
+		$sth -> bindParam(":id",$label->id);
 		$sth -> execute();
 	}
 
@@ -342,12 +339,8 @@ class DB {
 			$inputs[":itemid"] = $episode;
 		}
 		
-		//var_dump($query,$inputs);
-		
 		$sth = $this->dbh->prepare($query);
 		$sth->execute($inputs);
-		
-		//var_dump($sth->errorInfo());
 		
 		$episodes = array();
 		$itemid = null;
@@ -480,9 +473,11 @@ class DB {
 	}
 	
 	function import_opml($opml, $label = null){
+		$PERMALABEL = $label;
 		foreach ($opml->outline as $outline) {
 			
 			$title = null;
+			$label = $PERMALABEL;
 			
 			if (isset($outline["title"])){
 				$title = $outline["title"];
@@ -496,6 +491,9 @@ class DB {
 				}
 				$this->import_opml($outline, $label);
 			} else {
+				if ($label != null){
+					$label = "label/" . $label;
+				}
 				$this->subscribe_to((string) $outline["xmlUrl"],(string) $title,(string) $label);
 			}
 		}
@@ -513,7 +511,7 @@ class DB {
 		$this->add_to_label("cast/" . $castid, $label);
 		
 		if ($name == null){
-			$castinfo = $app->db->get_cast($castid);
+			$castinfo = $this->get_cast($castid);
 			if (array_key_exists("title",$castinfo)){
 				$name = $castinfo["title"];
 			} else {
