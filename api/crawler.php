@@ -19,8 +19,10 @@ if (php_sapi_name() == "cli"){
 	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
 	if ($sth) {
 		$urls = array();
+		$xml = array();
 		foreach ($sth as $row) {
 			array_push($urls, $row['URL']);
+			array_push($xml, $row['XML']);
 			//crawl($row['URL']);
 		}
 		$t = microtime(true);
@@ -28,7 +30,18 @@ if (php_sapi_name() == "cli"){
 		$GLOBALS['download_time'] = microtime(true) - $t;
 		$i = 0;
 		foreach ($feeds as $feed) {
-			crawl2($urls[$i], substr($feed, strpos($feed, "\r\n\r\n") + 4));
+			$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
+			echo $urls[$i]."\n";
+			$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
+			$sth->execute(array($data, $urls[$i]));
+			if (strcmp($xml[$i], $data) != 0) {
+				echo "DERPING\n";
+				crawl2($urls[$i], $data);
+			}
+			else {
+				echo "Skipping\n";
+			}
+			
 			$i++;
 		}
 		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']."sec\ninsert ".$GLOBALS['insert_time']." sec";
