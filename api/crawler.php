@@ -33,27 +33,31 @@ function multiHTTP ($urlArr) {
 	$errstr  = Array(); 
 	for ($x=0;$x<count($urlArr);$x++) { 
 		$urlInfo[$x] = parse_url($urlArr[$x]); 
-		$urlInfo[$x][port] = ($urlInfo[$x][port]) ? $urlInfo[$x][port] : 80; 
-		$urlInfo[$x][path] = ($urlInfo[$x][path]) ? $urlInfo[$x][path] : "/"; 
-		$sockets[$x] = fsockopen($urlInfo[$x][host], $urlInfo[$x][port], 
-			$errno[$x], $errstr[$x], 30); 
-		socket_set_blocking($sockets[$x], FALSE); 
-		$query = ($urlInfo[$x][query]) ? "?" . $urlInfo[$x][query] : ""; 
-		fputs($sockets[$x],"GET " . $urlInfo[$x][path] . "$query HTTP/1.0\r\nHost: " . 
-			$urlInfo[$x][host] . "\r\n\r\n"); 
+		$urlInfo[$x]["port"] = array_key_exists("port", $urlInfo[$x]) ? $urlInfo[$x]["port"] : 80;
+		$urlInfo[$x]["path"] = array_key_exists("path",$urlInfo[$x]) ? $urlInfo[$x]["path"] : "/"; 
+		try{
+			$sockets[$x] = fsockopen($urlInfo[$x]["host"], $urlInfo[$x]["port"], 
+				$errno[$x], $errstr[$x], 3);
+			socket_set_blocking($sockets[$x], FALSE); 
+			$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
+			fputs($sockets[$x],"GET " . $urlInfo[$x]["path"] . "$query HTTP/1.0\r\nHost: " . 
+				$urlInfo[$x]["host"] . "\r\n\r\n"); 
+		} catch (Exception $e){} 
 	}
 	$done = false; 
 	while (!$done) { 
-		for ($x=0; $x < count($urlArr);$x++) { 
-			if (!feof($sockets[$x])) { 
-				if ($retData[$x]) { 
-					$retData[$x] .= fgets($sockets[$x],128); 
+		for ($x=0; $x < count($urlArr);$x++) {
+			try{
+				if (!feof($sockets[$x])) { 
+					if (array_key_exists($x, $retData)) { 
+						$retData[$x] .= fgets($sockets[$x],128); 
+					} else { 
+						$retData[$x] = fgets($sockets[$x],128); 
+					} 
 				} else { 
-					$retData[$x] = fgets($sockets[$x],128); 
+					$retDone[$x] = 1; 
 				} 
-			} else { 
-				$retDone[$x] = 1; 
-			} 
+			} catch (Exception $e){} 
 		} 
 		$done = (array_sum($retDone) == count($urlArr)); 
 	} 
@@ -62,7 +66,7 @@ function multiHTTP ($urlArr) {
 
 function crawl_all() {
 	include 'cc-settings.php';
-	include 'util.php';
+	include_once 'util.php';
 	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
 	if ($sth) {
 		$urls = array();
@@ -96,7 +100,7 @@ function crawl_all() {
 
 function crawl_urls($urls) {
 	include 'cc-settings.php';
-	include 'util.php';
+	include_once 'util.php';
 	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
 	if ($sth) {
 		$db = $sth->fetchAll();

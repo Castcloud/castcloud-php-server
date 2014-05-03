@@ -504,12 +504,12 @@ class DB {
 	private $urls;
 
 	function import_opml($opml) {
-		include 'crawler.php';
-		$subscribe_to_these = array();
-		$urls = array();
+		include_once 'crawler.php';
+		$this->subscribe_to_these = array();
+		$this->urls = array();
 		$this->opml_next($opml);
-		crawl_urls($urls);
-		foreach ($subscribe_to_these as $sub) {
+		crawl_urls($this->urls);
+		foreach ($this->subscribe_to_these as $sub) {
 			$this->subscribe_to($sub["url"], $sub["title"], $sub["label"]);
 		}
 	}
@@ -536,9 +536,9 @@ class DB {
 				if ($label != null){
 					$label = "label/" . $label;
 				}
-				array_push($subscribe_to_these, array("url" => (string)$outline["xmlUrl"], 
+				array_push($this->subscribe_to_these, array("url" => (string)$outline["xmlUrl"], 
 					"title" => (string)$title, "label" => (string)$label));
-				array_push($urls, (string)$outline["xmlUrl"]);
+				array_push($this->urls, (string)$outline["xmlUrl"]);
 				//$this->subscribe_to((string) $outline["xmlUrl"],(string) $title,(string) $label);
 			}
 		}
@@ -552,7 +552,7 @@ class DB {
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 
-		$sth = $dbh->query("SELECT castid FROM {$db_prefix}cast WHERE url='".$feedurl."'");
+		$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='".$feedurl."'");
 		$castid = $sth->fetch(PDO::FETCH_ASSOC)['CastID'];
 		
 		if ($label == null){
