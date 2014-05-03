@@ -453,7 +453,6 @@ $app -> group('/library', function() use ($app) {
 		$opml = $app->request->params('opml');
 		$opml = simplexml_load_string($opml);
 		$app->db->import_opml($opml->body);
-		
 	});
 
 	/**

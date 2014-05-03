@@ -14,6 +14,53 @@ GLOBAL $crawl_time;
 GLOBAL $insert_time;
 
 if (php_sapi_name() == "cli"){
+	crawl_all();
+}
+
+function generateQuery($n) {
+	$db_prefix = $GLOBALS['db_prefix'];
+	$sql = "INSERT INTO {$db_prefix}feedcontent (castid, location, itemid, content, crawlts) VALUES";
+	$sql.= implode(', ', array_fill(0, $n, '(?,?,?,?,?)'));
+	return $sql;
+}
+
+function multiHTTP ($urlArr) { 
+	$sockets = Array(); 
+	$urlInfo = Array(); 
+	$retDone = Array(); 
+	$retData = Array(); 
+	$errno   = Array(); 
+	$errstr  = Array(); 
+	for ($x=0;$x<count($urlArr);$x++) { 
+		$urlInfo[$x] = parse_url($urlArr[$x]); 
+		$urlInfo[$x][port] = ($urlInfo[$x][port]) ? $urlInfo[$x][port] : 80; 
+		$urlInfo[$x][path] = ($urlInfo[$x][path]) ? $urlInfo[$x][path] : "/"; 
+		$sockets[$x] = fsockopen($urlInfo[$x][host], $urlInfo[$x][port], 
+			$errno[$x], $errstr[$x], 30); 
+		socket_set_blocking($sockets[$x], FALSE); 
+		$query = ($urlInfo[$x][query]) ? "?" . $urlInfo[$x][query] : ""; 
+		fputs($sockets[$x],"GET " . $urlInfo[$x][path] . "$query HTTP/1.0\r\nHost: " . 
+			$urlInfo[$x][host] . "\r\n\r\n"); 
+	}
+	$done = false; 
+	while (!$done) { 
+		for ($x=0; $x < count($urlArr);$x++) { 
+			if (!feof($sockets[$x])) { 
+				if ($retData[$x]) { 
+					$retData[$x] .= fgets($sockets[$x],128); 
+				} else { 
+					$retData[$x] = fgets($sockets[$x],128); 
+				} 
+			} else { 
+				$retDone[$x] = 1; 
+			} 
+		} 
+		$done = (array_sum($retDone) == count($urlArr)); 
+	} 
+	return $retData; 
+}
+
+function crawl_all() {
 	include 'cc-settings.php';
 	include 'util.php';
 	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
@@ -23,20 +70,19 @@ if (php_sapi_name() == "cli"){
 		foreach ($sth as $row) {
 			array_push($urls, $row['URL']);
 			array_push($xml, $row['XML']);
-			//crawl($row['URL']);
 		}
 		$t = microtime(true);
 		$feeds = multiHTTP($urls);
 		$GLOBALS['download_time'] = microtime(true) - $t;
 		$i = 0;
+		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
 		foreach ($feeds as $feed) {
 			$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
 			echo $urls[$i]."\n";
-			$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
-			$sth->execute(array($data, $urls[$i]));
 			if (strcmp($xml[$i], $data) != 0) {
-				echo "DERPING\n";
-				crawl2($urls[$i], $data);
+				$sth->execute(array($data, $urls[$i]));
+				echo "Crawling\n";
+				crawl($urls[$i], $data);
 			}
 			else {
 				echo "Skipping\n";
@@ -48,51 +94,48 @@ if (php_sapi_name() == "cli"){
 	}
 }
 
-function generateQuery($n) {
-	$db_prefix = $GLOBALS['db_prefix'];
-	$sql = "INSERT INTO {$db_prefix}feedcontent (castid, location, itemid, content, crawlts) VALUES";
-	$sql.= implode(', ', array_fill(0, $n, '(?,?,?,?,?)'));
-	return $sql;
+function crawl_urls($urls) {
+	include 'cc-settings.php';
+	include 'util.php';
+	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
+	if ($sth) {
+		$db = $sth->fetchAll();
+		$t = microtime(true);
+		$feeds = multiHTTP($urls);
+		$GLOBALS['download_time'] = microtime(true) - $t;
+		$i = 0;
+		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
+		foreach ($feeds as $feed) {
+			$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
+			echo $urls[$i]."\n";
+			$entry = where($db, "URL", $urls[$i]);
+			if ($entry != null) {
+				if (strcmp($entry["XML"], $data) != 0) {
+					$sth->execute(array($data, $urls[$i]));
+					crawl($urls[$i], $data);
+				}
+			}
+			else {
+				crawl($urls[$i], $data);
+				$sth->execute(array($data, $urls[$i]));
+			}
+			
+			$i++;
+		}
+		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']."sec\ninsert ".$GLOBALS['insert_time']." sec";
+	}
 }
 
-function multiHTTP ($urlArr) { 
- $sockets = Array(); // socket array! 
- $urlInfo = Array(); // info arr 
- $retDone = Array(); 
- $retData = Array(); 
- $errno   = Array(); 
- $errstr  = Array(); 
- for ($x=0;$x<count($urlArr);$x++) { 
-  $urlInfo[$x] = parse_url($urlArr[$x]); 
-  $urlInfo[$x][port] = ($urlInfo[$x][port]) ? $urlInfo[$x][port] : 80; 
-  $urlInfo[$x][path] = ($urlInfo[$x][path]) ? $urlInfo[$x][path] : "/"; 
-  $sockets[$x] = fsockopen($urlInfo[$x][host], $urlInfo[$x][port], 
-                           $errno[$x], $errstr[$x], 30); 
-  socket_set_blocking($sockets[$x],FALSE); 
-  $query = ($urlInfo[$x][query]) ? "?" . $urlInfo[$x][query] : ""; 
-  fputs($sockets[$x],"GET " . $urlInfo[$x][path] . "$query HTTP/1.0\r\nHost: " . 
-        $urlInfo[$x][host] . "\r\n\r\n"); 
- } 
- // ok read the data from each one 
- $done = false; 
- while (!$done) { 
-  for ($x=0; $x < count($urlArr);$x++) { 
-   if (!feof($sockets[$x])) { 
-    if ($retData[$x]) { 
-     $retData[$x] .= fgets($sockets[$x],128); 
-    } else { 
-     $retData[$x] = fgets($sockets[$x],128); 
-    } 
-   } else { 
-    $retDone[$x] = 1; 
-   } 
-  } 
-  $done = (array_sum($retDone) == count($urlArr)); 
- } 
- return $retData; 
+function where($arr, $k, $v) {
+	foreach ($arr as $obj) {
+		if ($obj[$k] == $v) {
+			return $obj;
+		}
+	}
+	return null;
 }
 
-function crawl($casturl) {
+/*function crawl($casturl) {
 	$dbh = $GLOBALS['dbh'];	
 	$db_prefix = $GLOBALS['db_prefix'];
 	$time = time();
@@ -151,22 +194,28 @@ function crawl($casturl) {
 	} catch (Exception $e) {}
 
 	return $castid;
-}
+}*/
 
-function crawl2($casturl, $data) {
+function crawl($casturl, $data = null) {
 	$dbh = $GLOBALS['dbh'];	
 	$db_prefix = $GLOBALS['db_prefix'];
 	$time = time();
 	$castid = null;
 
 	try {
-		//echo "downloading $casturl\n";
 		$t = microtime(true);
-		$xml = simplexml_load_string($data);
+		if ($data == null) {
+			$update_xml = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
+			$xml = simplexml_load_file($casturl);
+		}
+		else {
+			$xml = simplexml_load_string($data);
+		}
 
 		$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
-		if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-			$castid = $result['CastID'];
+		$cast = $sth->fetch(PDO::FETCH_ASSOC);
+		if ($cast) {
+			$castid = $cast['CastID'];
 			
 			$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time");
 		}
@@ -175,19 +224,24 @@ function crawl2($casturl, $data) {
 			$castid = $dbh->lastInsertId();
 		}
 
+		if ($data == null) {
+			$xml_string = $xml->asXML();
+			if (strcmp($xml_string, $cast['XML']) != 0) {
+				$update_xml->execute(array($xml_string, $casturl));
+			}
+		}
+
 		$GLOBALS['push_this'] = array();
 
 		$d = microtime(true) - $t;
 		$GLOBALS['parse_time'] += $d;
 		$t = microtime(true);
-		//echo "crawling $casturl\n";
 
 		next_child($xml->channel, "channel/", $castid, $time);
 
 		$c = microtime(true) - $t;
 		$GLOBALS['crawl_time'] += $c;
 		$t = microtime(true);
-		//echo "inserting $casturl\n";
 
 		$push_this = $GLOBALS['push_this'];
 

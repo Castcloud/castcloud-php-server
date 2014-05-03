@@ -471,8 +471,22 @@ class DB {
 			return $sth->fetchAll(PDO::FETCH_CLASS, "setting");
 		}
 	}
+
+	private $subscribe_to_these;
+	private $urls;
+
+	function import_opml($opml) {
+		include 'crawler.php';
+		$subscribe_to_these = array();
+		$urls = array();
+		$this->opml_next($opml);
+		crawl_urls($urls);
+		foreach ($subscribe_to_these as $sub) {
+			$this->subscribe_to($sub["url"], $sub["title"], $sub["label"]);
+		}
+	}
 	
-	function import_opml($opml, $label = null){
+	function opml_next($opml, $label = null){
 		$PERMALABEL = $label;
 		foreach ($opml->outline as $outline) {
 			
@@ -489,12 +503,15 @@ class DB {
 				if ($label == null){
 					$label = $title;
 				}
-				$this->import_opml($outline, $label);
+				$this->opml_next($outline, $label);
 			} else {
 				if ($label != null){
 					$label = "label/" . $label;
 				}
-				$this->subscribe_to((string) $outline["xmlUrl"],(string) $title,(string) $label);
+				array_push($subscribe_to_these, array("url" => (string)$outline["xmlUrl"], 
+					"title" => (string)$title, "label" => (string)$label));
+				array_push($urls, (string)$outline["xmlUrl"]);
+				//$this->subscribe_to((string) $outline["xmlUrl"],(string) $title,(string) $label);
 			}
 		}
 	}
@@ -502,7 +519,13 @@ class DB {
 	function subscribe_to($feedurl, $name = null, $label = null){
 		$userid = $GLOBALS['app'] -> userid;
 		
-		$castid = crawl($feedurl);
+		//$castid = crawl($feedurl);
+		
+		$dbh = $GLOBALS['dbh'];
+		$db_prefix = $GLOBALS['db_prefix'];
+
+		$sth = $dbh->query("SELECT castid FROM {$db_prefix}cast WHERE url='".$feedurl."'");
+		$castid = $sth->fetch(PDO::FETCH_ASSOC)['CastID'];
 		
 		if ($label == null){
 			$label = "root";
@@ -518,9 +541,7 @@ class DB {
 				$name = $feedurl;
 			}
 		}
-		
-		$dbh = $GLOBALS['dbh'];
-		$db_prefix = $GLOBALS['db_prefix'];
+
 		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE castid=$castid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
 			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (castid, name, userid) 
