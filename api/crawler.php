@@ -15,6 +15,8 @@ GLOBAL $crawl_time;
 GLOBAL $insert_time;
 GLOBAL $rows;
 
+define("MAX_CONNECTIONS", 16);
+
 if (php_sapi_name() == "cli"){
 	crawl_all();
 }
@@ -26,14 +28,14 @@ function generateQuery($n) {
 	return $sql;
 }
 
-function multiHTTP ($urlArr) { 
+function multiHTTP ($urlArr, $from = 0, $to = null) { 
 	$sockets = Array(); 
 	$urlInfo = Array(); 
 	$retDone = Array(); 
 	$retData = Array(); 
 	$errno   = Array(); 
 	$errstr  = Array(); 
-	for ($x=0;$x<count($urlArr);$x++) { 
+	for ($x=$from;$x< $to == null ? count($urlArr) : min($to, count($urlArr));$x++) { 
 		$urlInfo[$x] = parse_url($urlArr[$x]); 
 		$urlInfo[$x]["port"] = array_key_exists("port", $urlInfo[$x]) ? $urlInfo[$x]["port"] : 80;
 		$urlInfo[$x]["path"] = array_key_exists("path",$urlInfo[$x]) ? $urlInfo[$x]["path"] : "/"; 
@@ -48,7 +50,7 @@ function multiHTTP ($urlArr) {
 	}
 	$done = false; 
 	while (!$done) { 
-		for ($x=0; $x < count($urlArr);$x++) {
+		for ($x=$from; $x < $to == null ? count($urlArr) : min($to, count($urlArr));$x++) {
 			try{
 				if (!feof($sockets[$x])) { 
 					if (array_key_exists($x, $retData)) { 
@@ -107,26 +109,29 @@ function crawl_urls($urls) {
 	if ($sth) {
 		$db = $sth->fetchAll();
 		$t = microtime(true);
-		$feeds = multiHTTP($urls);
-		$GLOBALS['download_time'] = microtime(true) - $t;
 		$i = 0;
 		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
-		foreach ($feeds as $feed) {
-			$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
-			echo $urls[$i]."\n";
-			$entry = where($db, "URL", $urls[$i]);
-			if ($entry != null) {
-				if (strcmp($entry["XML"], $data) != 0) {
-					$sth->execute(array($data, $urls[$i]));
-					crawl($urls[$i], $data);
+		for ($n = 0; $n < sizeof($urls); $n += MAX_CONNECTIONS) {
+			$feeds = multiHTTP($urls, $n, $n + MAX_CONNECTIONS);
+			$GLOBALS['download_time'] += microtime(true) - $t;
+			$t = microtime(true);
+			foreach ($feeds as $feed) {
+				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
+				echo $urls[$i]."\n";
+				$entry = where($db, "URL", $urls[$i]);
+				if ($entry != null) {
+					if (strcmp($entry["XML"], $data) != 0) {
+						$sth->execute(array($data, $urls[$i]));
+						crawl($urls[$i], $data);
+					}
 				}
+				else {
+					crawl($urls[$i], $data);
+					$sth->execute(array($data, $urls[$i]));
+				}
+				
+				$i++;
 			}
-			else {
-				crawl($urls[$i], $data);
-				$sth->execute(array($data, $urls[$i]));
-			}
-			
-			$i++;
 		}
 		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']." sec\ninsert ".$GLOBALS['insert_time']." sec";
 	}
