@@ -8,10 +8,12 @@ $download_time = 0;
 $parse_time = 0;
 $crawl_time = 0;
 $insert_time = 0;
+$rows = 0;
 GLOBAL $download_time;
 GLOBAL $parse_time;
 GLOBAL $crawl_time;
 GLOBAL $insert_time;
+GLOBAL $rows;
 
 if (php_sapi_name() == "cli"){
 	crawl_all();
@@ -126,7 +128,7 @@ function crawl_urls($urls) {
 			
 			$i++;
 		}
-		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']."sec\ninsert ".$GLOBALS['insert_time']." sec";
+		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']." sec\ninsert ".$GLOBALS['insert_time']." sec";
 	}
 }
 
@@ -249,8 +251,11 @@ function crawl($casturl, $data = null) {
 
 		$push_this = $GLOBALS['push_this'];
 
+		echo sizeof($push_this)." rows inserted\n";
+
+		$i = 0;
 		if (sizeof($push_this) > 0) {
-			$dbh->beginTransaction();
+			//$dbh->beginTransaction();
 			$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
 			$vals = array();
 			foreach ($push_this as $line) {
@@ -260,13 +265,16 @@ function crawl($casturl, $data = null) {
 				array_push($vals, $line["content"]);
 				array_push($vals, $line["time"]);
 			}
+			$i = microtime(true) - $t;
+			$t = microtime(true);
 			$sth->execute($vals);
-			$dbh->commit();
+			//$dbh->commit();
 		}
 
-		$i = microtime(true) - $t;
-		$GLOBALS['insert_time'] += $i;
-		echo "parsed for $d sec\ncrawled for $c sec\ninserted for $i sec\n\n";
+		$i2 = microtime(true) - $t;
+		
+		$GLOBALS['insert_time'] += $i + $i2;
+		echo "parsed for $d sec\ncrawled for $c sec\nbuilt query for $i sec\nexecuted query for $i2 sec\n\n";
 	} catch (Exception $e) {}
 
 	return $castid;
