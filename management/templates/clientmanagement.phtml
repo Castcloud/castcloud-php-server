@@ -13,11 +13,23 @@ include('nav.phtml');
 				<h4><span class="name"><?=$client['Name']?></a></h3>
 					<p class="description"><?=$client['ClientDescription']?></p>
 				</td>
-      				<td>
+				<td>
+					<?php if($client['StatusID'] == "1") { ?>
 					<a href="clients/disable/<?=$client['UniqueClientID']?>" class="button">Disable</a>
+					<?php } ?>
+					
+					<?php if($client['StatusID'] == "0"){ ?>
+					<a href="clients/disable/<?=$client['UniqueClientID']?>" class="button">Enable</a>
+					<?php } ?>
       				</td>
-      				<td>
-      					<a class="button disabled" title="Disable to remove.">Remove</a>
+				<td>
+					<?php if($client['StatusID'] == "1"){ ?>
+					<a class="button disabled">Disable to Remove</a>
+					<?php } ?>
+					
+					<?php if($client['StatusID'] == "0"){ ?>
+					<a href="clients/remove/<?=$client['UniqueClientID']?>" class="button alert">Remove Client</a>
+					<?php } ?>
       				</td>
 				
 				<td>

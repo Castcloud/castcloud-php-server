@@ -137,8 +137,8 @@ function post_login($app) {
 						}
 					}
 
-					$sth = $dbh -> prepare("INSERT INTO {$db_prefix}clientauthorization (userid, clientid, token, clientdescription, clientversion, uuid, seents) "
-					 . "VALUES($userid, $clientid, '$token', :clientdescription, :clientversion, :uuid, " . time() . ")");
+					$sth = $dbh -> prepare("INSERT INTO {$db_prefix}clientauthorization (userid, clientid, token, clientdescription, statusid, clientversion, uuid, seents) "
+					 . "VALUES($userid, $clientid, '$token', :clientdescription, 1, :clientversion, :uuid, " . time() . ")");
 					$sth -> bindParam(':clientdescription', $clientdescription, PDO::PARAM_STR);
 					$sth -> bindParam(':clientversion', $clientversion, PDO::PARAM_STR|PDO::PARAM_NULL);
 					$sth -> bindParam(':uuid', $uuid, PDO::PARAM_STR);

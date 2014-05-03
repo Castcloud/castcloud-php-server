@@ -20,7 +20,7 @@ class AuthMiddleware extends \Slim\Middleware {
 						WHERE
 						token='$token'
 						AND auth.UserID = users.UserID
-						AND StatusID = 0");
+						AND auth.StatusID = '1'");
 					if ($sth && $sth->rowCount() < 1) {
 						$this -> app -> halt(400, 'Bad token');
 					} else {
