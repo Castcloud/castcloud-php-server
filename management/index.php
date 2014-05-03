@@ -143,7 +143,7 @@ $app->get('/clients', function() use($app) {
 	$sth = $dbh->prepare("SELECT {$db_prefix}clientauthorization.UniqueClientID,{$db_prefix}client.Name, {$db_prefix}clientauthorization.ClientDescription, 
 			{$db_prefix}clientauthorization.StatusID, {$db_prefix}clientauthorization.SeenTS FROM 
 			{$db_prefix}clientauthorization, {$db_prefix}client, {$db_prefix}users WHERE 
-			{$db_prefix}users.Username = ? AND {$db_prefix}clientauthorization.UserID={$db_prefix}users.UserID AND {$db_prefix}clientauthorization.StatusID NOT LIKE '-1' ORDER BY 
+			{$db_prefix}users.Username = ? AND {$db_prefix}clientauthorization.UserID={$db_prefix}users.UserID AND {$db_prefix}clientauthorization.ClientID={$db_prefix}client.ClientID AND {$db_prefix}clientauthorization.StatusID NOT LIKE '-1' ORDER BY 
 			{$db_prefix}clientauthorization.SeenTS DESC");
 	
 	if ($sth->execute(array($_SESSION['username']))) {
