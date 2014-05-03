@@ -16,6 +16,8 @@ GLOBAL $crawl_time;
 GLOBAL $insert_time;
 GLOBAL $rows;
 
+define("MAX_CONNECTIONS", 16);
+
 if (php_sapi_name() == "cli"){
 	crawl_all();
 }
@@ -27,36 +29,40 @@ function generateQuery($n) {
 	return $sql;
 }
 
-function multiHTTP ($urlArr) { 
+function multiHTTP ($urlArr, $from = 0, $to = null) { 
 	$sockets = Array(); 
 	$urlInfo = Array(); 
 	$retDone = Array(); 
 	$retData = Array(); 
 	$errno   = Array(); 
 	$errstr  = Array(); 
-	for ($x=0;$x<count($urlArr);$x++) { 
+	for ($x=$from;$x< $to == null ? count($urlArr) : min($to, count($urlArr));$x++) { 
 		$urlInfo[$x] = parse_url($urlArr[$x]); 
-		$urlInfo[$x][port] = ($urlInfo[$x][port]) ? $urlInfo[$x][port] : 80; 
-		$urlInfo[$x][path] = ($urlInfo[$x][path]) ? $urlInfo[$x][path] : "/"; 
-		$sockets[$x] = fsockopen($urlInfo[$x][host], $urlInfo[$x][port], 
-			$errno[$x], $errstr[$x], 30); 
-		socket_set_blocking($sockets[$x], FALSE); 
-		$query = ($urlInfo[$x][query]) ? "?" . $urlInfo[$x][query] : ""; 
-		fputs($sockets[$x],"GET " . $urlInfo[$x][path] . "$query HTTP/1.0\r\nHost: " . 
-			$urlInfo[$x][host] . "\r\n\r\n"); 
+		$urlInfo[$x]["port"] = array_key_exists("port", $urlInfo[$x]) ? $urlInfo[$x]["port"] : 80;
+		$urlInfo[$x]["path"] = array_key_exists("path",$urlInfo[$x]) ? $urlInfo[$x]["path"] : "/"; 
+		try{
+			$sockets[$x] = fsockopen($urlInfo[$x]["host"], $urlInfo[$x]["port"], 
+				$errno[$x], $errstr[$x], 3);
+			socket_set_blocking($sockets[$x], FALSE); 
+			$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
+			fputs($sockets[$x],"GET " . $urlInfo[$x]["path"] . "$query HTTP/1.0\r\nHost: " . 
+				$urlInfo[$x]["host"] . "\r\n\r\n"); 
+		} catch (Exception $e){} 
 	}
 	$done = false; 
 	while (!$done) { 
-		for ($x=0; $x < count($urlArr);$x++) { 
-			if (!feof($sockets[$x])) { 
-				if ($retData[$x]) { 
-					$retData[$x] .= fgets($sockets[$x],128); 
+		for ($x=$from; $x < $to == null ? count($urlArr) : min($to, count($urlArr));$x++) {
+			try{
+				if (!feof($sockets[$x])) { 
+					if (array_key_exists($x, $retData)) { 
+						$retData[$x] .= fgets($sockets[$x],128); 
+					} else { 
+						$retData[$x] = fgets($sockets[$x],128); 
+					} 
 				} else { 
-					$retData[$x] = fgets($sockets[$x],128); 
+					$retDone[$x] = 1; 
 				} 
-			} else { 
-				$retDone[$x] = 1; 
-			} 
+			} catch (Exception $e){} 
 		} 
 		$done = (array_sum($retDone) == count($urlArr)); 
 	} 
@@ -65,7 +71,7 @@ function multiHTTP ($urlArr) {
 
 function crawl_all() {
 	include 'cc-settings.php';
-	include 'util.php';
+	include_once 'util.php';
 	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
 	if ($sth) {
 		$urls = array();
@@ -99,20 +105,17 @@ function crawl_all() {
 
 function crawl_urls($urls) {
 	include 'cc-settings.php';
-	include 'util.php';
+	include_once 'util.php';
 	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
 	if ($sth) {
 		$db = $sth->fetchAll();
 		$t = microtime(true);
-		for ($n = 0; $n < sizeof($urls); $n += 16) {
-			$the_urls = array();
-			for ($j = $n; $j < sizeof($urls); $j++) {
-				array_push($the_urls, $urls[$j]);
-			}
-			$feeds = multiHTTP($the_urls);
+		$i = 0;
+		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
+		for ($n = 0; $n < sizeof($urls); $n += MAX_CONNECTIONS) {
+			$feeds = multiHTTP($urls, $n, $n + MAX_CONNECTIONS);
 			$GLOBALS['download_time'] += microtime(true) - $t;
-			$i = 0;
-			$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
+			$t = microtime(true);
 			foreach ($feeds as $feed) {
 				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
 				echo $urls[$i]."\n";
