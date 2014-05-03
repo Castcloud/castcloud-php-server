@@ -217,7 +217,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\Parameter(
 	 * 			name="since",
 	 * 			description="timestamp of last call",
-	 * 			paramType="form",
+	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
@@ -259,8 +259,8 @@ $app -> group('/library', function() use ($app) {
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="exclude",
-	 * 			description="Comma separated event ids to exclude. Default: 70",
-	 * 			paramType="form",
+	 * 			description="Exclude episode with latest event type. Comma separated event type ids to exclude. Default: 70",
+	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
@@ -503,7 +503,7 @@ $app -> group('/library', function() use ($app) {
 	 * 	path="/library/casts/{id}",
 	 * 	description="Edit a subcription",
 	 * 	@SWG\Operation(
-	 * 		method="POST",
+	 * 		method="PUT",
 	 * 		nickname="Edit a subcription",
 	 * 		summary="Edit a subcription",
 	 * 		type="void",
@@ -603,14 +603,21 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\Parameter(
 	 * 			name="since",
 	 * 			description="timestamp of last call",
-	 * 			paramType="form",
+	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="ItemID",
 	 * 			description="filter by ItemID",
-	 * 			paramType="form",
+	 * 			paramType="query",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="exclude",
+	 * 			description="Exclude episode with latest event type. Comma separated event type ids to exclude. Default: 70",
+	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
@@ -627,8 +634,14 @@ $app -> group('/library', function() use ($app) {
 		$itemid = $app->request->params('itemid');
 		$since = $app->request->params('since');
 		$limit = $app->request->params('limit');
-
-		json(new eventsresult($app->db->get_events($itemid, $since, $limit)));
+		$exclude = $app -> request -> params('exclude');
+		
+		
+		if ($exclude != null){
+			json(new eventsresult($app->db->get_events($itemid, $since, $limit, $exclude)));
+		} else {
+			json(new eventsresult($app->db->get_events($itemid, $since, $limit)));
+		}
 	});
 
 	/**

@@ -144,7 +144,7 @@
             "description": "Edit a subcription",
             "operations": [
                 {
-                    "method": "POST",
+                    "method": "PUT",
                     "summary": "Edit a subcription",
                     "nickname": "Edit a subcription",
                     "type": "void",
@@ -323,11 +323,11 @@
                             "description": "The casts id"
                         },
                         {
-                            "paramType": "form",
+                            "paramType": "query",
                             "name": "exclude",
                             "type": "integer",
                             "required": false,
-                            "description": "Comma separated event ids to exclude. Default: 70"
+                            "description": "Exclude episode with latest event type. Comma separated event type ids to exclude. Default: 70"
                         }
                     ],
                     "responseMessages": [
@@ -397,18 +397,25 @@
                             "description": "clients login token"
                         },
                         {
-                            "paramType": "form",
+                            "paramType": "query",
                             "name": "since",
                             "type": "integer",
                             "required": false,
                             "description": "timestamp of last call"
                         },
                         {
-                            "paramType": "form",
+                            "paramType": "query",
                             "name": "ItemID",
                             "type": "integer",
                             "required": false,
                             "description": "filter by ItemID"
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "exclude",
+                            "type": "integer",
+                            "required": false,
+                            "description": "Exclude episode with latest event type. Comma separated event type ids to exclude. Default: 70"
                         }
                     ],
                     "responseMessages": [
@@ -571,7 +578,7 @@
                             "description": "clients login token"
                         },
                         {
-                            "paramType": "form",
+                            "paramType": "query",
                             "name": "since",
                             "type": "integer",
                             "required": false,

@@ -383,9 +383,11 @@ class DB {
 		return array_values($episodes);
 	}	
 
-	function get_events($itemid, $since, $limit = null) {
+	function get_events($itemid, $since, $limit = null, $exclude = "70") {
 		include_once 'models/event.php';
 		$userid = $GLOBALS['app']->userid;
+		
+		$exclude = superexplode($exclude);
 
 		$query = "SELECT
 			event.type,
@@ -413,18 +415,44 @@ class DB {
 			$query.=" AND event.receivedts >= :since";
 			$inputs[":since"] = $since;
 		}
+		
+		if (false){ //!empty($exclude)){
+			
+			$query .= " AND event.ItemID = (
+					SELECT ev2.ItemID
+					FROM {$this->db_prefix}event AS ev2
+					WHERE ev2.UserID = :userid
+					AND ev2.ItemID = event.ItemID
+	         		AND (";
+			
+			for ($i = 0; $i < count($exclude); $i++) {
+				if ($i != 0){
+					$query .= " OR";
+				}
+				$query .= " ev2.TYPE != :exclude" . $i;
+				$inputs[":exclude" . $i] = $exclude[$i];
+			} 
+			
+			$query .= ")
+					AND ReceivedTS = (
+						SELECT MAX(ReceivedTS)
+						FROM {$this->db_prefix}event AS ev3
+						WHERE ev3.UserID = :userid
+	         			AND ev3.ItemID = ev2.ItemID
+					)
+				)";
+		}
 
 		$query.= " ORDER BY
 			event.clientts DESC,
 			event.concurrentorder DESC";
 		
 		if ($limit != null) {
-			/*
-			 * May the heavens have mercy on the fool that gets limits from user imput
-			 */
 			$query.=" LIMIT :limit";
 			$inputs[":limit"] = $limit;
 		}
+		
+		//var_dump($query, $inputs);
 		
 		$dbh = $GLOBALS['dbh'];
 		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
