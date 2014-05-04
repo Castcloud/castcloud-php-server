@@ -42,7 +42,7 @@ include('nav.phtml');
 			</td>
 
 
-<?php } ?>
+			<?php } else { ?> <td></td><td></td> <?php } ?>
       			<td>
 	  				<a href="export/<?php echo $value["username"]; ?>" class="button">Export</a>
       			</td>
