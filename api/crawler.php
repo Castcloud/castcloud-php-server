@@ -107,29 +107,31 @@ function crawl_urls($urls) {
 	$sth = $dbh->query("SELECT * FROM {$db_prefix}cast");
 	if ($sth) {
 		$db = $sth->fetchAll();
-		$t = microtime(true);
-		$feeds = multiHTTP($urls);
-		$GLOBALS['download_time'] = microtime(true) - $t;
 		$i = 0;
 		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
-		foreach ($feeds as $feed) {
-			$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
-			echo $urls[$i]."\n";
-			$entry = where($db, "URL", $urls[$i]);
-			if ($entry != null) {
-				if (strcmp($entry["XML"], $data) != 0) {
-					$sth->execute(array($data, $urls[$i]));
-					crawl($urls[$i], $data);
+		for ($j = 0; $j < sizeof($urls); $j += 16) {
+			//$t = microtime(true);
+			$feeds = multiHTTP(array_slice($urls, $j, 16));
+			//$GLOBALS['download_time'] += microtime(true) - $t;
+			foreach ($feeds as $feed) {
+				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
+				//echo $urls[$i]."\n";
+				$entry = where($db, "URL", $urls[$i]);
+				if ($entry != null) {
+					if (strcmp($entry["XML"], $data) != 0) {
+						$sth->execute(array($data, $urls[$i]));
+						crawl($urls[$i], $data);
+					}
 				}
+				else {
+					crawl($urls[$i], $data);
+					$sth->execute(array($data, $urls[$i]));
+				}
+				
+				$i++;
 			}
-			else {
-				crawl($urls[$i], $data);
-				$sth->execute(array($data, $urls[$i]));
-			}
-			
-			$i++;
 		}
-		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']." sec\ninsert ".$GLOBALS['insert_time']." sec";
+		//echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']." sec\ninsert ".$GLOBALS['insert_time']." sec";
 	}
 }
 
