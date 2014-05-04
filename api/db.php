@@ -383,7 +383,7 @@ class DB {
 		return array_values($episodes);
 	}	
 
-	function get_events($itemid, $since, $limit = null, $exclude = "70") {
+	function get_events($itemid, $since, $limit = null, $exclude = null) {
 		include_once 'models/event.php';
 		$userid = $GLOBALS['app']->userid;
 		

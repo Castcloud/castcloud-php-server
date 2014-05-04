@@ -358,7 +358,7 @@ $app -> group('/library', function() use ($app) {
 		if ($exclude != null){
 			json($app->db->get_episodes(null, $label, $exclude));
 		} else {
-			json($app->db->get_episodes(null, $label));
+			json($app->db->get_episodes(null, $label, "70"));
 		}
 	});
 
