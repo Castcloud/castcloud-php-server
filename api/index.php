@@ -640,7 +640,7 @@ $app -> group('/library', function() use ($app) {
 		if ($exclude != null){
 			json(new eventsresult($app->db->get_events($itemid, $since, $limit, $exclude)));
 		} else {
-			json(new eventsresult($app->db->get_events($itemid, $since, $limit)));
+			json(new eventsresult($app->db->get_events($itemid, $since, $limit, "70")));
 		}
 	});
 

@@ -416,18 +416,19 @@ class DB {
 			$inputs[":since"] = $since;
 		}
 		
-		if (false){ //!empty($exclude)){
+		if (!empty($exclude)){
 			
 			$query .= " AND event.ItemID = (
 					SELECT ev2.ItemID
 					FROM {$this->db_prefix}event AS ev2
-					WHERE ev2.UserID = :userid
+					WHERE ev2.UserID = :ev2userid
 					AND ev2.ItemID = event.ItemID
 	         		AND (";
+			$inputs[":ev2userid"] = $userid;
 			
 			for ($i = 0; $i < count($exclude); $i++) {
 				if ($i != 0){
-					$query .= " OR";
+					$query .= " AND";
 				}
 				$query .= " ev2.TYPE != :exclude" . $i;
 				$inputs[":exclude" . $i] = $exclude[$i];
@@ -437,10 +438,11 @@ class DB {
 					AND ReceivedTS = (
 						SELECT MAX(ReceivedTS)
 						FROM {$this->db_prefix}event AS ev3
-						WHERE ev3.UserID = :userid
+						WHERE ev3.UserID = :ev3userid
 	         			AND ev3.ItemID = ev2.ItemID
 					)
 				)";
+			$inputs[":ev3userid"] = $userid;
 		}
 
 		$query.= " ORDER BY
@@ -451,8 +453,6 @@ class DB {
 			$query.=" LIMIT :limit";
 			$inputs[":limit"] = $limit;
 		}
-		
-		//var_dump($query, $inputs);
 		
 		$dbh = $GLOBALS['dbh'];
 		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
