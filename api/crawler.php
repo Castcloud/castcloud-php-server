@@ -34,33 +34,45 @@ function multiHTTP ($urlArr) {
 	$retData = Array(); 
 	$errno   = Array(); 
 	$errstr  = Array(); 
-	for ($x=0;$x<count($urlArr);$x++) { 
-		$urlInfo[$x] = parse_url($urlArr[$x]); 
-		$urlInfo[$x]["port"] = array_key_exists("port", $urlInfo[$x]) ? $urlInfo[$x]["port"] : 80;
-		$urlInfo[$x]["path"] = array_key_exists("path",$urlInfo[$x]) ? $urlInfo[$x]["path"] : "/"; 
+	for ($x=0;$x<count($urlArr);$x++) {
 		try{
+			$urlInfo[$x] = parse_url($urlArr[$x]); 
+			$urlInfo[$x]["port"] = array_key_exists("port", $urlInfo[$x]) ? $urlInfo[$x]["port"] : 80;
+			$urlInfo[$x]["path"] = array_key_exists("path",$urlInfo[$x]) ? $urlInfo[$x]["path"] : "/"; 
+		
 			$sockets[$x] = fsockopen($urlInfo[$x]["host"], $urlInfo[$x]["port"], 
-				$errno[$x], $errstr[$x], 3);
-			socket_set_blocking($sockets[$x], FALSE); 
-			$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
-			fputs($sockets[$x],"GET " . $urlInfo[$x]["path"] . "$query HTTP/1.0\r\nHost: " . 
-				$urlInfo[$x]["host"] . "\r\n\r\n"); 
-		} catch (Exception $e){} 
+				$errno[$x], $errstr[$x], 1);
+			if ($sockets[$x]) {
+				socket_set_blocking($sockets[$x], FALSE); 
+				$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
+				fputs($sockets[$x],"GET " . $urlInfo[$x]["path"] . "$query HTTP/1.0\r\nHost: " . 
+					$urlInfo[$x]["host"] . "\r\n\r\n"); 
+			}
+		} catch (Exception $e){
+			echo $urlArr[$x]." failed :(\n";
+		} 
 	}
+	echo "Done opening sockets!\n\n";
 	$done = false; 
 	while (!$done) { 
 		for ($x=0; $x < count($urlArr);$x++) {
-			try{
-				if (!feof($sockets[$x])) { 
-					if (array_key_exists($x, $retData)) { 
-						$retData[$x] .= fgets($sockets[$x],128); 
+			//try{
+				if ($sockets[$x]) {
+					if (!feof($sockets[$x])) { 
+						if (array_key_exists($x, $retData)) { 
+							$retData[$x] .= fgets($sockets[$x],128); 
+						} else { 
+							$retData[$x] = fgets($sockets[$x],128); 
+						} 
 					} else { 
-						$retData[$x] = fgets($sockets[$x],128); 
+						$retDone[$x] = 1; 
 					} 
-				} else { 
+				}
+				else {
+					$retData[$x] = null;
 					$retDone[$x] = 1; 
-				} 
-			} catch (Exception $e){} 
+				}
+			//} catch (Exception $e){} 
 		} 
 		$done = (array_sum($retDone) == count($urlArr)); 
 	} 
@@ -81,6 +93,12 @@ function crawl_all() {
 		$t = microtime(true);
 		$feeds = multiHTTP($urls);
 		$GLOBALS['download_time'] = microtime(true) - $t;
+		$size_downloaded = 0;
+		foreach($feeds as $feed) {
+			$size_downloaded += strlen($feed);
+		}
+		$size_downloaded /= 1024 * 1024;
+		echo "Downloaded $size_downloaded MB in ".$GLOBALS['download_time']." seconds\n";
 		$i = 0;
 		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
 		foreach ($feeds as $feed) {
@@ -115,7 +133,7 @@ function crawl_urls($urls) {
 			//$GLOBALS['download_time'] += microtime(true) - $t;
 			foreach ($feeds as $feed) {
 				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
-				//echo $urls[$i]."\n";
+				echo $urls[$i]."\n";
 				$entry = where($db, "URL", $urls[$i]);
 				if ($entry != null) {
 					if (strcmp($entry["XML"], $data) != 0) {
@@ -215,69 +233,77 @@ function crawl($casturl, $data = null) {
 		$t = microtime(true);
 		if ($data == null) {
 			$update_xml = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
-			$xml = simplexml_load_file($casturl);
+			$xml = simplexml_load_file($casturl, 'SimpleXMLElement', LIBXML_NOCDATA);
 		}
 		else {
-			$xml = simplexml_load_string($data);
+			$xml = simplexml_load_string($data, 'SimpleXMLElement', LIBXML_NOCDATA);
 		}
-
-		$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
-		$cast = $sth->fetch(PDO::FETCH_ASSOC);
-		if ($cast) {
-			$castid = $cast['CastID'];
-			
-			$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time");
-		}
-		else {
-			$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$casturl', $time)");
-			$castid = $dbh->lastInsertId();
-		}
-
-		if ($data == null) {
-			$xml_string = $xml->asXML();
-			if (strcmp($xml_string, $cast['XML']) != 0) {
-				$update_xml->execute(array($xml_string, $casturl));
-			}
-		}
-
-		$GLOBALS['push_this'] = array();
-
 		$d = microtime(true) - $t;
 		$GLOBALS['parse_time'] += $d;
 		$t = microtime(true);
 
-		next_child($xml->channel, "channel/", $castid, $time);
+		if ($xml) {
+			$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
+			$cast = $sth->fetch(PDO::FETCH_ASSOC);
 
-		$c = microtime(true) - $t;
-		$GLOBALS['crawl_time'] += $c;
-		$t = microtime(true);
-
-		$push_this = $GLOBALS['push_this'];
-
-		echo sizeof($push_this)." rows inserted\n";
-
-		$i = 0;
-		if (sizeof($push_this) > 0) {
-			//$dbh->beginTransaction();
-			$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
-			$vals = array();
-			foreach ($push_this as $line) {
-				array_push($vals, $line["castid"]);
-				array_push($vals, $line["location"]);
-				array_push($vals, $line["itemid"]);
-				array_push($vals, $line["content"]);
-				array_push($vals, $line["time"]);
+			if ($cast) {
+				$castid = $cast['CastID'];
+				
+				$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time");
 			}
-			$i = microtime(true) - $t;
-			$t = microtime(true);
-			$sth->execute($vals);
-			//$dbh->commit();
-		}
+			else {
+				$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$casturl', $time)");
+				$castid = $dbh->lastInsertId();
+			}
 
-		$i2 = microtime(true) - $t;
-		
-		$GLOBALS['insert_time'] += $i + $i2;
-		echo "parsed for $d sec\ncrawled for $c sec\nbuilt query for $i sec\nexecuted query for $i2 sec\n\n";
+			if ($data == null) {
+				$xml_string = $xml->asXML();
+				if (strcmp($xml_string, $cast['XML']) != 0) {
+					$update_xml->execute(array($xml_string, $casturl));
+				}
+			}
+
+			$GLOBALS['push_this'] = array();
+
+			$h = microtime(true) - $t;
+			$t = microtime(true);
+
+			next_child($xml->channel, "channel/", $castid, $time);
+
+			$c = microtime(true) - $t;
+			$GLOBALS['crawl_time'] += $c;
+			$t = microtime(true);
+
+			$push_this = $GLOBALS['push_this'];
+
+			echo sizeof($push_this)." rows inserted\n";
+
+			$i = 0;
+			if (sizeof($push_this) > 0) {
+				//$dbh->beginTransaction();
+				$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
+				$vals = array();
+				foreach ($push_this as $line) {
+					array_push($vals, $line["castid"]);
+					array_push($vals, $line["location"]);
+					array_push($vals, $line["itemid"]);
+					array_push($vals, $line["content"]);
+					array_push($vals, $line["time"]);
+				}
+				$i = microtime(true) - $t;
+				$t = microtime(true);
+				$sth->execute($vals);
+				//$dbh->commit();
+			}
+
+			$i2 = microtime(true) - $t;
+			
+			$GLOBALS['insert_time'] += $i + $i2;
+			echo "parsed for $d sec\nfetched castid for $h sec\ncrawled for $c sec\nbuilt query for $i sec\nexecuted query for $i2 sec\n\n";
+		}
+		else {
+			echo "Failed parsing XML :/\n";
+		}
 	} catch (Exception $e) {}
 
 	return $castid;

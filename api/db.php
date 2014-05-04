@@ -3,6 +3,7 @@ date_default_timezone_set('UTC');
 $current;
 GLOBAL $current;
 function cmp($a, $b) {
+	var_dump($GLOBALS['current'][$a]);
 	return strtotime($GLOBALS['current'][$a]->feed["pubDate"]) < strtotime($GLOBALS['current'][$b]->feed["pubDate"]);
 }
 
@@ -347,6 +348,7 @@ class DB {
 		$previtemid = null;
 		$i = -1;
 		if ($result = $sth->fetchAll()) {
+			$needsLove = null;
 			foreach ($result as $row) {
 				$itemid = $row['ItemID'];
 				$castid = $row['CastID'];
@@ -362,6 +364,25 @@ class DB {
 
 					$exploded = explode("/", $row['Location']);
 					if (sizeof($exploded) > 3) {
+						if ($needsLove != null) {
+							if ($exploded[2] == $needsLove) {
+								$v = $episodes[$i]->feed[$needsLove];
+								$episodes[$i]->feed[$needsLove] = array();
+								$episodes[$i]->feed[$needsLove][$needsLove] = $v; 
+							}
+							$needsLove = null;
+						}
+						$episodes[$i]->feed[$exploded[2]][$exploded[3]] = $row['Content'];
+					}
+					else {
+						if ($row["Content"] != "") {
+							$needsLove = $exploded[2];
+						}
+						$episodes[$i]->feed[$exploded[2]] = $row['Content'];
+					}
+
+					/*$exploded = explode("/", $row['Location']);
+					if (sizeof($exploded) > 3) {
 						$episodes[$i]->feed[$exploded[2]][$exploded[3]] = $row['Content'];
 					}
 					else {
@@ -371,7 +392,7 @@ class DB {
 						else {
 							$episodes[$i]->feed[$exploded[2]] = $row['Content'];
 						}
-					}
+					}*/
 				}
 				$previtemid = $itemid;
 			}
@@ -508,7 +529,19 @@ class DB {
 		$this->subscribe_to_these = array();
 		$this->urls = array();
 		$this->opml_next($opml);
-		crawl_urls($this->urls);
+		//crawl_urls($this->urls);
+
+		$dbh = $GLOBALS['dbh'];
+		$db_prefix = $GLOBALS['db_prefix'];
+
+		foreach ($this->urls as $url) {
+			$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$url'");
+			$cast = $sth->fetch();
+			if (!$cast) {
+				$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$url', 0)");
+			}
+		}
+
 		foreach ($this->subscribe_to_these as $sub) {
 			$this->subscribe_to($sub["url"], $sub["title"], $sub["label"]);
 		}

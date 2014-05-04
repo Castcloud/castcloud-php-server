@@ -450,6 +450,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/casts.opml', function() use ($app) {
+		set_time_limit(0);
 		$opml = $app->request->params('opml');
 		$opml = simplexml_load_string($opml);
 		$app->db->import_opml($opml->body);
