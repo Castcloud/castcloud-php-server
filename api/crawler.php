@@ -1,5 +1,4 @@
 <?php
-// Rolled dat shit back
 include 'cc-settings.php';
 
 $push_this = array();
@@ -38,10 +37,10 @@ function multiHTTP ($urlArr) {
 		try{
 			$urlInfo[$x] = parse_url($urlArr[$x]); 
 			$urlInfo[$x]["port"] = array_key_exists("port", $urlInfo[$x]) ? $urlInfo[$x]["port"] : 80;
-			$urlInfo[$x]["path"] = array_key_exists("path",$urlInfo[$x]) ? $urlInfo[$x]["path"] : "/"; 
+			$urlInfo[$x]["path"] = array_key_exists("path", $urlInfo[$x]) ? $urlInfo[$x]["path"] : "/"; 
 		
 			$sockets[$x] = fsockopen($urlInfo[$x]["host"], $urlInfo[$x]["port"], 
-				$errno[$x], $errstr[$x], 1);
+				$errno[$x], $errstr[$x], 3);
 			if ($sockets[$x]) {
 				socket_set_blocking($sockets[$x], FALSE); 
 				$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
@@ -52,7 +51,7 @@ function multiHTTP ($urlArr) {
 			echo $urlArr[$x]." failed :(\n";
 		} 
 	}
-	echo "Done opening sockets!\n\n";
+	echo "Done opening ".sizeof($sockets)." sockets!\n\n";
 	$done = false; 
 	while (!$done) { 
 		for ($x=0; $x < count($urlArr);$x++) {
@@ -64,7 +63,10 @@ function multiHTTP ($urlArr) {
 						} else { 
 							$retData[$x] = fgets($sockets[$x],128); 
 						} 
-					} else { 
+					} else {
+						if (!array_key_exists($x, $retData)) {
+							$retData[$x] = null;
+						}
 						$retDone[$x] = 1; 
 					} 
 				}
@@ -98,21 +100,25 @@ function crawl_all() {
 			$size_downloaded += strlen($feed);
 		}
 		$size_downloaded /= 1024 * 1024;
-		echo "Downloaded $size_downloaded MB in ".$GLOBALS['download_time']." seconds\n";
+		echo "Downloaded ".sizeof($feeds)." feeds, $size_downloaded MB in ".$GLOBALS['download_time']." seconds\n";
 		$i = 0;
 		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
 		foreach ($feeds as $feed) {
-			$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
-			echo $urls[$i]."\n";
-			if (strcmp($xml[$i], $data) != 0) {
-				$sth->execute(array($data, $urls[$i]));
-				echo "Crawling\n";
-				crawl($urls[$i], $data);
+			echo "#".($i + 1)." ".$urls[$i]."\n";
+			if ($feed != null) {
+				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
+				if (strcmp($xml[$i], $data) != 0) {
+					$sth->execute(array($data, $urls[$i]));
+					echo "Crawling\n";
+					crawl($urls[$i], $data);
+				}
+				else {
+					echo "Skipping\n";
+				}
 			}
 			else {
-				echo "Skipping\n";
-			}
-			
+				echo "Feed was empty :(\n";
+			}			
 			$i++;
 		}
 		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']."sec\ninsert ".$GLOBALS['insert_time']." sec";
@@ -249,7 +255,7 @@ function crawl($casturl, $data = null) {
 			if ($cast) {
 				$castid = $cast['CastID'];
 				
-				$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time");
+				$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time WHERE castid=$castid");
 			}
 			else {
 				$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$casturl', $time)");
@@ -354,10 +360,7 @@ function process_child($child, $ns, $url, $castid, $time) {
 			$item = false;
 
 			$sth = $dbh->query("SELECT * FROM {$db_prefix}feedcontent WHERE location='channel/item/guid' AND content='$child' AND castid=$castid");
-			if ($sth && $sth->rowCount() > 0) {
-				// Existing item
-			}
-			else {
+			if ($sth && $sth->rowCount() < 1) {
 				$dbh->exec("INSERT INTO {$db_prefix}itemid () VALUES()");
 				$itemid = $dbh->lastInsertId();
 
@@ -365,6 +368,9 @@ function process_child($child, $ns, $url, $castid, $time) {
 					array_push($GLOBALS['push_this'], array("castid" => $castid, "location" => $line["location"], "itemid" => $itemid, "content" => $line["content"], "time" => $time));
 				}
 				$buffer = array();
+			}
+			else {
+				// Exisiting item
 			}
 		}
 
