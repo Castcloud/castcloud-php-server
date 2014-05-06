@@ -580,7 +580,7 @@ class DB {
 	function subscribe_to($feedurl, $name = null, $label = null){
 		$userid = $GLOBALS['app'] -> userid;
 		
-		//$castid = crawl($feedurl);
+		$castid = crawl($feedurl);
 		
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];

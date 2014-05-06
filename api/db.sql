@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `prefix_event` (
   `EventID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
   `Type` int(11) NOT NULL,
-  `ItemID` int(11) NOT NULL,
+  `EpisodeID` int(11) NOT NULL,
   `PositionTS` int(11) NOT NULL,
   `ConcurrentOrder` int(11) NULL,
   `ClientTS` int(11) NOT NULL,
@@ -36,32 +36,26 @@ CREATE TABLE IF NOT EXISTS `prefix_event` (
   PRIMARY KEY (`EventID`),
   KEY `UserID` (`UserID`),
   KEY `UniqueClientID` (`UniqueClientID`),
-  KEY `ItemID` (`ItemID`)
+  KEY `EpisodeID` (`EpisodeID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `prefix_cast` (
   `CastID` int(11) NOT NULL AUTO_INCREMENT,
   `URL` text,
+  `Content` text NOT NULL,
   `CrawlTS` int(11) NOT NULL,
-  'XML' mediumtext NULL,
+  `XML` mediumtext NULL,
   PRIMARY KEY (`CastID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-CREATE TABLE IF NOT EXISTS `prefix_feedcontent` (
-  `ContentID` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `prefix_episode` (
+  `EpisodeID` int(11) NOT NULL AUTO_INCREMENT,
   `CastID` int(11) NOT NULL,
-  `Location` text NOT NULL,
-  `ItemID` int(11) DEFAULT NULL,
   `Content` text NOT NULL,
+  `GUID` text,
   `CrawlTS` int(11) NOT NULL,
-  PRIMARY KEY (`ContentID`),
-  KEY `CastID` (`CastID`),
-  KEY `ItemID` (`ItemID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
-
-CREATE TABLE IF NOT EXISTS `prefix_itemid` (
-  `ItemID` int(11) NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`ItemID`)
+  PRIMARY KEY (`EpisodeID`),
+  KEY `CastID` (`CastID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `prefix_setting` (
@@ -113,11 +107,11 @@ ALTER TABLE `prefix_clientauthorization`
 ALTER TABLE `prefix_event`
   ADD CONSTRAINT `Event_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Event_UniqueClientID` FOREIGN KEY (`UniqueClientID`) REFERENCES `prefix_clientauthorization` (`UniqueClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `Event_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `prefix_itemid` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `Event_EpisodeID` FOREIGN KEY (`EpisodeID`) REFERENCES `prefix_episodeid` (`EpisodeID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 ALTER TABLE `prefix_feedcontent`
   ADD CONSTRAINT `FeedContent_CastID` FOREIGN KEY (`CastID`) REFERENCES `prefix_cast` (`CastID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `FeedContent_ItemID` FOREIGN KEY (`ItemID`) REFERENCES `prefix_itemid` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `FeedContent_EpisodeID` FOREIGN KEY (`EpisodeID`) REFERENCES `prefix_episodeid` (`EpisodeID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 ALTER TABLE `prefix_setting`
   ADD CONSTRAINT `Setting_ClientID` FOREIGN KEY (`ClientID`) REFERENCES `prefix_client` (`ClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
