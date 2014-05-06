@@ -1,5 +1,6 @@
 <?php
 require '../lib/Slim/Slim.php';
+require '../lib/password_compat/password.php';
 \Slim\Slim::registerAutoloader();
 
 include 'authmiddleware.php';
@@ -55,8 +56,7 @@ $app->post('/login', function() use($app) {
 	if ($sth->execute(array($username))) {
 		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 			$userid = $result['UserID'];
-			$salt = $result['Salt'];
-			if ($result['Password'] == md5($password.$salt)) {
+			if (password_verify($password,$result['Password'])) {
 				$_SESSION['login'] = true;
 				$_SESSION['username'] = $username;
 			}
@@ -95,14 +95,12 @@ $app->post('/edit/:username', function($username) use($app) {
 		$sth->execute(array(':mail'=>$mail, ':username'=>$username));
 	}
 	if($password = $app->request->params("password")){
-		$sth = $dbh->prepare("SELECT salt FROM {$db_prefix}users WHERE username = ?");
-		if ($sth->execute(array($username))) {
-			if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
-				$salt = $result['salt'];
-			}
+		if ($password = password_hash($password, PASSWORD_BCRYPT)){
+			$sth = $dbh->prepare("UPDATE {$db_prefix}users SET Password = :password WHERE Username = :username");
+			$sth->execute(array(':password'=>$password, ':username'=>$username));
+		} else {
+			// error
 		}
-		$sth = $dbh->prepare("UPDATE {$db_prefix}users SET Password = :password WHERE Username = :username");
-		$sth->execute(array(':password'=>md5($password.$salt), ':username'=>$username));
 	}
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
 
@@ -116,13 +114,13 @@ $app->post('/adduser', function() use($app) {
 if(($username = $app->request->params("username")) && 
 		($name = $app->request->params("name")) && 
 		($mail = $app->request->params("mail")) && 
-		($password = $app->request->params("password")) && 
-		($salt = base64_encode(random_bytes(16))) ){
+		($password = $app->request->params("password")) &&
+		($password = password_hash($password, PASSWORD_BCRYPT))){
 			$dbh = $GLOBALS['dbh'];
 			$userlevel = 0;
 			$db_prefix = $GLOBALS['db_prefix'];
-			$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password, salt) VALUES (:userlevel, :username, :name, :mail, :password, :salt)");
-			$values = array(':userlevel'=>$userlevel, ':username'=>$username, ':name'=>$name,':mail'=>$mail,':password'=>md5($password.$salt), ':salt'=>$salt);
+			$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password) VALUES (:userlevel, :username, :name, :mail, :password)");
+			$values = array(':userlevel'=>$userlevel, ':username'=>$username, ':name'=>$name,':mail'=>$mail,':password'=>$password);
 			if ($stmt->execute($values)){
 				$app->flash('adduser', "Added User");
 				$app->response->redirect($_SERVER['HTTP_REFERER']);
@@ -229,10 +227,12 @@ $app->post('/install', function() use($app) {
 
 	$username = $app->request->params("cc_username");
 	$password = $app->request->params("cc_password");
-	$salt = base64_encode(random_bytes(16));
-
-	$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password, salt) VALUES (:userlevel, :username, :name, :mail, :password, :salt)");
-	$stmt->execute(array(':userlevel'=>100, ':username'=>$username, ':name'=>"",':mail'=>"",':password'=>md5($password.$salt), ':salt'=>$salt));
+	if ($password = password_hash($password, PASSWORD_BCRYPT)){
+		$stmt = $dbh->prepare("INSERT INTO {$db_prefix}users (userlevel, username, name, mail, password) VALUES (:userlevel, :username, :name, :mail, :password)");
+		$stmt->execute(array(':userlevel'=>100, ':username'=>$username, ':name'=>"",':mail'=>"",':password'=>$password));
+	} else {
+		//error
+	}
 	
 	$app->response->redirect($_SERVER['HTTP_REFERER']);
 });

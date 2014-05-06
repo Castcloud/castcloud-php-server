@@ -1,5 +1,6 @@
 <?php
 require '../lib/Slim/Slim.php';
+require '../lib/password_compat/password.php';
 \Slim\Slim::registerAutoloader();
 
 $app = new \Slim\Slim();

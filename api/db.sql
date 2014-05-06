@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `prefix_cast` (
   `CastID` int(11) NOT NULL AUTO_INCREMENT,
   `URL` text,
   `CrawlTS` int(11) NOT NULL,
+  'XML' mediumtext NULL,
   PRIMARY KEY (`CastID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -79,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `prefix_subscription` (
   `Name` text NOT NULL,
   `CastID` int(11) NOT NULL,
   `UserID` int(11) NOT NULL,
-  `Arrangement` int(11) NULL,
+  `SubscriptionTS` int(11) NULL,
   PRIMARY KEY (`SubscriptionID`),
   KEY `CastID` (`CastID`),
   KEY `UserID` (`UserID`)
@@ -101,7 +102,6 @@ CREATE TABLE IF NOT EXISTS `prefix_users` (
   `Name` text,
   `Mail` text NOT NULL,
   `Password` text NOT NULL,
-  `Salt` text NOT NULL,
   PRIMARY KEY (`UserID`),
   CONSTRAINT prefix_users UNIQUE (Username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

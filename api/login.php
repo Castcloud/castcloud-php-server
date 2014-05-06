@@ -109,8 +109,7 @@ function post_login($app) {
 	if ($sth) {
 		if ($result = $sth -> fetch(PDO::FETCH_ASSOC)) {
 			$userid = $result['UserID'];
-			$salt = $result['Salt'];
-			if ($result['Password'] == md5($password . $salt)) {
+			if (password_verify($password,$result['Password'])) {
 				$sth = $dbh -> query("SELECT * FROM {$db_prefix}client WHERE Name='$clientname'");
 				if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
 					$clientid = $result['ClientID'];
