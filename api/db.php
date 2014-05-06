@@ -23,8 +23,8 @@ class DB {
 		$query = "SELECT
 			cast.CastID AS id,
 			subs.name,
-			cast.url,
-			subs.arrangement
+			cast.url/*,
+			subs.arrangement*/
 			FROM 
 			{$this->db_prefix}cast AS cast,
 			{$this->db_prefix}subscription AS subs
@@ -47,7 +47,7 @@ class DB {
 	}
 
 	function get_cast($castid) {//
-		$cast = array();
+		/*$cast = array();
 		$sth = $this->dbh->query("SELECT * FROM {$this->db_prefix}feedcontent WHERE CastID=$castid");
 		if ($result = $sth->fetchAll()) {
 			$needsLove = null;
@@ -73,6 +73,11 @@ class DB {
 					}
 				}
 			}
+		}*/
+
+		$sth = $this->dbh->query("SELECT Content FROM {$this->db_prefix}cast WHERE castid=$castid");
+		if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
+			$cast = json_decode($result['Content'], true);
 		}
 
 		return $cast;

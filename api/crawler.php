@@ -194,11 +194,9 @@ function where($arr, $k, $v) {
 function crawl($casturl, $data = null) {
 	$dbh = $GLOBALS['dbh'];	
 	$db_prefix = $GLOBALS['db_prefix'];
-	$time = time();
 	$castid = null;
 
 	if ($data == null) {
-		//$update_xml = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
 		$xml = simplexml_load_file($casturl, 'SimpleXMLElement', LIBXML_NOCDATA);
 	}
 	else {
@@ -206,51 +204,36 @@ function crawl($casturl, $data = null) {
 	}
 
 	if ($xml) {
-		$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
-		$cast = $sth->fetch(PDO::FETCH_ASSOC);
+		$time = time();
 
-		if ($cast) {
-			$castid = $cast['CastID'];
-			
+		$cast = json_decode(json_encode($xml->channel));
+		$episodes = $cast->item;
+		unset($cast->item);
+
+		$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$casturl'");
+		$c = $sth->fetch(PDO::FETCH_ASSOC);
+
+		if ($c) {
+			$castid = $c['CastID'];			
 			$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time WHERE castid=$castid");
 		}
 		else {
-			$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$casturl', $time)");
+			$sth = $dbh->prepare("INSERT INTO {$db_prefix}cast (url, content, crawlts) VALUES(?,?,?)");
+			$sth->execute(array($casturl, json_encode($cast), $time));
 			$castid = $dbh->lastInsertId();
 		}
 
-		/*if ($data == null) {
-			$xml_string = $xml->asXML();
-			if (strcmp($xml_string, $cast['XML']) != 0) {
-				$update_xml->execute(array($xml_string, $casturl));
+		$sth = $dbh->query("SELECT GUID FROM {$db_prefix}episode WHERE castid=$castid");
+		$guids = $sth->fetchAll(PDO::FETCH_COLUMN, 0);
+
+		$sth = $dbh->prepare("INSERT INTO {$db_prefix}episode (castid, content, guid, crawlts) VALUES(?,?,?,?)");
+		foreach ($episodes as $episode) {
+			if (!in_array($episode->guid, $guids)) {
+				$sth->execute(array($castid, json_encode($episode), $episode->guid, $time));
 			}
-		}*/
+		}
 
-		//$castid = where($GLOBALS['casts'], "url", $casturl)["id"];
-
-		$o = json_decode(json_encode($xml->channel));
-		$i = $o->item;
-		unset($o->item);
-		//echo json_encode($o);
-		echo json_encode($i);
-
-		/*$GLOBALS['push_this'] = array();
-
-		$h = microtime(true) - $t;
-		$t = microtime(true);*/
-
-		//next_child($xml->channel, "channel/", $castid, $time);
-
-		/*$c = microtime(true) - $t;
-		$GLOBALS['crawl_time'] += $c;
-		$t = microtime(true);
-
-		$push_this = $GLOBALS['push_this'];
-
-		echo sizeof($push_this)." rows inserted\n";
-
-		$i = 0;
-		if (sizeof($push_this) > 0) {
+		/*if (sizeof($push_this) > 0) {
 			//$dbh->beginTransaction();
 			$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
 			$vals = array();
@@ -261,23 +244,11 @@ function crawl($casturl, $data = null) {
 				array_push($vals, $line["content"]);
 				array_push($vals, $line["time"]);
 			}
-			$i = microtime(true) - $t;
-			$t = microtime(true);
 			$sth->execute($vals);
 			//$dbh->commit();
-		}
+		}*/
+	}
 
-		$i2 = microtime(true) - $t;
-		
-		$GLOBALS['insert_time'] += $i + $i2;
-		echo "parsed for $d sec\nfetched castid for $h sec\ncrawled for $c sec\nbuilt query for $i sec\nexecuted query for $i2 sec\n\n";
-	}
-} catch (Exception $e) {}
-*/
-	}
-	else {
-		echo "Failed parsing XML :/\n";
-	}
 	return $castid;
 }
 ?>
