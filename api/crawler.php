@@ -88,9 +88,11 @@ function crawl_all() {
 	if ($sth) {
 		$urls = array();
 		$xml = array();
+		$GLOBALS['casts'] = array();
 		foreach ($sth as $row) {
 			array_push($urls, $row['URL']);
 			array_push($xml, $row['XML']);
+			array_push($GLOBALS['casts'], array("id" => $row['CastID'], "url" => $row['URL']));
 		}
 		$t = microtime(true);
 		$feeds = multiHTTP($urls);
@@ -108,7 +110,7 @@ function crawl_all() {
 			if ($feed != null) {
 				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
 				if (strcmp($xml[$i], $data) != 0) {
-					$sth->execute(array($data, $urls[$i]));
+					//$sth->execute(array($data, $urls[$i]));
 					echo "Crawling\n";
 					crawl($urls[$i], $data);
 				}
@@ -121,6 +123,28 @@ function crawl_all() {
 			}			
 			$i++;
 		}
+
+		$push_this = $GLOBALS['push_this'];
+
+		echo sizeof($push_this)." rows inserted\n";
+
+		if (sizeof($push_this) > 0) {
+			//$dbh->beginTransaction();
+			$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
+			$vals = array();
+			foreach ($push_this as $line) {
+				array_push($vals, $line["castid"]);
+				array_push($vals, $line["location"]);
+				array_push($vals, $line["itemid"]);
+				array_push($vals, $line["content"]);
+				array_push($vals, $line["time"]);
+			}
+			$i = microtime(true) - $t;
+			$t = microtime(true);
+			$sth->execute($vals);
+			//$dbh->commit();
+		}
+
 		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']."sec\ninsert ".$GLOBALS['insert_time']." sec";
 	}
 }
@@ -168,67 +192,6 @@ function where($arr, $k, $v) {
 	return null;
 }
 
-/*function crawl($casturl) {
-	$dbh = $GLOBALS['dbh'];	
-	$db_prefix = $GLOBALS['db_prefix'];
-	$time = time();
-	$castid = null;
-
-	try {
-		//echo "downloading $casturl\n";
-		$t = microtime(true);
-		$xml = simplexml_load_file($casturl);
-
-		$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
-		if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-			$castid = $result['CastID'];
-			
-			$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time");
-		}
-		else {
-			$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$casturl', $time)");
-			$castid = $dbh->lastInsertId();
-		}
-
-		$GLOBALS['push_this'] = array();
-
-		$d = microtime(true) - $t;
-		$GLOBALS['download_time'] += $d;
-		$t = microtime(true);
-		//echo "crawling $casturl\n";
-
-		next_child($xml->channel, "channel/", $castid, $time);
-
-		$c = microtime(true) - $t;
-		$GLOBALS['crawl_time'] += $c;
-		$t = microtime(true);
-		//echo "inserting $casturl\n";
-
-		$push_this = $GLOBALS['push_this'];
-
-		if (sizeof($push_this) > 0) {
-			$dbh->beginTransaction();
-			$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
-			$vals = array();
-			foreach ($push_this as $line) {
-				array_push($vals, $line["castid"]);
-				array_push($vals, $line["location"]);
-				array_push($vals, $line["itemid"]);
-				array_push($vals, $line["content"]);
-				array_push($vals, $line["time"]);
-			}
-			$sth->execute($vals);
-			$dbh->commit();
-		}
-
-		$i = microtime(true) - $t;
-		$GLOBALS['insert_time'] += $i;
-		//echo "downloaded for $d sec\ncrawled for $c sec\ninserted for $i sec\n\n";
-	} catch (Exception $e) {}
-
-	return $castid;
-}*/
-
 function crawl($casturl, $data = null) {
 	$dbh = $GLOBALS['dbh'];	
 	$db_prefix = $GLOBALS['db_prefix'];
@@ -236,7 +199,7 @@ function crawl($casturl, $data = null) {
 	$castid = null;
 
 	try {
-		$t = microtime(true);
+		//$t = microtime(true);
 		if ($data == null) {
 			$update_xml = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
 			$xml = simplexml_load_file($casturl, 'SimpleXMLElement', LIBXML_NOCDATA);
@@ -244,12 +207,12 @@ function crawl($casturl, $data = null) {
 		else {
 			$xml = simplexml_load_string($data, 'SimpleXMLElement', LIBXML_NOCDATA);
 		}
-		$d = microtime(true) - $t;
+		/*$d = microtime(true) - $t;
 		$GLOBALS['parse_time'] += $d;
-		$t = microtime(true);
+		$t = microtime(true);*/
 
 		if ($xml) {
-			$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
+			/*$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$casturl'");
 			$cast = $sth->fetch(PDO::FETCH_ASSOC);
 
 			if ($cast) {
@@ -267,16 +230,18 @@ function crawl($casturl, $data = null) {
 				if (strcmp($xml_string, $cast['XML']) != 0) {
 					$update_xml->execute(array($xml_string, $casturl));
 				}
-			}
+			}*/
 
-			$GLOBALS['push_this'] = array();
+			$castid = where($GLOBALS['casts'], "url", $casturl)["id"];
+
+			/*$GLOBALS['push_this'] = array();
 
 			$h = microtime(true) - $t;
-			$t = microtime(true);
+			$t = microtime(true);*/
 
 			next_child($xml->channel, "channel/", $castid, $time);
 
-			$c = microtime(true) - $t;
+			/*$c = microtime(true) - $t;
 			$GLOBALS['crawl_time'] += $c;
 			$t = microtime(true);
 
@@ -305,7 +270,7 @@ function crawl($casturl, $data = null) {
 			$i2 = microtime(true) - $t;
 			
 			$GLOBALS['insert_time'] += $i + $i2;
-			echo "parsed for $d sec\nfetched castid for $h sec\ncrawled for $c sec\nbuilt query for $i sec\nexecuted query for $i2 sec\n\n";
+			echo "parsed for $d sec\nfetched castid for $h sec\ncrawled for $c sec\nbuilt query for $i sec\nexecuted query for $i2 sec\n\n";*/
 		}
 		else {
 			echo "Failed parsing XML :/\n";
@@ -331,6 +296,7 @@ function process_child($child, $ns, $url, $castid, $time) {
 	static $item = false;
 	static $buffer = array();
 	static $itemid = null;
+	static $yoloid = 0;
 	$dbh = $GLOBALS['dbh'];
 	$db_prefix = $GLOBALS['db_prefix'];
 	if ($ns != null) {
@@ -343,10 +309,12 @@ function process_child($child, $ns, $url, $castid, $time) {
 	if (!startsWith($url, "channel/item")) {
 		$itemid = null;
 
+		/*$t = microtime(true);
 		$sth = $dbh->query("SELECT * FROM {$db_prefix}feedcontent WHERE castid=$castid AND location='$newurl'");
+		$GLOBALS['db_crawl_time'] += microtime(true) - $t;
 		if ($sth && $sth->rowCount() > 0) {
 			return;
-		}
+		}*/
 	}
 
 	if ($child->count() > 0) {
@@ -359,21 +327,26 @@ function process_child($child, $ns, $url, $castid, $time) {
 		if ($child->getName() == "guid") {
 			$item = false;
 
+			/*$t = microtime(true);
 			$sth = $dbh->query("SELECT * FROM {$db_prefix}feedcontent WHERE location='channel/item/guid' AND content='$child' AND castid=$castid");
-			if ($sth && $sth->rowCount() < 1) {
-				$dbh->exec("INSERT INTO {$db_prefix}itemid () VALUES()");
-				$itemid = $dbh->lastInsertId();
+			$GLOBALS['db_crawl_time'] += microtime(true) - $t;
+			if ($sth && $sth->rowCount() < 1) {*/
+				//$t = microtime(true);
+				//$dbh->exec("INSERT INTO {$db_prefix}itemid () VALUES()");
+				//$GLOBALS['db_crawl_time'] += microtime(true) - $t;
+				//$itemid = $dbh->lastInsertId();
+				$itemid = $yoloid;
+				$yoloid++;
 
 				foreach ($buffer as $line) {
 					array_push($GLOBALS['push_this'], array("castid" => $castid, "location" => $line["location"], "itemid" => $itemid, "content" => $line["content"], "time" => $time));
 				}
 				$buffer = array();
-			}
+			/*}
 			else {
 				// Exisiting item
-			}
+			}*/
 		}
-
 
 		if ($item) {
 			array_push($buffer, array("location" => $newurl, "content" => (string)$child));
