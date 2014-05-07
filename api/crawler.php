@@ -109,9 +109,11 @@ function crawl_all() {
 			if ($feed != null) {
 				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
 				if (strcmp($xml[$i], $data) != 0) {
-					//$sth->execute(array($data, $urls[$i]));
+					$sth->execute(array($data, $urls[$i]));
 					echo "Crawling\n";
+					$t = microtime(true);
 					crawl($urls[$i], $data);
+					$GLOBALS['crawl_time'] += microtime(true) - $t;
 				}
 				else {
 					echo "Skipping\n";
@@ -123,7 +125,7 @@ function crawl_all() {
 			$i++;
 		}
 
-		$push_this = $GLOBALS['push_this'];
+		/*$push_this = $GLOBALS['push_this'];
 
 		echo sizeof($push_this)." rows inserted\n";
 
@@ -142,7 +144,7 @@ function crawl_all() {
 			$t = microtime(true);
 			$sth->execute($vals);
 			//$dbh->commit();
-		}
+		}*/
 
 		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']."sec\ninsert ".$GLOBALS['insert_time']." sec";
 	}

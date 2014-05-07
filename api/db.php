@@ -76,8 +76,8 @@ class DB {
 		}*/
 
 		$sth = $this->dbh->query("SELECT Content FROM {$this->db_prefix}cast WHERE castid=$castid");
-		if ($result = $sth->fetch(PDO::FETCH_ASSOC)) {
-			$cast = json_decode($result['Content'], true);
+		if ($result = $sth->fetch()) {
+			$cast = json_decode($result[0], true);
 		}
 
 		return $cast;
