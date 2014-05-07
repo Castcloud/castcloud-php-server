@@ -280,18 +280,17 @@ class DB {
 		
 		$query = "SELECT
 			feed.CastID,
-			feed.Location,
-			feed.ItemID,
+			feed.EpisodeID,
 			feed.Content
 			FROM
-			{$this->db_prefix}feedcontent AS feed
+			{$this->db_prefix}episode AS feed
 			LEFT JOIN 
 				{$this->db_prefix}subscription AS subs
 				ON subs.CastID = feed.CastID
 				AND subs.UserID = :userid
 			LEFT JOIN 
 				{$this->db_prefix}event AS event
-				ON feed.ItemID = event.ItemID";
+				ON feed.EpisodeID = event.EpisodeID";
 		if (!empty($exclude)){
 			$query .= " AND (";
 			for ($i = 0; $i < count($exclude); $i++) {
@@ -303,7 +302,7 @@ class DB {
 				
 				$query .= " AND ReceivedTS = (SELECT MAX(ReceivedTS)
           			FROM {$this->db_prefix}event AS ev2
-         			WHERE ev2.ItemID = event.ItemID
+         			WHERE ev2.EpisodeID = event.EpisodeID
          			AND ev2.UserID = :userid)";
 			} 
 			$query .= " )";
@@ -327,7 +326,7 @@ class DB {
 		}
 		
 		if (!empty($exclude)) {
-			$query.=" AND event.ItemID IS NULL";
+			$query.=" AND event.EpisodeID IS NULL";
 		}
 
 		if ($since != null) {
@@ -341,7 +340,7 @@ class DB {
 		}
 		
 		if ($episode != null) {
-			$query.=" AND feed.ItemID = :itemid";
+			$query.=" AND feed.EpisodeID = :itemid";
 			$inputs[":itemid"] = $episode;
 		}
 		
@@ -349,7 +348,10 @@ class DB {
 		$sth->execute($inputs);
 		
 		$episodes = array();
-		$itemid = null;
+		foreach ($sth as $row) {
+			echo $row['EpisodeID']."\n";
+		}
+		/*$itemid = null;
 		$previtemid = null;
 		$i = -1;
 		if ($result = $sth->fetchAll()) {
@@ -385,28 +387,15 @@ class DB {
 						}
 						$episodes[$i]->feed[$exploded[2]] = $row['Content'];
 					}
-
-					/*$exploded = explode("/", $row['Location']);
-					if (sizeof($exploded) > 3) {
-						$episodes[$i]->feed[$exploded[2]][$exploded[3]] = $row['Content'];
-					}
-					else {
-						if ($exploded[2] == "guid") {
-							$episodes[$i]->feed["guid"]["guid"] = $row['Content'];
-						}
-						else {
-							$episodes[$i]->feed[$exploded[2]] = $row['Content'];
-						}
-					}*/
 				}
 				$previtemid = $itemid;
 			}
 		}
 
 		$GLOBALS['current'] = $episodes;
-		uksort($episodes, 'cmp');
+		uksort($episodes, 'cmp');*/
 
-		return array_values($episodes);
+		return $episodes;
 	}	
 
 	function get_events($itemid, $since, $limit = null, $exclude = null) {
