@@ -349,7 +349,8 @@ class DB {
 		
 		$episodes = array();
 		foreach ($sth as $row) {
-			echo $row['EpisodeID']."\n";
+			$episode = new Episode($row['EpisodeID'], $row['CastID'], null, json_decode($row['Content']));
+			array_push($episodes, $episode);
 		}
 		/*$itemid = null;
 		$previtemid = null;
@@ -579,8 +580,8 @@ class DB {
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 
-		$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='".$feedurl."'");
-		$castid = $sth->fetch(PDO::FETCH_ASSOC)['CastID'];
+		//$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='".$feedurl."'");
+		//$castid = $sth->fetch(PDO::FETCH_ASSOC)['CastID'];
 		
 		if ($label == null){
 			$label = "root";

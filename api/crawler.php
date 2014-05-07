@@ -208,9 +208,19 @@ function crawl($casturl, $data = null) {
 	if ($xml) {
 		$time = time();
 
+		//var_dump($xml->channel);
+
 		$cast = json_decode(json_encode($xml->channel));
 		$episodes = $cast->item;
 		unset($cast->item);
+
+		foreach ($xml->channel->getDocNamespaces() as $ns => $nsurl) {
+			foreach ($xml->channel->children($nsurl) as $child) {
+				$cast->{$ns.":".$child->getName()} = (string)$child;
+			}
+		}
+
+		echo json_encode($cast);
 
 		$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$casturl'");
 		$c = $sth->fetch(PDO::FETCH_ASSOC);
