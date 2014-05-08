@@ -517,8 +517,6 @@ class DB {
 			$label = "root";
 		}
 		
-		$this->add_to_label("cast/" . $castid, $label);
-		
 		if ($name == null){
 			$castinfo = $this->get_cast($castid);
 			if (array_key_exists("title",$castinfo)){

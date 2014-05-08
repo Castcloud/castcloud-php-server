@@ -215,6 +215,12 @@ function crawl($casturl, $data = null) {
 		$episodes = $cast->item;
 		unset($cast->item);
 
+		if (sizeof($episodes) === 1) {
+			$temp = $episodes;
+			$episodes = array();
+			array_push($episodes, $temp);
+		}
+
 		foreach ($xml->channel->getDocNamespaces() as $ns => $nsurl) {
 			foreach ($xml->channel->children($nsurl) as $child) {
 				if (sizeof($child->attributes()) > 0) {
@@ -232,38 +238,40 @@ function crawl($casturl, $data = null) {
 				}	
 			}
 
-			$i = 0;
-			foreach ($episodes as $episode) {
-				foreach ($xml->channel->item[$i]->children() as $child) {
-					if (sizeof($child->attributes()) > 0) {
-						$episode->{$child->getName()} = new stdClass();
-						$val = (string)$child;
-						if ($val !== '') {
-							$episode->{$child->getName()}->_ = $val;
-						}
-						foreach ($child->attributes() as $k => $v) {
-							$episode->{$child->getName()}->$k = (string)$v;
-						}
-					}
-				}
-
+			for ($i = 0; $i < sizeof($episodes); $i++) {
 				foreach ($xml->channel->item[$i]->children($nsurl) as $child) {
 					if (sizeof($child->attributes()) > 0) {
-						$episode->{$ns.":".$child->getName()} = new stdClass();
+						$episodes[$i]->{$ns.":".$child->getName()} = new stdClass();
 						$val = (string)$child;
 						if ($val !== '') {
-							$episode->{$ns.":".$child->getName()}->_ = $val;
+							$episodes[$i]->{$ns.":".$child->getName()}->_ = $val;
 						}
 						foreach ($child->attributes() as $k => $v) {
-							$episode->{$ns.":".$child->getName()}->$k = (string)$v;
+							$episodes[$i]->{$ns.":".$child->getName()}->$k = (string)$v;
 						}
 					}
 					else {
-						$episode->{$ns.":".$child->getName()} = (string)$child;
+						$episodes[$i]->{$ns.":".$child->getName()} = (string)$child;
 					}	
 				}
 
 				$i++;
+			}
+		}
+
+		$i = 0;
+		foreach ($episodes as $episode) {
+			foreach ($xml->channel->item[$i]->children() as $child) {
+				if (sizeof($child->attributes()) > 0) {
+					$episode->{$child->getName()} = new stdClass();
+					$val = (string)$child;
+					if ($val !== '') {
+						$episode->{$child->getName()}->_ = $val;
+					}
+					foreach ($child->attributes() as $k => $v) {
+						$episode->{$child->getName()}->$k = (string)$v;
+					}
+				}
 			}
 		}
 
