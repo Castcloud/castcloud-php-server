@@ -196,14 +196,17 @@ function where($arr, $k, $v) {
 function crawl($casturl, $data = null) {
 	$dbh = $GLOBALS['dbh'];	
 	$db_prefix = $GLOBALS['db_prefix'];
-	$castid = null;
+	$castid = null; 
+	$xml = null;
 
-	if ($data == null) {
-		$xml = simplexml_load_file($casturl, 'SimpleXMLElement', LIBXML_NOCDATA);
-	}
-	else {
-		$xml = simplexml_load_string($data, 'SimpleXMLElement', LIBXML_NOCDATA);
-	}
+	try{
+		if ($data == null) {
+			$xml = simplexml_load_file($casturl, 'SimpleXMLElement', LIBXML_NOCDATA);
+		}
+		else {
+			$xml = simplexml_load_string($data, 'SimpleXMLElement', LIBXML_NOCDATA);
+		}
+	} catch (Exception $e) {}
 
 	if ($xml) {
 		$time = time();
@@ -282,8 +285,18 @@ function crawl($casturl, $data = null) {
 
 		$sth = $dbh->prepare("INSERT INTO {$db_prefix}episode (castid, content, guid, crawlts) VALUES(?,?,?,?)");
 		foreach ($episodes as $episode) {
-			if (!in_array($episode->guid->_, $guids)) {
-				$sth->execute(array($castid, json_encode($episode), $episode->guid->_, $time));
+			$guid = null;
+			
+			if (isset($episode->guid->_)){
+				$guid = $episode->guid->_;
+			} else if (isset($episode->guid)){
+				$guid = $episode->guid;
+			} else if (isset($episode->title)){
+				$guid = $episode->title;
+			} 
+			
+			if($guid != null && !in_array($guid, $guids)) {
+				$sth->execute(array($castid, json_encode($episode), $guid, $time));
 			}
 		}
 
