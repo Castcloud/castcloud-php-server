@@ -208,19 +208,61 @@ function crawl($casturl, $data = null) {
 	if ($xml) {
 		$time = time();
 
-		//var_dump($xml->channel);
-
 		$cast = json_decode(json_encode($xml->channel));
 		$episodes = $cast->item;
 		unset($cast->item);
 
 		foreach ($xml->channel->getDocNamespaces() as $ns => $nsurl) {
 			foreach ($xml->channel->children($nsurl) as $child) {
-				$cast->{$ns.":".$child->getName()} = (string)$child;
+				if (sizeof($child->attributes()) > 0) {
+					$cast->{$ns.":".$child->getName()} = new stdClass();
+					$val = (string)$child;
+					if ($val !== '') {
+						$cast->{$ns.":".$child->getName()}->_ = $val;
+					}
+					foreach ($child->attributes() as $k => $v) {
+						$cast->{$ns.":".$child->getName()}->$k = (string)$v;
+					}
+				}
+				else {
+					$cast->{$ns.":".$child->getName()} = (string)$child;
+				}	
+			}
+
+			$i = 0;
+			foreach ($episodes as $episode) {
+				foreach ($xml->channel->item[$i]->children() as $child) {
+					if (sizeof($child->attributes()) > 0) {
+						$episode->{$child->getName()} = new stdClass();
+						$val = (string)$child;
+						if ($val !== '') {
+							$episode->{$child->getName()}->_ = $val;
+						}
+						foreach ($child->attributes() as $k => $v) {
+							$episode->{$child->getName()}->$k = (string)$v;
+						}
+					}
+				}
+
+				foreach ($xml->channel->item[$i]->children($nsurl) as $child) {
+					if (sizeof($child->attributes()) > 0) {
+						$episode->{$ns.":".$child->getName()} = new stdClass();
+						$val = (string)$child;
+						if ($val !== '') {
+							$episode->{$ns.":".$child->getName()}->_ = $val;
+						}
+						foreach ($child->attributes() as $k => $v) {
+							$episode->{$ns.":".$child->getName()}->$k = (string)$v;
+						}
+					}
+					else {
+						$episode->{$ns.":".$child->getName()} = (string)$child;
+					}	
+				}
+
+				$i++;
 			}
 		}
-
-		echo json_encode($cast);
 
 		$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$casturl'");
 		$c = $sth->fetch(PDO::FETCH_ASSOC);
@@ -240,8 +282,8 @@ function crawl($casturl, $data = null) {
 
 		$sth = $dbh->prepare("INSERT INTO {$db_prefix}episode (castid, content, guid, crawlts) VALUES(?,?,?,?)");
 		foreach ($episodes as $episode) {
-			if (!in_array($episode->guid, $guids)) {
-				$sth->execute(array($castid, json_encode($episode), $episode->guid, $time));
+			if (!in_array($episode->guid->_, $guids)) {
+				$sth->execute(array($castid, json_encode($episode), $episode->guid->_, $time));
 			}
 		}
 
