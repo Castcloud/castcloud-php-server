@@ -497,7 +497,7 @@ $app -> group('/library', function() use ($app) {
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
 		$name = $app -> request -> params('name');
-		$app->db->subscribe_to($feedurl, $name);
+		$app->db->subscribe_to($feedurl, $name, null, true);
 	});
 	
 	/**
@@ -684,7 +684,7 @@ $app -> group('/library', function() use ($app) {
 		$json = json_decode(json_encode($app->request->params('json')));
 
 		foreach ($json as $event) {
-			$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}event (userid, type, itemid, positionts, concurrentorder, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, :concurrentorder, $event->clientts, $receivedts, $app->uniqueclientid)");
+			$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}event (userid, type, episodeid, positionts, concurrentorder, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, :concurrentorder, $event->clientts, $receivedts, $app->uniqueclientid)");
 			$sth->bindParam(":concurrentorder", $event->concurrentorder, PDO::PARAM_INT);
 			$sth->execute();
 		}

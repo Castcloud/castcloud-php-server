@@ -23,8 +23,7 @@ class DB {
 		$query = "SELECT
 			cast.CastID AS id,
 			subs.name,
-			cast.url/*,
-			subs.arrangement*/
+			cast.url
 			FROM 
 			{$this->db_prefix}cast AS cast,
 			{$this->db_prefix}subscription AS subs
@@ -46,35 +45,7 @@ class DB {
 		return $casts;
 	}
 
-	function get_cast($castid) {//
-		/*$cast = array();
-		$sth = $this->dbh->query("SELECT * FROM {$this->db_prefix}feedcontent WHERE CastID=$castid");
-		if ($result = $sth->fetchAll()) {
-			$needsLove = null;
-			foreach ($result as $row) {
-				if (!startsWith($row['Location'], "channel/item")) {
-					$exploded = explode("/", $row['Location']);
-					if (sizeof($exploded) > 2) {
-						if ($needsLove != null) {
-							if ($exploded[1] == $needsLove) {
-								$v = $cast[$needsLove];
-								$cast[$needsLove] = array();
-								$cast[$needsLove][$needsLove] = $v; 
-							}
-							$needsLove = null;
-						}
-						$cast[$exploded[1]][$exploded[2]] = $row['Content'];
-					}
-					else {
-						if ($row["Content"] != "") {
-							$needsLove = $exploded[1];
-						}
-						$cast[$exploded[1]] = $row['Content'];
-					}
-				}
-			}
-		}*/
-
+	function get_cast($castid) {
 		$sth = $this->dbh->query("SELECT Content FROM {$this->db_prefix}cast WHERE castid=$castid");
 		if ($result = $sth->fetch()) {
 			$cast = json_decode($result[0], true);
@@ -352,49 +323,6 @@ class DB {
 			$episode = new Episode($row['EpisodeID'], $row['CastID'], null, json_decode($row['Content']));
 			array_push($episodes, $episode);
 		}
-		/*$itemid = null;
-		$previtemid = null;
-		$i = -1;
-		if ($result = $sth->fetchAll()) {
-			$needsLove = null;
-			foreach ($result as $row) {
-				$itemid = $row['ItemID'];
-				$castid = $row['CastID'];
-				if (startsWith($row['Location'], "channel/item")) {
-					if ($itemid != $previtemid) {
-						$i++;
-					}
-				
-					if (!isset($episodes[$i])) {
-						$episodes[$i] = new episode($itemid, $castid, null, array());
-						$episodes[$i]->lastevent = $this->get_events($itemid, null, 1);
-					}
-
-					$exploded = explode("/", $row['Location']);
-					if (sizeof($exploded) > 3) {
-						if ($needsLove != null) {
-							if ($exploded[2] == $needsLove) {
-								$v = $episodes[$i]->feed[$needsLove];
-								$episodes[$i]->feed[$needsLove] = array();
-								$episodes[$i]->feed[$needsLove][$needsLove] = $v; 
-							}
-							$needsLove = null;
-						}
-						$episodes[$i]->feed[$exploded[2]][$exploded[3]] = $row['Content'];
-					}
-					else {
-						if ($row["Content"] != "") {
-							$needsLove = $exploded[2];
-						}
-						$episodes[$i]->feed[$exploded[2]] = $row['Content'];
-					}
-				}
-				$previtemid = $itemid;
-			}
-		}
-
-		$GLOBALS['current'] = $episodes;
-		uksort($episodes, 'cmp');*/
 
 		return $episodes;
 	}	
@@ -407,7 +335,7 @@ class DB {
 
 		$query = "SELECT
 			event.type,
-			event.itemid AS episodeid,
+			event.episodeid AS episodeid,
 			event.positionts,
 			event.clientts,
 			event.concurrentorder, 
@@ -424,7 +352,7 @@ class DB {
 		$inputs = array(":userid" => $userid);
 
 		if ($itemid != null) {
-			$query.=" AND event.itemid=:itemid";
+			$query.=" AND event.episodeid=:itemid";
 			$inputs[":itemid"] = $itemid;
 		}
 		if ($since != null) {
@@ -434,11 +362,11 @@ class DB {
 		
 		if (!empty($exclude)){
 			
-			$query .= " AND event.ItemID = (
-					SELECT ev2.ItemID
+			$query .= " AND event.EpisodeID = (
+					SELECT ev2.EpisodeID
 					FROM {$this->db_prefix}event AS ev2
 					WHERE ev2.UserID = :ev2userid
-					AND ev2.ItemID = event.ItemID
+					AND ev2.EpisodeID = event.EpisodeID
 	         		AND (";
 			$inputs[":ev2userid"] = $userid;
 			
@@ -455,7 +383,7 @@ class DB {
 						SELECT MAX(ReceivedTS)
 						FROM {$this->db_prefix}event AS ev3
 						WHERE ev3.UserID = :ev3userid
-	         			AND ev3.ItemID = ev2.ItemID
+	         			AND ev3.EpisodeID = ev2.EpisodeID
 					)
 				)";
 			$inputs[":ev3userid"] = $userid;
@@ -524,7 +452,7 @@ class DB {
 		$this->subscribe_to_these = array();
 		$this->urls = array();
 		$this->opml_next($opml);
-		//crawl_urls($this->urls);
+		crawl_urls($this->urls);
 
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
@@ -567,21 +495,23 @@ class DB {
 				array_push($this->subscribe_to_these, array("url" => (string)$outline["xmlUrl"], 
 					"title" => (string)$title, "label" => (string)$label));
 				array_push($this->urls, (string)$outline["xmlUrl"]);
-				//$this->subscribe_to((string) $outline["xmlUrl"],(string) $title,(string) $label);
 			}
 		}
 	}
 	
-	function subscribe_to($feedurl, $name = null, $label = null){
+	function subscribe_to($feedurl, $name = null, $label = null, $crawl = false){
 		$userid = $GLOBALS['app'] -> userid;
-		
-		//$castid = crawl($feedurl);
 		
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
 
-		$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$feedurl'");
-		$castid = $sth->fetch(PDO::FETCH_ASSOC)['CastID'];
+		if ($crawl) {
+			$castid = crawl($feedurl);
+		}
+		else {
+			$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$feedurl'");
+			$castid = $sth->fetch(PDO::FETCH_ASSOC)['CastID'];
+		}		
 		
 		if ($label == null){
 			$label = "root";
