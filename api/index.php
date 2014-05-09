@@ -283,7 +283,7 @@ $app -> group('/library', function() use ($app) {
 	
 		/**
 	 * @SWG\Api(
-	 * 	path="/library/episode/{itemid}",
+	 * 	path="/library/episode/{episodeid}",
 	 * 	description="Get a spesific episode",
 	 * 	@SWG\Operation(
 	 * 		method="GET",
@@ -299,8 +299,8 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="itemid",
-	 * 			description="The episodes itemid",
+	 * 			name="episodeid",
+	 * 			description="The episodes id",
 	 * 			paramType="path",
 	 * 			required=true,
 	 * 			type="integer"
@@ -312,8 +312,8 @@ $app -> group('/library', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> get('/episode/:itemid', function($itemid) use ($app) {
-		json($app->db->get_episodes(null, null, "", null, $itemid)[0]);
+	$app -> get('/episode/:episodeid', function($episodeid) use ($app) {
+		json($app->db->get_episodes(null, null, "", null, $episodeid)[0]);
 	});
 	
 	/**
@@ -610,8 +610,8 @@ $app -> group('/library', function() use ($app) {
 	 * 			type="integer"
 	 * 		),
 	 * 		@SWG\Parameter(
-	 * 			name="ItemID",
-	 * 			description="filter by ItemID",
+	 * 			name="episodeid",
+	 * 			description="filter by episodeid",
 	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
@@ -633,16 +633,16 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/events', function() use ($app) {
 		include_once 'models/eventsresult.php';
 		
-		$itemid = $app->request->params('itemid');
+		$episodeid = $app->request->params('episodeid');
 		$since = $app->request->params('since');
 		$limit = $app->request->params('limit');
 		$exclude = $app -> request -> params('exclude');
 		
 		
 		if ($exclude != null){
-			json(new eventsresult($app->db->get_events($itemid, $since, $limit, $exclude)));
+			json(new eventsresult($app->db->get_events($episodeid, $since, $limit, $exclude)));
 		} else {
-			json(new eventsresult($app->db->get_events($itemid, $since, $limit, "70")));
+			json(new eventsresult($app->db->get_events($episodeid, $since, $limit, "70")));
 		}
 	});
 
@@ -684,7 +684,7 @@ $app -> group('/library', function() use ($app) {
 		$json = json_decode(json_encode($app->request->params('json')));
 
 		foreach ($json as $event) {
-			$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}event (userid, type, episodeid, positionts, concurrentorder, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->itemid, $event->positionts, :concurrentorder, $event->clientts, $receivedts, $app->uniqueclientid)");
+			$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}event (userid, type, episodeid, positionts, concurrentorder, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->episodeid, $event->positionts, :concurrentorder, $event->clientts, $receivedts, $app->uniqueclientid)");
 			$sth->bindParam(":concurrentorder", $event->concurrentorder, PDO::PARAM_INT);
 			$sth->execute();
 		}

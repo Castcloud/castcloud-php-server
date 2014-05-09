@@ -215,7 +215,7 @@
             ]
         },
         {
-            "path": "/library/episode/{itemid}",
+            "path": "/library/episode/{episodeid}",
             "description": "Get a spesific episode",
             "operations": [
                 {
@@ -236,10 +236,10 @@
                         },
                         {
                             "paramType": "path",
-                            "name": "itemid",
+                            "name": "episodeid",
                             "type": "integer",
                             "required": true,
-                            "description": "The episodes itemid"
+                            "description": "The episodes id"
                         }
                     ],
                     "responseMessages": [
@@ -405,10 +405,10 @@
                         },
                         {
                             "paramType": "query",
-                            "name": "ItemID",
+                            "name": "episodeid",
                             "type": "integer",
                             "required": false,
-                            "description": "filter by ItemID"
+                            "description": "filter by episodeid"
                         },
                         {
                             "paramType": "query",
