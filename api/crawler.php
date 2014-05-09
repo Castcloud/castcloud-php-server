@@ -32,7 +32,10 @@ function multiHTTP ($urlArr) {
 	$retDone = Array(); 
 	$retData = Array(); 
 	$errno   = Array(); 
-	$errstr  = Array(); 
+	$errstr  = Array();
+
+	$user_agent = "Castcloud crawler; +https://github.com/castcloud/castcloud (PHP ".phpversion().")";
+
 	for ($x=0;$x<count($urlArr);$x++) {
 		try{
 			$urlInfo[$x] = parse_url($urlArr[$x]); 
@@ -44,8 +47,10 @@ function multiHTTP ($urlArr) {
 			if ($sockets[$x]) {
 				socket_set_blocking($sockets[$x], FALSE); 
 				$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
-				fputs($sockets[$x],"GET " . $urlInfo[$x]["path"] . "$query HTTP/1.0\r\nHost: " . 
-					$urlInfo[$x]["host"] . "\r\n\r\n"); 
+				$req = "GET " . $urlInfo[$x]["path"] . "$query HTTP/1.1\r\nHost: " . 
+					$urlInfo[$x]["host"] . "\r\nUser-Agent: ".$user_agent."\r\n\r\n";
+				//echo $req;
+				fputs($sockets[$x], $req); 
 			}
 		} catch (Exception $e){
 			echo $urlArr[$x]." failed :(\n";
@@ -116,6 +121,12 @@ function crawl_all() {
 			echo "#".($i + 1)." ".$urls[$i]."\n";
 			if ($feed != null) {
 				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
+
+				if ($data == null) {
+					echo $feed;
+					sleep(5);
+				}
+
 				if (strcmp($xml[$i], $data) != 0) {
 					$sth->execute(array($data, $urls[$i]));
 					echo "Crawling\n";
