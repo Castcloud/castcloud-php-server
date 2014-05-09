@@ -21,8 +21,8 @@ if (php_sapi_name() == "cli"){
 
 function generateQuery($n) {
 	$db_prefix = $GLOBALS['db_prefix'];
-	$sql = "INSERT INTO {$db_prefix}feedcontent (castid, location, itemid, content, crawlts) VALUES";
-	$sql.= implode(', ', array_fill(0, $n, '(?,?,?,?,?)'));
+	$sql = "INSERT INTO {$db_prefix}episode (castid, content, guid, crawlts) VALUES";
+	$sql.= implode(', ', array_fill(0, $n, '(?,?,?,?)'));
 	return $sql;
 }
 
@@ -56,11 +56,11 @@ function multiHTTP ($urlArr) {
 	while (!$done) { 
 		for ($x=0; $x < count($urlArr);$x++) {
 			if ($sockets[$x]) {
-				if (!feof($sockets[$x])) { 
+				if (!feof($sockets[$x])) {
 					if (array_key_exists($x, $retData)) { 
-						$retData[$x] .= fgets($sockets[$x],128); 
+						$retData[$x] .= fgets($sockets[$x],512); 
 					} else { 
-						$retData[$x] = fgets($sockets[$x],128); 
+						$retData[$x] = fgets($sockets[$x],512); 
 					} 
 				} else {
 					if (!array_key_exists($x, $retData)) {
@@ -93,6 +93,11 @@ function crawl_all() {
 			array_push($xml, $row['XML']);
 			array_push($GLOBALS['casts'], array("id" => $row['CastID'], "url" => $row['URL']));
 		}
+		$sth = $dbh->query("SELECT GUID FROM {$db_prefix}episode");
+		$GLOBALS['guids'] = $sth->fetchAll(PDO::FETCH_COLUMN, 0);
+
+		$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=".time());
+		
 		$t = microtime(true);
 		$feeds = multiHTTP($urls);
 		$GLOBALS['download_time'] = microtime(true) - $t;
@@ -103,6 +108,9 @@ function crawl_all() {
 		$size_downloaded /= 1024 * 1024;
 		echo "Downloaded ".sizeof($feeds)." feeds, $size_downloaded MB in ".$GLOBALS['download_time']." seconds\n";
 		$i = 0;
+
+		$dbh->beginTransaction();
+
 		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
 		foreach ($feeds as $feed) {
 			echo "#".($i + 1)." ".$urls[$i]."\n";
@@ -125,26 +133,20 @@ function crawl_all() {
 			$i++;
 		}
 
-		/*$push_this = $GLOBALS['push_this'];
+		$push_this = $GLOBALS['push_this'];
 
-		echo sizeof($push_this)." rows inserted\n";
-
-		if (sizeof($push_this) > 0) {
-			//$dbh->beginTransaction();
-			$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
-			$vals = array();
-			foreach ($push_this as $line) {
-				array_push($vals, $line["castid"]);
-				array_push($vals, $line["location"]);
-				array_push($vals, $line["itemid"]);
-				array_push($vals, $line["content"]);
-				array_push($vals, $line["time"]);
-			}
-			$i = microtime(true) - $t;
-			$t = microtime(true);
+		$t = microtime(true);
+		$n = 250;
+		for ($i = 0; $i < sizeof($push_this); $i += $n * 4) {
+			$vals = array_slice($push_this, $i, $n * 4);
+			$sth = $dbh->prepare(generateQuery(sizeof($vals) / 4));
 			$sth->execute($vals);
-			//$dbh->commit();
-		}*/
+		}
+		$GLOBALS['insert_time'] = microtime(true) - $t;
+
+		echo (sizeof($push_this) / 4)." rows inserted\n";
+
+		$dbh->commit();
 
 		echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']."sec\ninsert ".$GLOBALS['insert_time']." sec";
 	}
@@ -159,9 +161,7 @@ function crawl_urls($urls) {
 		$i = 0;
 		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
 		for ($j = 0; $j < sizeof($urls); $j += 16) {
-			//$t = microtime(true);
 			$feeds = multiHTTP(array_slice($urls, $j, 16));
-			//$GLOBALS['download_time'] += microtime(true) - $t;
 			foreach ($feeds as $feed) {
 				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
 				echo $urls[$i]."\n";
@@ -180,7 +180,6 @@ function crawl_urls($urls) {
 				$i++;
 			}
 		}
-		//echo "download ".$GLOBALS['download_time']." sec\nparse ".$GLOBALS['parse_time']." sec\ncrawl ".$GLOBALS['crawl_time']." sec\ninsert ".$GLOBALS['insert_time']." sec";
 	}
 }
 
@@ -210,6 +209,8 @@ function crawl($casturl, $data = null) {
 
 	if ($xml) {
 		$time = time();
+
+		$t = microtime(true);
 
 		$cast = json_decode(json_encode($xml->channel));
 		$episodes = $cast->item;
@@ -259,69 +260,73 @@ function crawl($casturl, $data = null) {
 			}
 		}
 
-		$i = 0;
-		foreach ($episodes as $episode) {
+		for ($i = 0; $i < sizeof($episodes); $i++) {
 			foreach ($xml->channel->item[$i]->children() as $child) {
 				if (sizeof($child->attributes()) > 0) {
-					$episode->{$child->getName()} = new stdClass();
+					$episodes[$i]->{$child->getName()} = new stdClass();
 					$val = (string)$child;
 					if ($val !== '') {
-						$episode->{$child->getName()}->_ = $val;
+						$episodes[$i]->{$child->getName()}->_ = $val;
 					}
 					foreach ($child->attributes() as $k => $v) {
-						$episode->{$child->getName()}->$k = (string)$v;
+						$episodes[$i]->{$child->getName()}->$k = (string)$v;
 					}
 				}
 			}
 		}
 
-		$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$casturl'");
-		$c = $sth->fetch(PDO::FETCH_ASSOC);
+		$GLOBALS['parse_time'] += microtime(true) - $t;
 
-		if ($c) {
-			$castid = $c['CastID'];			
-			$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time WHERE castid=$castid");
+		if ($data !== null) {
+			$castid = where($GLOBALS['casts'], "url", $casturl)['id'];
 		}
 		else {
-			$sth = $dbh->prepare("INSERT INTO {$db_prefix}cast (url, content, crawlts) VALUES(?,?,?)");
-			$sth->execute(array($casturl, json_encode($cast), $time));
-			$castid = $dbh->lastInsertId();
+			$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$casturl'");
+			$c = $sth->fetch(PDO::FETCH_ASSOC);
+
+			if ($c) {
+				$castid = $c['id'];
+				$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time WHERE castid=$castid");
+			}
+			else {
+				$sth = $dbh->prepare("INSERT INTO {$db_prefix}cast (url, content, crawlts) VALUES(?,?,?)");
+				$sth->execute(array($casturl, json_encode($cast), $time));
+				$castid = $dbh->lastInsertId();
+			}
 		}
 
-		$sth = $dbh->query("SELECT GUID FROM {$db_prefix}episode WHERE castid=$castid");
-		$guids = $sth->fetchAll(PDO::FETCH_COLUMN, 0);
+		if ($data !== null) {
+			$guids = $GLOBALS['guids'];
+		}
+		else {
+			$sth = $dbh->query("SELECT GUID FROM {$db_prefix}episode WHERE castid=$castid");
+			$guids = $sth->fetchAll(PDO::FETCH_COLUMN, 0);
+			$sth = $dbh->prepare("INSERT INTO {$db_prefix}episode (castid, content, guid, crawlts) VALUES(?,?,?,?)");
+		}
 
-		$sth = $dbh->prepare("INSERT INTO {$db_prefix}episode (castid, content, guid, crawlts) VALUES(?,?,?,?)");
 		foreach ($episodes as $episode) {
 			$guid = null;
 			
 			if (isset($episode->guid->_)){
 				$guid = $episode->guid->_;
-			} else if (isset($episode->guid)){
+			} else if (isset($episode->guid) && !($episode->guid instanceof stdClass)){
 				$guid = $episode->guid;
 			} else if (isset($episode->title)){
 				$guid = $episode->title;
-			} 
+			}
 			
 			if($guid != null && !in_array($guid, $guids)) {
-				$sth->execute(array($castid, json_encode($episode), $guid, $time));
+				if ($data !== null) {
+					array_push($GLOBALS['push_this'], $castid);
+					array_push($GLOBALS['push_this'], json_encode($episode));
+					array_push($GLOBALS['push_this'], $guid);
+					array_push($GLOBALS['push_this'], $time);
+				}
+				else {
+					$sth->execute(array($castid, json_encode($episode), $guid, $time));					
+				}				
 			}
 		}
-
-		/*if (sizeof($push_this) > 0) {
-			//$dbh->beginTransaction();
-			$sth = $dbh->prepare(generateQuery(sizeof($push_this)));
-			$vals = array();
-			foreach ($push_this as $line) {
-				array_push($vals, $line["castid"]);
-				array_push($vals, $line["location"]);
-				array_push($vals, $line["itemid"]);
-				array_push($vals, $line["content"]);
-				array_push($vals, $line["time"]);
-			}
-			$sth->execute($vals);
-			//$dbh->commit();
-		}*/
 	}
 
 	return $castid;
