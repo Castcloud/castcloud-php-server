@@ -48,8 +48,7 @@ function multiHTTP ($urlArr) {
 				socket_set_blocking($sockets[$x], FALSE); 
 				$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
 				$req = "GET " . $urlInfo[$x]["path"] . "$query HTTP/1.1\r\nHost: " . 
-					$urlInfo[$x]["host"] . "\r\nUser-Agent: ".$user_agent."\r\n\r\n";
-				//echo $req;
+					$urlInfo[$x]["host"] . "\r\nUser-Agent: ".$user_agent."\r\nConnection: close\r\n\r\n";
 				fputs($sockets[$x], $req); 
 			}
 		} catch (Exception $e){
@@ -66,7 +65,7 @@ function multiHTTP ($urlArr) {
 						$retData[$x] .= fgets($sockets[$x],512); 
 					} else { 
 						$retData[$x] = fgets($sockets[$x],512); 
-					} 
+					}
 				} else {
 					if (!array_key_exists($x, $retData)) {
 						$retData[$x] = null;
