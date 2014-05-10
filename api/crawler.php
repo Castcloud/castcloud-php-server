@@ -43,7 +43,7 @@ function multiHTTP ($urlArr) {
 			$urlInfo[$x]["path"] = array_key_exists("path", $urlInfo[$x]) ? $urlInfo[$x]["path"] : "/"; 
 		
 			$sockets[$x] = fsockopen($urlInfo[$x]["host"], $urlInfo[$x]["port"], 
-				$errno[$x], $errstr[$x], 3);
+				$errno[$x], $errstr[$x], 1);
 			if ($sockets[$x]) {
 				socket_set_blocking($sockets[$x], FALSE); 
 				$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
@@ -132,7 +132,6 @@ function crawl_all() {
 			echo "#".($i + 1)." ".$urls[$i]."\n";
 			if ($feed != null) {
 				$header = array();
-				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
 
 				foreach (explode("\r\n", substr($feed, 0, strpos($feed, "\r\n\r\n"))) as $line) {
 					$line = explode(":", $line);
@@ -144,26 +143,26 @@ function crawl_all() {
 					}
 				}
 
-				$cache = array();
-				if (array_key_exists("ETag", $header)) {
-					$cache["etag"] = $header["ETag"];
-				}
-				$hash = md5($data);
-				$cache["hash"] = $hash;
+				if ($status == 200) {
+					$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
 
-				if ($status == 200 && strcmp($xml[$i]->hash, $hash) != 0) {
-					$sth->execute(array(json_encode($cache), $urls[$i]));
-					echo "Crawling\n";
-					$t = microtime(true);
-					crawl($urls[$i], $data);
-					$GLOBALS['crawl_time'] += microtime(true) - $t;
-				}
-				else {
-					echo "Skipping\n";
+					$cache = array();
+					if (array_key_exists("ETag", $header)) {
+						$cache["etag"] = $header["ETag"];
+					}
+					$hash = md5($data);
+					$cache["hash"] = $hash;
+
+					if (strcmp($xml[$i]->hash, $hash) != 0) {
+						$sth->execute(array(json_encode($cache), $urls[$i]));
+						$t = microtime(true);
+						crawl($urls[$i], $data);
+						$GLOBALS['crawl_time'] += microtime(true) - $t;
+					}
 				}
 			}
 			else {
-				echo "Feed was empty :(\n";
+				echo "Feed failed downloading\n";
 			}			
 			$i++;
 		}
