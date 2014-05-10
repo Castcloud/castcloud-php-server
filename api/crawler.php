@@ -48,7 +48,14 @@ function multiHTTP ($urlArr) {
 				socket_set_blocking($sockets[$x], FALSE); 
 				$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
 				$req = "GET " . $urlInfo[$x]["path"] . "$query HTTP/1.1\r\nHost: " . 
-					$urlInfo[$x]["host"] . "\r\nUser-Agent: ".$user_agent."\r\nConnection: close\r\n\r\n";
+					$urlInfo[$x]["host"] . "\r\nUser-Agent: ".$user_agent."\r\nConnection: close\r\n";
+
+				if (array_key_exists("etag", $GLOBALS['casts'][$x])) {
+					$req.="If-None-Match: ".$GLOBALS['casts'][$x]['etag']."\r\n";
+				}
+
+				$req.="\r\n";
+
 				fputs($sockets[$x], $req); 
 			}
 		} catch (Exception $e){
@@ -78,7 +85,7 @@ function multiHTTP ($urlArr) {
 				$retDone[$x] = 1; 
 			}
 		} 
-		usleep(100);
+		usleep(1);
 		$done = (array_sum($retDone) == count($urlArr)); 
 	} 
 	return $retData; 
@@ -94,8 +101,13 @@ function crawl_all() {
 		$GLOBALS['casts'] = array();
 		foreach ($sth as $row) {
 			array_push($urls, $row['URL']);
-			array_push($xml, $row['XML']);
-			array_push($GLOBALS['casts'], array("id" => $row['CastID'], "url" => $row['URL']));
+			$cache = json_decode($row['XML']);
+			array_push($xml, $cache);
+			$cast = array("id" => $row['CastID'], "url" => $row['URL']);
+			if (isset($cache->etag)) {
+				$cast["etag"] = $cache->etag;
+			}
+			array_push($GLOBALS['casts'], $cast);
 		}
 		$sth = $dbh->query("SELECT GUID FROM {$db_prefix}episode");
 		$GLOBALS['guids'] = $sth->fetchAll(PDO::FETCH_COLUMN, 0);
@@ -119,15 +131,28 @@ function crawl_all() {
 		foreach ($feeds as $feed) {
 			echo "#".($i + 1)." ".$urls[$i]."\n";
 			if ($feed != null) {
+				$header = array();
 				$data = substr($feed, strpos($feed, "\r\n\r\n") + 4);
 
-				if ($data == null) {
-					echo $feed;
-					sleep(5);
+				foreach (explode("\r\n", substr($feed, 0, strpos($feed, "\r\n\r\n"))) as $line) {
+					$line = explode(":", $line);
+					if (sizeof($line) > 1) {
+						$header[$line[0]] = trim($line[1]);
+					}
+					else {
+						$status = explode(" ", $line[0])[1];
+					}
 				}
 
-				if (strcmp($xml[$i], $data) != 0) {
-					$sth->execute(array($data, $urls[$i]));
+				$cache = array();
+				if (array_key_exists("ETag", $header)) {
+					$cache["etag"] = $header["ETag"];
+				}
+				$hash = md5($data);
+				$cache["hash"] = $hash;
+
+				if ($status == 200 && strcmp($xml[$i]->hash, $hash) != 0) {
+					$sth->execute(array(json_encode($cache), $urls[$i]));
 					echo "Crawling\n";
 					$t = microtime(true);
 					crawl($urls[$i], $data);
