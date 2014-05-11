@@ -125,6 +125,8 @@ function crawl_all() {
 		echo "Downloaded ".sizeof($feeds)." feeds, $size_downloaded MB in ".$GLOBALS['download_time']." seconds\n";
 		$i = 0;
 
+		$GLOBALS['cast_data'] = array();
+
 		$dbh->beginTransaction();
 
 		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET xml=? WHERE url=?");
@@ -179,6 +181,11 @@ function crawl_all() {
 		$GLOBALS['insert_time'] = microtime(true) - $t;
 
 		echo (sizeof($push_this) / 4)." rows inserted\n";
+
+		$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET content=? WHERE castid=?");
+		foreach ($GLOBALS['cast_data'] as $id => $data) {
+			$sth->execute(array($data, $id));
+		}
 
 		$dbh->commit();
 
@@ -313,6 +320,9 @@ function crawl($casturl, $data = null) {
 
 		if ($data !== null) {
 			$castid = where($GLOBALS['casts'], "url", $casturl)['id'];
+			$GLOBALS['cast_data'][$castid] = json_encode($cast);
+			//$sth = $dbh->prepare("UPDATE {$db_prefix}cast SET content=? WHERE castid=$castid");
+			//$sth->execute(array(json_encode($cast)));
 		}
 		else {
 			$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$casturl'");
