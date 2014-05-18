@@ -231,7 +231,7 @@ class DB {
 		$sth -> execute();
 	}
 
-	function get_episodes($castid, $labelid, $exclude = "70", $since = null, $episode = null) {
+	function get_episodes($castid = null, $labelid = null, $episode = null, $since = null, $exclude = "70") {
 		include_once 'models/episode.php';
 		
 		$label = null;
