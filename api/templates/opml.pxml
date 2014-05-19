@@ -26,7 +26,6 @@ function output_label($label, $labels, $casts){
 				title="<?= htmlspecialchars($cast->name); ?>"
 				text="<?= htmlspecialchars($cast->name); ?>"
 				xmlUrl="<?= htmlspecialchars($cast->url); ?>"
-				description="<?= htmlspecialchars($cast->feed["description"]); ?>"
 			/><?php
 		}
 	}
