@@ -222,6 +222,13 @@ $app -> group('/library', function() use ($app) {
 	 * 			required=false,
 	 * 			type="integer"
 	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="exclude",
+	 * 			description="Exclude episode with latest event type. Comma separated event type ids to exclude. Default: 70",
+	 * 			paramType="query",
+	 * 			required=false,
+	 * 			type="integer"
+	 * 		),
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
 	 * 			message="Bad token"
@@ -231,7 +238,17 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/newepisodes', function() use ($app) {
 		include_once 'models/newepisodesresult.php';
-		json(new newepisodesresult($app->db->get_episodes(null, null, "70", $app->request->params('since'))));
+		
+		$exclude = $app -> request -> params('exclude');
+		$episodes = array();
+		
+		if ($exclude != null){
+			$episodes = $app->db->get_episodes(null, null, null, $app->request->params('since'));
+		} else {
+			$episodes = $app->db->get_episodes(null, null, null, $app->request->params('since'), $exclude);
+		}
+		
+		json(new newepisodesresult($episodes));
 	});
 
 	/**
@@ -275,9 +292,9 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/episodes/:castid', function($castid) use ($app) {
 		$exclude = $app -> request -> params('exclude');
 		if ($exclude != null){
-			json($app->db->get_episodes($castid, null, $exclude));
+			json($app->db->get_episodes($castid, null, null, null, $exclude));
 		} else {
-			json($app->db->get_episodes($castid, null));
+			json($app->db->get_episodes($castid));
 		}
 	});
 	
@@ -313,7 +330,10 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/episode/:episodeid', function($episodeid) use ($app) {
-		json($app->db->get_episodes(null, null, "", null, $episodeid)[0]);
+		$episode = $app->db->get_episodes(null, null, $episodeid, null, "");
+		if (!empty($episode)){
+			json($episode[0]);
+		}
 	});
 	
 	/**
@@ -357,9 +377,9 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/episodes/label/:label', function($label) use ($app) {
 		$exclude = $app -> request -> params('exclude');
 		if ($exclude != null){
-			json($app->db->get_episodes(null, $label, $exclude));
+			json($app->db->get_episodes(null, $label, null, null, $exclude));
 		} else {
-			json($app->db->get_episodes(null, $label, "70"));
+			json($app->db->get_episodes(null, $label));
 		}
 	});
 
