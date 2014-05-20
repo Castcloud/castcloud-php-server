@@ -233,6 +233,7 @@ class DB {
 
 	function get_episodes($castid = null, $labelid = null, $episode = null, $since = null, $exclude = "70") {
 		include_once 'models/episode.php';
+		include_once 'models/event.php';
 		
 		$label = null;
 		$userid = $GLOBALS['app']->userid;
@@ -252,7 +253,14 @@ class DB {
 		$query = "SELECT
 			feed.CastID,
 			feed.EpisodeID,
-			feed.Content
+			feed.Content,
+			event.type,
+			event.positionts,
+			event.clientts,
+			event.concurrentorder,
+			client.Name AS clientname,
+			cauth.clientdescription
+			
 			FROM
 			{$this->db_prefix}episode AS feed
 			LEFT JOIN 
@@ -274,11 +282,34 @@ class DB {
 				$query .= " AND ReceivedTS = (SELECT MAX(ReceivedTS)
           			FROM {$this->db_prefix}event AS ev2
          			WHERE ev2.EpisodeID = event.EpisodeID
-         			AND ev2.UserID = :userid)";
+         			AND ev2.UserID = :userid
+         			LIMIT 1)";
 			} 
 			$query .= " )";
 		}
 		$query .= " AND event.UserID = :userid
+				AND event.ReceivedTS = (
+					SELECT MAX(ReceivedTS)
+					FROM {$this->db_prefix}event AS ev3
+					WHERE ev3.UserID = :ev3userid
+         			AND ev3.EpisodeID = event.EpisodeID
+         			LIMIT 1
+				)
+				AND event.ConcurrentOrder = (
+					SELECT MAX(ConcurrentOrder)
+					FROM {$this->db_prefix}event AS ev4
+					WHERE ev4.UserID = :ev4userid
+         			AND ev4.EpisodeID = event.EpisodeID
+         			LIMIT 1
+				)";
+		$inputs[":ev3userid"] = $userid;
+		$inputs[":ev4userid"] = $userid;
+		$query .= " LEFT JOIN 
+				{$this->db_prefix}clientauthorization AS cauth
+				ON cauth.UniqueClientID = event.UniqueClientID
+			LEFT JOIN 
+				{$this->db_prefix}client AS client
+				ON client.ClientID = cauth.ClientID
 			WHERE subs.CastID IS NOT NULL";
 		$inputs[":userid"] = $userid;
 		
@@ -320,7 +351,11 @@ class DB {
 		
 		$episodes = array();
 		foreach ($sth as $row) {
-			$episode = new Episode($row['EpisodeID'], $row['CastID'], null, json_decode($row['Content']));
+			$lastevent = null;
+			if ($row["type"] != null){
+				$lastevent = new event($row['type'], $row['EpisodeID'], $row['positionts'], $row['clientts'], $row['concurrentorder'], $row['clientname'], $row['clientdescription']);
+			}
+			$episode = new Episode($row['EpisodeID'], $row['CastID'], $lastevent, json_decode($row['Content']));
 			array_push($episodes, $episode);
 		}
 
@@ -384,9 +419,19 @@ class DB {
 						FROM {$this->db_prefix}event AS ev3
 						WHERE ev3.UserID = :ev3userid
 	         			AND ev3.EpisodeID = ev2.EpisodeID
+	         			LIMIT 1
 					)
+					AND ConcurrentOrder = (
+						SELECT MAX(ConcurrentOrder)
+						FROM {$this->db_prefix}event AS ev4
+						WHERE ev4.UserID = :ev4userid
+	         			AND ev4.EpisodeID = ev2.EpisodeID
+	         			LIMIT 1
+					)
+					LIMIT 1
 				)";
 			$inputs[":ev3userid"] = $userid;
+			$inputs[":ev4userid"] = $userid;
 		}
 
 		$query.= " ORDER BY

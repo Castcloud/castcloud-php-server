@@ -4,6 +4,16 @@
  */
 class event
 {
+	function __construct($type, $episodeid, $positionts, $clientts, $concurrentorder, $clientname, $clientdescription) {
+        $this->type = $type;
+        $this->episodeid = $episodeid;
+        $this->positionts = $positionts;
+        $this->clientts = $clientts;
+        $this->concurrentorder = $concurrentorder;
+        $this->clientname = $clientname;
+        $this->clientdescription = $clientdescription;
+    }
+	
     /**
      * @SWG\Property(name="type",type="integer",format="int64",description="The event type")
      */
