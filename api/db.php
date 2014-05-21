@@ -3,7 +3,6 @@ date_default_timezone_set('UTC');
 $current;
 GLOBAL $current;
 function cmp($a, $b) {
-	var_dump($GLOBALS['current'][$a]);
 	return strtotime($GLOBALS['current'][$a]->feed["pubDate"]) < strtotime($GLOBALS['current'][$b]->feed["pubDate"]);
 }
 
@@ -442,9 +441,6 @@ class DB {
 			$query.=" LIMIT :limit";
 			$inputs[":limit"] = $limit;
 		}
-
-		var_dump($query);
-		var_dump($inputs);
 		
 		$dbh = $GLOBALS['dbh'];
 		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
