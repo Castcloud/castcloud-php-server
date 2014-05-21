@@ -445,13 +445,8 @@ class DB {
 		$dbh = $GLOBALS['dbh'];
 		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
 		$sth = $dbh -> prepare($query);
-		
-		$t = microtime(true);
-
 		$sth->execute($inputs);
-
-		echo microtime(true) - $t;
-
+		
 		if ($sth) {
 			if ($limit == "1" && $sth->rowCount() == 1){
 				$events = $sth->fetchAll(PDO::FETCH_CLASS, "event");
