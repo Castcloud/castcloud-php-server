@@ -47,4 +47,12 @@ function get_unit_with_id($id, $array){
 		}
 	}
 }
+
+function log_db_errors($sth){
+	$error = $sth->errorInfo();
+	if($error[0] != "0000"){
+		error_log("Castcloud database error: " . var_export($error, TRUE), 0);
+		$GLOBALS['app'] -> halt(500, 'Database error'); // Yes this is brutal #toughlove
+	}
+}
 ?>
