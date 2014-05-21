@@ -396,23 +396,18 @@ class DB {
 		
 		if (!empty($exclude)){
 			
-			$query .= " AND event.EpisodeID = (
+			$query .= " AND event.EpisodeID IN (
 					SELECT ev2.EpisodeID
 					FROM {$this->db_prefix}event AS ev2
-					WHERE ev2.UserID = :ev2userid
-					AND ev2.EpisodeID = event.EpisodeID
-	         		AND (";
+					WHERE ev2.UserID = :ev2userid";
 			$inputs[":ev2userid"] = $userid;
 			
 			for ($i = 0; $i < count($exclude); $i++) {
-				if ($i != 0){
-					$query .= " AND";
-				}
-				$query .= " ev2.TYPE != :exclude" . $i;
+				$query .= " AND ev2.TYPE != :exclude" . $i;
 				$inputs[":exclude" . $i] = $exclude[$i];
 			} 
 			
-			$query .= ")
+			$query .= "
 					AND ReceivedTS = (
 						SELECT MAX(ReceivedTS)
 						FROM {$this->db_prefix}event AS ev3
@@ -425,9 +420,9 @@ class DB {
 						FROM {$this->db_prefix}event AS ev4
 						WHERE ev4.UserID = :ev4userid
 	         			AND ev4.EpisodeID = ev2.EpisodeID
-	         			LIMIT 1
+	         			AND ev4.ReceivedTS = ev2.ReceivedTS
 					)
-					LIMIT 1
+					GROUP BY ev2.EpisodeID
 				)";
 			$inputs[":ev3userid"] = $userid;
 			$inputs[":ev4userid"] = $userid;
@@ -441,6 +436,8 @@ class DB {
 			$query.=" LIMIT :limit";
 			$inputs[":limit"] = $limit;
 		}
+		
+		//var_dump($query, $inputs);
 		
 		$dbh = $GLOBALS['dbh'];
 		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
