@@ -363,6 +363,7 @@ class DB {
 
 	function get_events($itemid, $since, $limit = null, $exclude = null) {
 		include_once 'models/event.php';
+		$dbh = $GLOBALS['dbh'];
 		$userid = $GLOBALS['app']->userid;
 		
 		$exclude = superexplode($exclude);
@@ -395,37 +396,47 @@ class DB {
 		}
 		
 		if (!empty($exclude)){
-			
-			$query .= " AND event.EpisodeID IN (
-					SELECT ev2.EpisodeID
-					FROM {$this->db_prefix}event AS ev2
-					WHERE ev2.UserID = :ev2userid";
-			$inputs[":ev2userid"] = $userid;
-			
-			for ($i = 0; $i < count($exclude); $i++) {
-				$query .= " AND ev2.TYPE != :exclude" . $i;
-				$inputs[":exclude" . $i] = $exclude[$i];
-			} 
-			
-			$query .= "
-					AND ReceivedTS = (
-						SELECT MAX(ReceivedTS)
-						FROM {$this->db_prefix}event AS ev3
-						WHERE ev3.UserID = :ev3userid
-	         			AND ev3.EpisodeID = ev2.EpisodeID
-	         			LIMIT 1
-					)
-					AND ConcurrentOrder = (
-						SELECT MAX(ConcurrentOrder)
-						FROM {$this->db_prefix}event AS ev4
-						WHERE ev4.UserID = :ev4userid
-	         			AND ev4.EpisodeID = ev2.EpisodeID
-	         			AND ev4.ReceivedTS = ev2.ReceivedTS
-					)
-					GROUP BY ev2.EpisodeID
+			$eqi = array();
+			$eq = "SELECT ev2.EpisodeID
+				FROM {$this->db_prefix}event AS ev2
+				WHERE ev2.UserID = :ev2userid
+				AND ReceivedTS = (
+					SELECT MAX(ReceivedTS)
+					FROM {$this->db_prefix}event AS ev3
+					WHERE ev3.UserID = :ev3userid
+					AND ev3.EpisodeID = ev2.EpisodeID
+				)
+				AND ConcurrentOrder = (
+					SELECT MAX(ConcurrentOrder)
+					FROM {$this->db_prefix}event AS ev4
+					WHERE ev4.UserID = :ev4userid
+					AND ev4.EpisodeID = ev2.EpisodeID
+					AND ev4.ReceivedTS = ev2.ReceivedTS
 				)";
-			$inputs[":ev3userid"] = $userid;
-			$inputs[":ev4userid"] = $userid;
+			$eqi[":ev2userid"] = $userid;
+			$eqi[":ev3userid"] = $userid;
+			$eqi[":ev4userid"] = $userid;
+					
+			for ($i = 0; $i < count($exclude); $i++) {
+				$eq .= " AND ev2.TYPE != :exclude" . $i;
+				$eqi[":exclude" . $i] = $exclude[$i];
+			}
+			
+			$eq .= " GROUP BY ev2.EpisodeID";
+			
+			// var_dump($eq, $eqi);
+			
+			$sth = $dbh -> prepare($eq);
+			$sth->execute($eqi);
+			
+			$exclude = array();
+			$res = $sth->fetchAll(PDO::FETCH_ASSOC);
+			foreach ($res as $resent) {
+				$exclude[] = $resent["EpisodeID"];
+			}
+			
+			$query .= " AND event.EpisodeID IN (" . implode(",", $exclude) . ")";
+			
 		}
 
 		$query.= " ORDER BY
@@ -439,7 +450,6 @@ class DB {
 		
 		//var_dump($query, $inputs);
 		
-		$dbh = $GLOBALS['dbh'];
 		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
 		$sth = $dbh -> prepare($query);
 		$sth->execute($inputs);
