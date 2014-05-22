@@ -259,51 +259,29 @@ class DB {
 			event.concurrentorder,
 			client.Name AS clientname,
 			cauth.clientdescription
-			
-			FROM
-			{$this->db_prefix}episode AS feed
+			FROM {$this->db_prefix}episode AS feed
 			LEFT JOIN 
 				{$this->db_prefix}subscription AS subs
 				ON subs.CastID = feed.CastID
 				AND subs.UserID = :userid
 			LEFT JOIN 
 				{$this->db_prefix}event AS event
-				ON feed.EpisodeID = event.EpisodeID";
-		if (!empty($exclude)){
-			$query .= " AND (";
-			for ($i = 0; $i < count($exclude); $i++) {
-				if ($i != 0){
-					$query .= " OR";
-				}
-				$query .= " event.TYPE = :exclude" . $i;
-				$inputs[":exclude" . $i] = $exclude[$i];
-				
-				$query .= " AND ReceivedTS = (SELECT MAX(ReceivedTS)
+				ON feed.EpisodeID = event.EpisodeID
+				AND event.UserID = :userid
+				AND event.ReceivedTS = (
+					SELECT MAX(ev2.ReceivedTS)
           			FROM {$this->db_prefix}event AS ev2
          			WHERE ev2.EpisodeID = event.EpisodeID
-         			AND ev2.UserID = :userid
-         			LIMIT 1)";
-			} 
-			$query .= " )";
-		}
-		$query .= " AND event.UserID = :userid
-				AND event.ReceivedTS = (
-					SELECT MAX(ReceivedTS)
-					FROM {$this->db_prefix}event AS ev3
-					WHERE ev3.UserID = :ev3userid
-         			AND ev3.EpisodeID = event.EpisodeID
-         			LIMIT 1
-				)
-				AND event.ConcurrentOrder = (
-					SELECT MAX(ConcurrentOrder)
-					FROM {$this->db_prefix}event AS ev4
-					WHERE ev4.UserID = :ev4userid
-         			AND ev4.EpisodeID = event.EpisodeID
-         			LIMIT 1
-				)";
-		$inputs[":ev3userid"] = $userid;
-		$inputs[":ev4userid"] = $userid;
-		$query .= " LEFT JOIN 
+         			AND ev2.UserID = :ev2userid
+         		)
+         		AND event.ConcurrentOrder = (
+					SELECT MAX(ev3.ConcurrentOrder)
+          			FROM {$this->db_prefix}event AS ev3
+         			WHERE ev3.EpisodeID = event.EpisodeID
+         			AND ev3.UserID = :ev3userid
+         			AND event.ReceivedTS = ev3.ReceivedTS
+         		)
+         	LEFT JOIN 
 				{$this->db_prefix}clientauthorization AS cauth
 				ON cauth.UniqueClientID = event.UniqueClientID
 			LEFT JOIN 
@@ -311,6 +289,8 @@ class DB {
 				ON client.ClientID = cauth.ClientID
 			WHERE subs.CastID IS NOT NULL";
 		$inputs[":userid"] = $userid;
+		$inputs[":ev2userid"] = $userid;
+		$inputs[":ev3userid"] = $userid;
 		
 		if ($label != null){
 			$query .= " AND (";
@@ -327,7 +307,10 @@ class DB {
 		}
 		
 		if (!empty($exclude)) {
-			$query.=" AND event.EpisodeID IS NULL";
+			for ($i = 0; $i < count($exclude); $i++) {
+				$query .= " AND event.TYPE != :exclude" . $i;
+				$inputs[":exclude" . $i] = $exclude[$i];
+			}
 		}
 
 		if ($since != null) {
@@ -400,18 +383,19 @@ class DB {
 			$eq = "SELECT ev2.EpisodeID
 				FROM {$this->db_prefix}event AS ev2
 				WHERE ev2.UserID = :ev2userid
-				AND ReceivedTS = (
+				AND ev2.ReceivedTS = (
 					SELECT MAX(ReceivedTS)
 					FROM {$this->db_prefix}event AS ev3
 					WHERE ev3.UserID = :ev3userid
 					AND ev3.EpisodeID = ev2.EpisodeID
 				)
-				AND ConcurrentOrder = (
-					SELECT MAX(ConcurrentOrder)
-					FROM {$this->db_prefix}event AS ev4
-					WHERE ev4.UserID = :ev4userid
-					AND ev4.EpisodeID = ev2.EpisodeID
-					AND ev4.ReceivedTS = ev2.ReceivedTS
+				AND ( ev2.ConcurrentOrder = (
+						SELECT MAX(ConcurrentOrder)
+						FROM {$this->db_prefix}event AS ev4
+						WHERE ev4.UserID = :ev4userid
+						AND ev4.EpisodeID = ev2.EpisodeID
+						AND ev4.ReceivedTS = ev2.ReceivedTS
+					) OR ev2.ConcurrentOrder IS NULL
 				)";
 			$eqi[":ev2userid"] = $userid;
 			$eqi[":ev3userid"] = $userid;
@@ -434,7 +418,6 @@ class DB {
 			}
 			
 			$query .= " AND event.EpisodeID IN (" . implode(",", $exclude) . ")";
-			
 		}
 
 		$query.= " ORDER BY
