@@ -424,8 +424,6 @@ class DB {
 			
 			$eq .= " GROUP BY ev2.EpisodeID";
 			
-			// var_dump($eq, $eqi);
-			
 			$sth = $dbh -> prepare($eq);
 			$sth->execute($eqi);
 			
@@ -447,8 +445,6 @@ class DB {
 			$query.=" LIMIT :limit";
 			$inputs[":limit"] = $limit;
 		}
-		
-		//var_dump($query, $inputs);
 		
 		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
 		$sth = $dbh -> prepare($query);
