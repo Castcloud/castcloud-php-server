@@ -638,7 +638,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="exclude",
-	 * 			description="Exclude episode with latest event type. Comma separated event type ids to exclude. Default: 70",
+	 * 			description="Comma separated event type ids to exclude. Exclude events for episodes where the most recent event has this type. Default: 70. Ignored if since or episodeid parameters are set.",
 	 * 			paramType="query",
 	 * 			required=false,
 	 * 			type="integer"
