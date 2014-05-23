@@ -686,6 +686,10 @@
                 "clientdescription": {
                     "description": "Description of the client that sent the event",
                     "type": "string"
+                },
+                "clientinstanceid": {
+                    "description": "A unique instance id so clients can itentify event is has set. Consists of md5 of UUID",
+                    "type": "string"
                 }
             },
             "required": [

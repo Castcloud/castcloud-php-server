@@ -258,7 +258,8 @@ class DB {
 			event.clientts,
 			event.concurrentorder,
 			client.Name AS clientname,
-			cauth.clientdescription
+			cauth.clientdescription,
+			cauth.UUID AS clientinstanceid
 			FROM {$this->db_prefix}episode AS feed
 			LEFT JOIN 
 				{$this->db_prefix}subscription AS subs
@@ -358,7 +359,8 @@ class DB {
 			event.clientts,
 			event.concurrentorder, 
 			client.name AS clientname,
-			clientauthorization.clientdescription
+			clientauthorization.clientdescription,
+			clientauthorization.UUID AS clientinstanceid
 			FROM 
 			{$this->db_prefix}event AS event,
 			{$this->db_prefix}clientauthorization AS clientauthorization,
@@ -454,7 +456,7 @@ class DB {
 			setting.settingid,
 			setting.setting,
 			setting.value,
-			setting.ClientID IS NOT NULL AS clientspecific
+			setting.ClientID IS NOT NULL AS clientspesific
 			FROM 
 			{$this->db_prefix}setting AS setting
 			WHERE
