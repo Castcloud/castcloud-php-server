@@ -243,9 +243,9 @@ $app -> group('/library', function() use ($app) {
 		$episodes = array();
 		
 		if ($exclude != null){
-			$episodes = $app->db->get_episodes(null, null, null, $app->request->params('since'));
-		} else {
 			$episodes = $app->db->get_episodes(null, null, null, $app->request->params('since'), $exclude);
+		} else {
+			$episodes = $app->db->get_episodes(null, null, null, $app->request->params('since'));
 		}
 		
 		json(new newepisodesresult($episodes));

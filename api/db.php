@@ -308,7 +308,7 @@ class DB {
 		
 		if (!empty($exclude)) {
 			for ($i = 0; $i < count($exclude); $i++) {
-				$query .= " AND event.TYPE != :exclude" . $i;
+				$query .= " AND ( event.TYPE != :exclude" . $i . " OR event.TYPE IS NULL)";
 				$inputs[":exclude" . $i] = $exclude[$i];
 			}
 		}
