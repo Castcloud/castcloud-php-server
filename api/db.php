@@ -336,7 +336,7 @@ class DB {
 		foreach ($sth as $row) {
 			$lastevent = null;
 			if ($row["type"] != null){
-				$lastevent = new event($row['type'], $row['EpisodeID'], $row['positionts'], $row['clientts'], $row['concurrentorder'], $row['clientname'], $row['clientdescription']);
+				$lastevent = new event($row['type'], $row['EpisodeID'], $row['positionts'], $row['clientts'], $row['concurrentorder'], $row['clientname'], $row['clientdescription'], $row['clientinstanceid']);
 			}
 			$episode = new Episode($row['EpisodeID'], $row['CastID'], $lastevent, json_decode($row['Content']));
 			array_push($episodes, $episode);
