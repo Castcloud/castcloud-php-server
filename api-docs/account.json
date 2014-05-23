@@ -224,8 +224,8 @@
                     "description": "The value of the setting",
                     "type": "string"
                 },
-                "clientspesific": {
-                    "description": "Whether the setting is clientspesific or not.",
+                "clientspecific": {
+                    "description": "Whether the setting is clientspecific or not.",
                     "type": "boolean"
                 }
             },
