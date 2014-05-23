@@ -5,7 +5,7 @@
 class setting
 {
     function __construct() {
-        $this->clientspesific = (bool)$this->clientspesific; // ;)
+        $this->clientspecific = (bool)$this->clientspecific; // ;)
     }
 	
     /**
@@ -24,7 +24,7 @@ class setting
     public $value;
 
     /**
-     * @SWG\Property(name="clientspesific",type="boolean",description="Whether the setting is clientspesific or not.")
+     * @SWG\Property(name="clientspecific",type="boolean",description="Whether the setting is clientspecific or not.")
      */
-    public $clientspesific;
+    public $clientspecific;
 }

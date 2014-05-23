@@ -454,7 +454,7 @@ class DB {
 			setting.settingid,
 			setting.setting,
 			setting.value,
-			setting.ClientID IS NOT NULL AS clientspesific
+			setting.ClientID IS NOT NULL AS clientspecific
 			FROM 
 			{$this->db_prefix}setting AS setting
 			WHERE
