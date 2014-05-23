@@ -378,7 +378,7 @@ class DB {
 			$inputs[":since"] = $since;
 		}
 		
-		if (!empty($exclude) && $since == null && $itemid == null){
+		if (!empty($exclude) && !$since && $itemid === null){
 			$eqi = array();
 			$eq = "SELECT ev2.EpisodeID
 				FROM {$this->db_prefix}event AS ev2
