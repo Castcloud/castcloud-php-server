@@ -656,13 +656,13 @@ $app -> group('/library', function() use ($app) {
 		$episodeid = $app->request->params('episodeid');
 		$since = $app->request->params('since');
 		$limit = $app->request->params('limit');
-		$exclude = $app -> request -> params('exclude');
-		
+		$exclude = $app->request->params('exclude');
+		$exclude_self = $app->request->params('exclude_self') === 'true' ? true : false;
 		
 		if ($exclude != null){
-			json(new eventsresult($app->db->get_events($episodeid, $since, $limit, $exclude)));
+			json(new eventsresult($app->db->get_events($episodeid, $since, $limit, $exclude, $exclude_self)));
 		} else {
-			json(new eventsresult($app->db->get_events($episodeid, $since, $limit, "70")));
+			json(new eventsresult($app->db->get_events($episodeid, $since, $limit, "70", $exclude_self)));
 		}
 	});
 

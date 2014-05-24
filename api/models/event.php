@@ -4,7 +4,7 @@
  */
 class event
 {
-	function __construct($type = null, $episodeid = null, $positionts = null, $clientts = null, $concurrentorder = null, $clientname = null, $clientdescription = null, $clientinstanceid = null) {
+	function __construct($type = null, $episodeid = null, $positionts = null, $clientts = null, $concurrentorder = null, $clientname = null, $clientdescription = null) {
 		if (!isset($this->type)){
 			$this->type = $type;
 			$this->episodeid = $episodeid;
@@ -13,10 +13,7 @@ class event
 			$this->concurrentorder = $concurrentorder;
 			$this->clientname = $clientname;
 			$this->clientdescription = $clientdescription;
-			$this->clientinstanceid = $clientinstanceid;
 		}
-		
-		$this->clientinstanceid = md5($this->clientinstanceid);
     }
 	
     /**
@@ -53,10 +50,5 @@ class event
      * @SWG\Property(name="clientdescription",type="string",description="Description of the client that sent the event")
      */
     public $clientdescription;
-	
-	/**
-     * @SWG\Property(name="clientinstanceid",type="string",description="A unique instance id so clients can itentify event is has set. Consists of md5 of UUID")
-     */
-    public $clientinstanceid;
 
 }

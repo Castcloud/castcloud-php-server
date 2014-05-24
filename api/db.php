@@ -345,7 +345,7 @@ class DB {
 		return $episodes;
 	}	
 
-	function get_events($itemid, $since, $limit = null, $exclude = null) {
+	function get_events($itemid, $since, $limit = null, $exclude = null, $exclude_self = null) {
 		include_once 'models/event.php';
 		$dbh = $GLOBALS['dbh'];
 		$userid = $GLOBALS['app']->userid;
@@ -359,8 +359,7 @@ class DB {
 			event.clientts,
 			event.concurrentorder, 
 			client.name AS clientname,
-			clientauthorization.clientdescription,
-			clientauthorization.UUID AS clientinstanceid
+			clientauthorization.clientdescription
 			FROM 
 			{$this->db_prefix}event AS event,
 			{$this->db_prefix}clientauthorization AS clientauthorization,
@@ -378,6 +377,10 @@ class DB {
 		if ($since != null) {
 			$query.=" AND event.receivedts >= :since";
 			$inputs[":since"] = $since;
+		}
+		if ($exclude_self) {
+			$query.=" AND event.UniqueClientID != :self";
+			$inputs[":self"] = $GLOBALS['app']->uniqueclientid;
 		}
 		
 		if (!empty($exclude) && !$since && $itemid === null){
