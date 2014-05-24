@@ -329,7 +329,7 @@ function crawl($casturl, $data = null) {
 			$c = $sth->fetch(PDO::FETCH_ASSOC);
 
 			if ($c) {
-				$castid = $c['id'];
+				$castid = $c['CastID'];
 				$dbh->exec("UPDATE {$db_prefix}cast SET crawlts=$time WHERE castid=$castid");
 			}
 			else {
