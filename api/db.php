@@ -59,7 +59,7 @@ class DB {
 	 * Delete second since the information from the begunning is still fresh
 	 * Add third since this affects the information we have generate irreversably
 	 */
-	function clean_Labels(){
+	function clean_labels(){
 		// Lets gather up all the stuff
 		$labels = $this->get_label();
 		$subs = $this->get_casts();

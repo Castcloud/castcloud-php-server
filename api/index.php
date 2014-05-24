@@ -735,7 +735,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/labels', function() use ($app) {
-		$app->db->clean_Labels();
+		$app->db->clean_labels();
 		json($app->db->get_label());
 	});
 	
