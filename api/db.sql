@@ -107,11 +107,11 @@ ALTER TABLE `prefix_clientauthorization`
 ALTER TABLE `prefix_event`
   ADD CONSTRAINT `Event_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Event_UniqueClientID` FOREIGN KEY (`UniqueClientID`) REFERENCES `prefix_clientauthorization` (`UniqueClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `Event_EpisodeID` FOREIGN KEY (`EpisodeID`) REFERENCES `prefix_episodeid` (`EpisodeID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `Event_EpisodeID` FOREIGN KEY (`EpisodeID`) REFERENCES `prefix_episode` (`EpisodeID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 ALTER TABLE `prefix_feedcontent`
   ADD CONSTRAINT `FeedContent_CastID` FOREIGN KEY (`CastID`) REFERENCES `prefix_cast` (`CastID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `FeedContent_EpisodeID` FOREIGN KEY (`EpisodeID`) REFERENCES `prefix_episodeid` (`EpisodeID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+  ADD CONSTRAINT `FeedContent_EpisodeID` FOREIGN KEY (`EpisodeID`) REFERENCES `prefix_episode` (`EpisodeID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 ALTER TABLE `prefix_setting`
   ADD CONSTRAINT `Setting_ClientID` FOREIGN KEY (`ClientID`) REFERENCES `prefix_client` (`ClientID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -120,3 +120,9 @@ ALTER TABLE `prefix_setting`
 ALTER TABLE `prefix_subscription`
   ADD CONSTRAINT `Subscription_CastID` FOREIGN KEY (`CastID`) REFERENCES `prefix_cast` (`CastID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `Subscription_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE `prefix_label`
+  ADD CONSTRAINT `Label_UserID` FOREIGN KEY (`UserID`) REFERENCES `prefix_users` (`UserID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE `prefix_episode`
+  ADD CONSTRAINT `Episode_CastID` FOREIGN KEY (`CastID`) REFERENCES `prefix_cast` (`CastID`) ON DELETE NO ACTION ON UPDATE NO ACTION;
