@@ -64,6 +64,10 @@ class DB {
 		$labels = $this->get_label();
 		$subs = $this->get_casts();
 		
+		// Used in Delete:
+		// Anything inside any labels that does not actually exist
+		$removefromlabels = array();
+		
 		/*
 		 * GENERATE
 		 */
@@ -92,6 +96,11 @@ class DB {
 				if($label->root && startsWith($contentitem, "label/")){
 					$labelsinroot[] = contentAfter($contentitem, "label/");
 				}
+				
+				// If it is not a label and not a cast. Lets flag it for deletion
+				if (!startsWith($contentitem, "label/") && !startsWith($contentitem, "cast/")){
+					$removefromlabels[] = $contentitem;
+				}
 			}
 			// Take note of all LabelIDs that are not root
 			if(!$label->root){
@@ -102,8 +111,6 @@ class DB {
 		/*
 		 * DELETE
 		 */
-		// Anything inside any labels that does not actually exist
-		$removefromlabels = array();
 		// Casts that are inside a label but not subscribed too
 		$nonexsistingcasts = array_diff($allcastsinlabel,$allcastsinsubs);
 		foreach ($nonexsistingcasts as $castid) {
