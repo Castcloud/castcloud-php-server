@@ -87,18 +87,22 @@ class DB {
 			// All the individual enteries inside the label
 			$content = superexplode($label->content);
 			foreach ($content as $contentitem) {
-				// If it is a cast, but them in the array
+				// If it is a cast, put them in the array
 				if (startsWith($contentitem, "cast/")){
-					$allcastsinlabel[] = contentAfter($contentitem, "cast/");
+					if (strlen(contentAfter($contentitem, "cast/")) >= 1){
+						$allcastsinlabel[] = contentAfter($contentitem, "cast/");
+					}
 				}
 				
 				// If we are in root and we are finding labels, add them to the array
 				if($label->root && startsWith($contentitem, "label/")){
-					$labelsinroot[] = contentAfter($contentitem, "label/");
+					if (strlen(contentAfter($contentitem, "label/")) >= 1){
+						$labelsinroot[] = contentAfter($contentitem, "label/");
+					}
 				}
 				
 				// If it is not a label and not a cast. Lets flag it for deletion
-				if (!startsWith($contentitem, "label/") && !startsWith($contentitem, "cast/")){
+				if ((!startsWith($contentitem, "label/")  && !startsWith($contentitem, "cast/")) ||  $contentitem == "label/" || $contentitem == "cast/" ){
 					$removefromlabels[] = $contentitem;
 				}
 			}
