@@ -498,7 +498,7 @@ class DB {
 		$this->subscribe_to_these = array();
 		$this->urls = array();
 		$this->opml_next($opml);
-		crawl_urls($this->urls);
+		//crawl_urls($this->urls);
 
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
