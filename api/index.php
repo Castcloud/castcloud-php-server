@@ -15,7 +15,7 @@ include 'crawler.php';
 include 'login.php';
 include 'db.php';
 
-$app->db = new DB($dbh);
+$app->db = new DB($dbh, $app);
 
 $app -> add(new AuthMiddleware());
 
@@ -172,7 +172,7 @@ $app -> group('/account', function() use ($app) {
 	 * 	)
 	 * )
 	 */
-	$app -> post('/settings/:settingid', function($settingid) use ($app) {
+	$app -> delete('/settings/:settingid', function($settingid) use ($app) {
 		$userid = $app->userid;
 		$db_prefix = $GLOBALS['db_prefix'];
 		$dbh = $GLOBALS['dbh'];
@@ -947,6 +947,40 @@ $app -> group('/library', function() use ($app) {
 		
 		$sth = $dbh -> prepare($query);
 		$sth -> execute($inputs);
+	});
+	
+	/**
+	 * @SWG\Api(
+	 * 	path="/library/labels/{labelid}",
+	 * 	description="Delete a label",
+	 * 	@SWG\Operation(
+	 * 		method="DELETE",
+	 * 		nickname="Delete Label",
+	 * 		summary="Delete Label",
+	 * 		type="void",
+	 * 		@SWG\Parameter(
+	 * 			name="Authorization",
+	 * 			description="clients login token",
+	 * 			paramType="header",
+	 * 			required=true,
+	 * 			type="string"
+	 * 		),
+	 * 		@SWG\Parameter(
+	 * 			name="labelid",
+	 * 			description="ID of the label that is to be removed",
+	 * 			paramType="path",
+	 * 			required=true,
+	 * 			type="integer"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Bad token"
+	 * 		)
+	 * 	)
+	 * )
+	 */
+	$app -> delete('/labels/:labelid', function($labelid) use ($app) {
+		$app->db->del_label($labelid);
 	});
 
 });

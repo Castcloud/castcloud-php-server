@@ -9,15 +9,17 @@ function cmp($a, $b) {
 class DB {
 	private $dbh;
 	private $db_prefix;
+	private $app;
 
-	function __construct($dbh) {
+	function __construct($dbh, $app) {
 		$this->dbh = $dbh;
+		$this->app = $app;
 		$this->db_prefix = $GLOBALS['db_prefix'];
 	}
 	
 	function get_casts() {
 		include_once 'models/cast.php';
-		$userid = $GLOBALS['app']->userid;
+		$userid = $this->app->userid;
 
 		$query = "SELECT
 			cast.CastID AS id,
@@ -31,8 +33,7 @@ class DB {
 			AND subs.CastID = cast.CastID";
 		$inputs = array(":userid" => $userid);
 		
-		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> prepare($query);
+		$sth = $this->dbh -> prepare($query);
 		$sth->execute($inputs);
 		
 		$casts = $sth->fetchAll(PDO::FETCH_CLASS, "cast");
@@ -133,9 +134,8 @@ class DB {
 				SET content = :content
 				WHERE labelid = :id
 				AND userid = :userid";
-			$dbh = $GLOBALS['dbh'];
-			$sth = $dbh -> prepare($query);
-			$userid = $GLOBALS['app']->userid;
+			$sth = $this->dbh -> prepare($query);
+			$userid = $this->app->userid;
 			foreach ($labels as $label) {
 				$content = $label->content;
 				foreach ($removefromlabels as $removee) {
@@ -178,7 +178,7 @@ class DB {
 	
 	function get_label($name = null, $labelid = null) {
 		include_once 'models/label.php';
-		$userid = $GLOBALS['app']->userid;
+		$userid = $this->app->userid;
 
 		$query = "SELECT
 			label.LabelID AS id,
@@ -201,8 +201,7 @@ class DB {
 			$inputs[":labelid"] = $labelid;
 		}
 		
-		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> prepare($query);
+		$sth = $this->dbh -> prepare($query);
 		$sth->execute($inputs);
 		
 		$label = $sth->fetchAll(PDO::FETCH_CLASS, "label");
@@ -215,12 +214,11 @@ class DB {
 	}
 	
 	function add_to_label($value, $labelname){
-		$dbh = $GLOBALS['dbh'];
-		$userid = $GLOBALS['app']->userid;
+		$userid = $this->app->userid;
 		
 		$label = $this->get_label($labelname);
 		if(empty($label)){
-			$sth = $dbh -> prepare("INSERT INTO {$this->db_prefix}label
+			$sth = $this->dbh -> prepare("INSERT INTO {$this->db_prefix}label
 				(userid, name, content, expanded) 
 				VALUES($userid, :labelname, :content, TRUE)");
 			$sth -> bindParam(":content",$value);
@@ -233,7 +231,7 @@ class DB {
 		
 		$label->content .= "," . $value;
 		
-		$sth = $dbh -> prepare("UPDATE {$this->db_prefix}label
+		$sth = $this->dbh -> prepare("UPDATE {$this->db_prefix}label
 			SET content = :content
 			WHERE LabelID = :id");
 		$sth -> bindParam(":content",$label->content);
@@ -246,7 +244,7 @@ class DB {
 		include_once 'models/event.php';
 		
 		$label = null;
-		$userid = $GLOBALS['app']->userid;
+		$userid = $this->app->userid;
 		
 		if ($labelid != null){
 			$label = $this->get_label(null, $labelid);
@@ -358,8 +356,7 @@ class DB {
 
 	function get_events($itemid, $since, $limit = null, $exclude = null, $exclude_self = null) {
 		include_once 'models/event.php';
-		$dbh = $GLOBALS['dbh'];
-		$userid = $GLOBALS['app']->userid;
+		$userid = $this->app->userid;
 		
 		$exclude = superexplode($exclude);
 
@@ -391,7 +388,7 @@ class DB {
 		}
 		if ($exclude_self) {
 			$query.=" AND event.UniqueClientID != :self";
-			$inputs[":self"] = $GLOBALS['app']->uniqueclientid;
+			$inputs[":self"] = $this->app->uniqueclientid;
 		}
 		
 		if (!empty($exclude) && !$since && $itemid === null){
@@ -424,7 +421,7 @@ class DB {
 			
 			$eq .= " GROUP BY ev2.EpisodeID";
 			
-			$sth = $dbh -> prepare($eq);
+			$sth = $this->dbh -> prepare($eq);
 			$sth->execute($eqi);
 			
 			$exclude = array();
@@ -445,8 +442,8 @@ class DB {
 			$inputs[":limit"] = $limit;
 		}
 		
-		$dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
-		$sth = $dbh -> prepare($query);
+		$this->dbh->setAttribute(PDO::ATTR_EMULATE_PREPARES, FALSE);
+		$sth = $this->dbh -> prepare($query);
 		$sth->execute($inputs);
 		
 		if ($sth) {
@@ -463,8 +460,8 @@ class DB {
 	
 	function get_settings() {
 		include_once 'models/setting.php';
-		$userid = $GLOBALS['app']->userid;
-		$clientid = $GLOBALS['app']->clientid;
+		$userid = $this->app->userid;
+		$clientid = $this->app->clientid;
 
 		$query = "SELECT
 			setting.settingid,
@@ -481,8 +478,7 @@ class DB {
 			":clientid" => $clientid);
 
 		
-		$dbh = $GLOBALS['dbh'];
-		$sth = $dbh -> prepare($query);
+		$sth = $this->dbh -> prepare($query);
 		$sth->execute($inputs);
 
 		if ($sth) {
@@ -500,14 +496,11 @@ class DB {
 		$this->opml_next($opml);
 		//crawl_urls($this->urls);
 
-		$dbh = $GLOBALS['dbh'];
-		$db_prefix = $GLOBALS['db_prefix'];
-
 		foreach ($this->urls as $url) {
-			$sth = $dbh->query("SELECT * FROM {$db_prefix}cast WHERE url='$url'");
+			$sth = $this->dbh->query("SELECT * FROM {$this->db_prefix}cast WHERE url='$url'");
 			$cast = $sth->fetch();
 			if (!$cast) {
-				$dbh->exec("INSERT INTO {$db_prefix}cast (url, crawlts) VALUES('$url', 0)");
+				$this->dbh->exec("INSERT INTO {$this->db_prefix}cast (url, crawlts) VALUES('$url', 0)");
 			}
 		}
 
@@ -546,16 +539,13 @@ class DB {
 	}
 	
 	function subscribe_to($feedurl, $name = null, $label = null, $crawl = false){
-		$userid = $GLOBALS['app'] -> userid;
-		
-		$dbh = $GLOBALS['dbh'];
-		$db_prefix = $GLOBALS['db_prefix'];
+		$userid = $this->app -> userid;
 
 		if ($crawl) {
 			$castid = crawl($feedurl);
 		}
 		else {
-			$sth = $dbh->query("SELECT CastID FROM {$db_prefix}cast WHERE url='$feedurl'");
+			$sth = $this->dbh->query("SELECT CastID FROM {$this->db_prefix}cast WHERE url='$feedurl'");
 			$castid = $sth->fetch(PDO::FETCH_ASSOC)['CastID'];
 		}		
 		
@@ -572,15 +562,23 @@ class DB {
 			}
 		}
 
-		$sth = $dbh -> query("SELECT * FROM {$db_prefix}subscription WHERE castid=$castid AND userid=$userid");
+		$sth = $this->dbh -> query("SELECT * FROM {$this->db_prefix}subscription WHERE castid=$castid AND userid=$userid");
 		if ($sth && $sth -> rowCount() < 1) {
-			$sth = $dbh -> prepare("INSERT INTO {$db_prefix}subscription (castid, name, userid) 
+			$sth = $this->dbh -> prepare("INSERT INTO {$this->db_prefix}subscription (castid, name, userid) 
 			VALUES($castid, :name, $userid)");
 			$sth -> bindParam(":name",$name);
 			$sth -> execute();
 			
 			$this->add_to_label("cast/" . $castid, $label);
 		}
+	}
+	
+	function del_label($labelid){
+		$userid = $this->app->userid;
+		$sth = $this->dbh -> prepare("DELETE FROM {$this->db_prefix}label WHERE LabelID=:labelid AND userid=:userid");
+		$sth->bindParam(":labelid",$labelid);
+		$sth->bindParam(":userid",$userid);
+		$sth->execute();
 	}
 }
 ?>
