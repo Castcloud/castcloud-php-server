@@ -574,6 +574,8 @@ class DB {
 			VALUES($castid, :name, $userid)");
 			$sth -> bindParam(":name",$name);
 			$sth -> execute();
+			
+			$this->add_to_label("cast/" . $castid, $label);
 		}
 	}
 }
