@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS `prefix_label` (
   `LabelID` int(11) NOT NULL AUTO_INCREMENT,
   `UserID` int(11) NOT NULL,
   `Name` text NOT NULL,
-  `Content` text NOT NULL,
+  `Content` text NULL,
   `Expanded` int(11) NOT NULL,
   PRIMARY KEY (`LabelID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

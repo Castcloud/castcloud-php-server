@@ -757,7 +757,7 @@ $app -> group('/library', function() use ($app) {
 	 * 		),
 	 * 		@SWG\Parameter(
 	 * 			name="name",
-	 * 			description="The name of the new label",
+	 * 			description="The name of the new label. Mimimum 1 character",
 	 * 			paramType="form",
 	 * 			required=true,
 	 * 			type="string"
@@ -766,7 +766,7 @@ $app -> group('/library', function() use ($app) {
 	 * 			name="content",
 	 * 			description="The content of the label. See GET label for formatting",
 	 * 			paramType="form",
-	 * 			required=true,
+	 * 			required=false,
 	 * 			type="string"
 	 * 		),
 	 * 		@SWG\Parameter(
@@ -779,6 +779,10 @@ $app -> group('/library', function() use ($app) {
 	 * 		@SWG\ResponseMessage(
 	 * 			code=400,
 	 * 			message="Bad token"
+	 * 		),
+	 * 		@SWG\ResponseMessage(
+	 * 			code=400,
+	 * 			message="Name to short"
 	 * 		)
 	 * 	)
 	 * )
@@ -791,14 +795,12 @@ $app -> group('/library', function() use ($app) {
 		if (!(strpos($name,"label/") === 0)){
 			$name = "label/" . $name; 
 		}
-				
-		if($expanded != null){
-			$expanded = ($expanded == "true");
+		
+		if (strlen($name) < (strlen("label/") + 1)){
+			$app->halt(400, "Name to short");
 		}
 		
-		if (($expanded == null) || ($name == "root")){
-			$expanded = ($name == "root");
-		}
+		$expanded = $expanded != "false";
 		
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
@@ -822,7 +824,8 @@ $app -> group('/library', function() use ($app) {
 			$sth -> bindParam(":content",$content);
 			$sth -> bindParam(":expanded",$expanded);
 			$sth -> execute();
-			$labelid = $sth->lastInsertId();
+			log_db_errors($sth);
+			$labelid = $dbh->lastInsertId();
 			
 			$app->db->add_to_label_root("label/" . $labelid);
 		} else {
