@@ -138,9 +138,13 @@ class DB {
 			$userid = $this->app->userid;
 			foreach ($labels as $label) {
 				$content = $label->content;
+				
+				// Remove all unwanted strings
 				foreach ($removefromlabels as $removee) {
 					$content = str_replace($removee, "", $content);
 				}
+				
+				// Make sure we have the correct blend of , and values
 				$content = implode(",",superexplode($content));
 				
 				$inputs = array();
