@@ -47,8 +47,8 @@ function multiHTTP ($urlArr) {
 			if ($sockets[$x]) {
 				socket_set_blocking($sockets[$x], FALSE); 
 				$query = array_key_exists("query",$urlInfo[$x]) ? "?" . $urlInfo[$x]["query"] : ""; 
-				$req = "GET " . $urlInfo[$x]["path"] . "$query HTTP/1.1\r\nHost: " . 
-					$urlInfo[$x]["host"] . "\r\nUser-Agent: ".$user_agent."\r\nConnection: close\r\n";
+				$req = "GET " . $urlInfo[$x]["path"] . "$query HTTP/1.0\r\nHost: " . 
+					$urlInfo[$x]["host"] . "\r\nUser-Agent: ".$user_agent."\r\n";
 
 				if (array_key_exists("etag", $GLOBALS['casts'][$x])) {
 					$req.="If-None-Match: ".$GLOBALS['casts'][$x]['etag']."\r\n";
