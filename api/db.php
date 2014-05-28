@@ -282,18 +282,18 @@ class DB {
 				{$this->db_prefix}event AS event
 				ON feed.EpisodeID = event.EpisodeID
 				AND event.UserID = :userid
-				AND event.ReceivedTS = (
-					SELECT MAX(ev2.ReceivedTS)
-          			FROM {$this->db_prefix}event AS ev2
-         			WHERE ev2.EpisodeID = event.EpisodeID
-         			AND ev2.UserID = :ev2userid
+				AND event.clientts = (
+					SELECT MAX(ev2.clientts)
+					FROM {$this->db_prefix}event AS ev2
+					WHERE ev2.EpisodeID = event.EpisodeID
+					AND ev2.UserID = :ev2userid
          		)
          		AND event.ConcurrentOrder = (
 					SELECT MAX(ev3.ConcurrentOrder)
-          			FROM {$this->db_prefix}event AS ev3
-         			WHERE ev3.EpisodeID = event.EpisodeID
-         			AND ev3.UserID = :ev3userid
-         			AND event.ReceivedTS = ev3.ReceivedTS
+					FROM {$this->db_prefix}event AS ev3
+					WHERE ev3.EpisodeID = event.EpisodeID
+					AND ev3.UserID = :ev3userid
+					AND event.clientts = ev3.clientts
          		)
          	LEFT JOIN 
 				{$this->db_prefix}clientauthorization AS cauth
@@ -341,6 +341,8 @@ class DB {
 			$query.=" AND feed.EpisodeID = :itemid";
 			$inputs[":itemid"] = $episode;
 		}
+		
+		$query.= " GROUP BY feed.episodeid";
 		
 		$sth = $this->dbh->prepare($query);
 		$sth->execute($inputs);
@@ -400,8 +402,8 @@ class DB {
 			$eq = "SELECT ev2.EpisodeID
 				FROM {$this->db_prefix}event AS ev2
 				WHERE ev2.UserID = :ev2userid
-				AND ev2.ReceivedTS = (
-					SELECT MAX(ReceivedTS)
+				AND ev2.clientts = (
+					SELECT MAX(clientts)
 					FROM {$this->db_prefix}event AS ev3
 					WHERE ev3.UserID = :ev3userid
 					AND ev3.EpisodeID = ev2.EpisodeID
@@ -411,7 +413,7 @@ class DB {
 						FROM {$this->db_prefix}event AS ev4
 						WHERE ev4.UserID = :ev4userid
 						AND ev4.EpisodeID = ev2.EpisodeID
-						AND ev4.ReceivedTS = ev2.ReceivedTS
+						AND ev4.clientts = ev2.clientts
 					) OR ev2.ConcurrentOrder IS NULL
 				)";
 			$eqi[":ev2userid"] = $userid;
