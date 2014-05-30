@@ -7,9 +7,13 @@ function random_bytes($n) {
 	return $bytes;
 }
 
-function json($json) {
+function json($json, $cached = false) {
+	$res = json_encode($json);
 	$GLOBALS['app']->response->header('Content-Type', 'application/json');
-	echo json_encode($json);
+	if ($cached) {
+		$GLOBALS['app']->etag(md5($res));
+	}
+	echo $res;
 }
 
 function opml($labels, $casts) {

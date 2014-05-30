@@ -7,7 +7,7 @@ $app = new \Slim\Slim();
 GLOBAL $app;
 
 include 'cc-settings.php';
-GLOBAL $db_prefix,$dbh;
+GLOBAL $db_prefix, $dbh;
 
 include 'authmiddleware.php';
 include 'util.php';
@@ -17,7 +17,7 @@ include 'db.php';
 
 $app->db = new DB($dbh, $app);
 
-$app -> add(new AuthMiddleware());
+$app->add(new AuthMiddleware());
 
 /**
  * @SWG\Resource(
@@ -87,7 +87,7 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/settings', function() use ($app) {
-		json($app->db->get_settings());
+		json($app->db->get_settings(), true);
 	});
 
 	/**
@@ -292,9 +292,9 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/episodes/:castid', function($castid) use ($app) {
 		$exclude = $app -> request -> params('exclude');
 		if ($exclude != null){
-			json($app->db->get_episodes($castid, null, null, null, $exclude));
+			json($app->db->get_episodes($castid, null, null, null, $exclude), true);
 		} else {
-			json($app->db->get_episodes($castid));
+			json($app->db->get_episodes($castid), true);
 		}
 	});
 	
@@ -332,7 +332,7 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/episode/:episodeid', function($episodeid) use ($app) {
 		$episode = $app->db->get_episodes(null, null, $episodeid, null, "");
 		if (!empty($episode)){
-			json($episode[0]);
+			json($episode[0], true);
 		}
 	});
 	
@@ -377,9 +377,9 @@ $app -> group('/library', function() use ($app) {
 	$app -> get('/episodes/label/:label', function($label) use ($app) {
 		$exclude = $app -> request -> params('exclude');
 		if ($exclude != null){
-			json($app->db->get_episodes(null, $label, null, null, $exclude));
+			json($app->db->get_episodes(null, $label, null, null, $exclude), true);
 		} else {
-			json($app->db->get_episodes(null, $label));
+			json($app->db->get_episodes(null, $label), true);
 		}
 	});
 
@@ -408,7 +408,7 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/casts', function() use ($app) {
-		json($app->db->get_casts());
+		json($app->db->get_casts(), true);
 	});
 	
 	/**
@@ -736,7 +736,7 @@ $app -> group('/library', function() use ($app) {
 	 */
 	$app -> get('/labels', function() use ($app) {
 		$app->db->clean_labels();
-		json($app->db->get_label());
+		json($app->db->get_label(), true);
 	});
 	
 	/**
