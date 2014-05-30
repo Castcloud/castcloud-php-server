@@ -122,7 +122,7 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/settings', function() use ($app) {
-		$settings = json_decode($app->request->params("json"));
+		$settings = json_decode(json_encode($app->request->params("json")));
 		$userid = $app->userid;
 		
 		$dbh = $GLOBALS['dbh'];
