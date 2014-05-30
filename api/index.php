@@ -122,7 +122,7 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/settings', function() use ($app) {
-		$settings = json_decode(json_encode($app->request->params("json")));
+		$settings = json_decode($app->request->params("json"));
 		$userid = $app->userid;
 		
 		$dbh = $GLOBALS['dbh'];
@@ -722,7 +722,7 @@ $app -> group('/library', function() use ($app) {
 		$db_prefix = $GLOBALS['db_prefix'];
 		$receivedts = time();
 				
-		$json = json_decode(json_encode($app->request->params('json')));
+		$json = json_decode($app->request->params('json'));
 
 		foreach ($json as $event) {
 			$sth = $GLOBALS['dbh']->prepare("INSERT INTO {$db_prefix}event (userid, type, episodeid, positionts, concurrentorder, clientts, receivedts, uniqueclientid) VALUES($app->userid, $event->type, $event->episodeid, $event->positionts, :concurrentorder, $event->clientts, $receivedts, $app->uniqueclientid)");
