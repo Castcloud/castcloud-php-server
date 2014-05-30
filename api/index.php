@@ -290,12 +290,8 @@ $app -> group('/library', function() use ($app) {
 	 * )
 	 */
 	$app -> get('/episodes/:castid', function($castid) use ($app) {
-		$exclude = $app -> request -> params('exclude');
-		if ($exclude != null){
-			json($app->db->get_episodes($castid, null, null, null, $exclude), true);
-		} else {
-			json($app->db->get_episodes($castid), true);
-		}
+		$exclude = $app->request->params('exclude');
+		json($app->db->get_episodes($castid, null, null, null, $exclude), true);
 	});
 	
 		/**
