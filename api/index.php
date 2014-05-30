@@ -1,4 +1,13 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header('Access-Control-Allow-Headers: If-None-Match, Authorization');
+header('Access-Control-Expose-Headers: Etag');
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+	exit;
+}
+
 require '../lib/Slim/Slim.php';
 require '../lib/password_compat/password.php';
 \Slim\Slim::registerAutoloader();
