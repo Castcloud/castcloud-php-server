@@ -122,22 +122,47 @@ $app -> group('/account', function() use ($app) {
 	 * )
 	 */
 	$app -> post('/settings', function() use ($app) {
-		if ($app->request->params('json') == null) {
-			$settings = $app->request->params();
-		}
-		else {			
-			$settings = json_decode($app->request->params('json'));
-		}
-
+		$settings = json_decode($app->request->params("json"));
+		$userid = $app->userid;
+		
 		$dbh = $GLOBALS['dbh'];
 		$db_prefix = $GLOBALS['db_prefix'];
-		foreach($settings as $key => $value) {
-			$sth = $dbh->query("SELECT * FROM {$db_prefix}setting WHERE userid=$app->userid AND setting='$key'");
+		foreach($settings as $setting) {
+			$ClientID = null;
+			
+			if($setting->clientspecific == "true"){
+				$ClientID = $app->clientid;
+			}
+			
+			$sth = $dbh->prepare ("SELECT * FROM {$db_prefix}setting
+				WHERE userid=:userid
+				AND setting=:setting
+				AND ClientID = :ClientID");
+			$sth->bindParam(':userid', $userid);
+			$sth->bindParam(':setting', $setting->setting);
+			$sth->bindParam(':ClientID', $ClientID);
+			$sth->execute();
+			
 			if ($sth && $sth->rowCount() > 0) {
-				$dbh->exec("UPDATE {$db_prefix}setting SET value='$value' WHERE userid=$app->userid AND setting='$key'");				
+				$sth = $dbh->prepare ("UPDATE {$db_prefix}setting
+					SET value=:value
+					WHERE userid=:userid
+					AND setting=:setting
+					AND ClientID =:ClientID");
+				$sth->bindParam(':userid', $userid);
+				$sth->bindParam(':setting', $setting->setting);
+				$sth->bindParam(':value', $setting->value);
+				$sth->bindParam(':ClientID', $ClientID);
+				$sth->execute();		
 			}
 			else {
-				$dbh->exec("INSERT INTO {$db_prefix}setting (userid, setting, value) VALUES($app->userid, '$key', '$value')");
+				$sth = $dbh->prepare ("INSERT INTO {$db_prefix}setting (userid, setting, value, ClientID)
+					VALUES(:userid, :setting, :value, :ClientID)");
+				$sth->bindParam(':userid', $userid);
+				$sth->bindParam(':setting', $setting->setting);
+				$sth->bindParam(':value', $setting->value);
+				$sth->bindParam(':ClientID', $ClientID);
+				$sth->execute();
 			}
 		}
 	});
