@@ -577,6 +577,13 @@ class DB {
 			
 			$this->add_to_label("cast/" . $castid, $label);
 		}
+
+		return array(
+			"id" => $castid,
+			"name" => $name,
+			"url" => $feedurl,
+			"feed" => $castinfo
+		);
 	}
 	
 	function del_label($labelid){

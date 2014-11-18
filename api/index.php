@@ -547,7 +547,7 @@ $app -> group('/library', function() use ($app) {
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
 		$name = $app -> request -> params('name');
-		$app->db->subscribe_to($feedurl, $name, null, true);
+		json($app->db->subscribe_to($feedurl, $name, null, true));
 	});
 	
 	/**
@@ -858,6 +858,10 @@ $app -> group('/library', function() use ($app) {
 			$labelid = $dbh->lastInsertId();
 			
 			$app->db->add_to_label_root("label/" . $labelid);
+			json(array(
+				"id" => $labelid,
+				"name" => $name
+			));
 		} else {
 			$app->halt(400, "Exsisting label");
 		}
