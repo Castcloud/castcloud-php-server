@@ -28,108 +28,17 @@ $app->db = new DB($dbh, $app);
 
 $app->add(new AuthMiddleware());
 
-/**
- * @SWG\Resource(
- * 	apiVersion="1.0.0",
- * 	swaggerVersion="1.2",
- * 	resourcePath="/account",
- * 	description="Account related operations",
- * 	produces="['application/json']"
- * )
- */
 $app -> group('/account', function() use ($app) {
 	$app -> post('/login', function() use ($app) {
 		post_login($app);
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/account/ping",
-	 * 	description="Tests if token works",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Ping",
-	 * 		summary="Test token",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=200,
-	 * 			message="All ok"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/ping', function() {});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/account/settings",
-	 * 	description="Settings",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get Settings",
-	 * 		summary="Get Settings",
-	 * 		type="array",
-	 * 		items="$ref:setting",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/settings', function() use ($app) {
 		json($app->db->get_settings(), true);
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/account/settings",
-	 * 	description="Settings",
-	 * 	@SWG\Operation(
-	 * 		method="POST",
-	 * 		nickname="Set Settings",
-	 * 		summary="Set Settings",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="json",
-	 * 			description="New or modified settings",
-	 * 			paramType="form",
-	 * 			required=true,
-	 * 			type="array",
-	 * 			items="$ref:setting"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> post('/settings', function() use ($app) {
 		$settings = json_decode($app->request->params("json"));
 		$userid = $app->userid;
@@ -175,37 +84,7 @@ $app -> group('/account', function() use ($app) {
 			}
 		}
 	});
-	
-	/**
-	 * @SWG\Api(
-	 * 	path="/account/settings/{settingid}",
-	 * 	description="Settings",
-	 * 	@SWG\Operation(
-	 * 		method="DELETE",
-	 * 		nickname="Delete Setting",
-	 * 		summary="Delete Setting",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="settingid",
-	 * 			description="ID of the setting that is to be removed",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
+
 	$app -> delete('/settings/:settingid', function($settingid) use ($app) {
 		$userid = $app->userid;
 		$db_prefix = $GLOBALS['db_prefix'];
@@ -222,54 +101,8 @@ $app -> group('/account', function() use ($app) {
 
 });
 
-/**
- * @SWG\Resource(
- *   apiVersion="1.0.0",
- *   swaggerVersion="1.2",
- *   resourcePath="/library",
- *   description="Library related operations",
- *   produces="['application/json']"
- * )
- */
 $app -> group('/library', function() use ($app) {
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/newepisodes",
-	 * 	description="Get new episodes",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get new episodes",
-	 * 		summary="Get new episodes",
-     * 		type="newepisodesresult",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="since",
-	 * 			description="timestamp of last call",
-	 * 			paramType="query",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="exclude",
-	 * 			description="Exclude episode with latest event type. Comma separated event type ids to exclude. Default: 70",
-	 * 			paramType="query",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/newepisodes', function() use ($app) {
 		include_once 'models/newepisodesresult.php';
 		
@@ -285,80 +118,11 @@ $app -> group('/library', function() use ($app) {
 		json(new newepisodesresult($episodes));
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/episodes/{castid}",
-	 * 	description="Get all episodes of a cast",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get all episodes of a cast",
-	 * 		summary="Get all episodes of a cast",
-     * 		type="array",
-     * 		items="$ref:episode",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="castid",
-	 * 			description="The casts id",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="exclude",
-	 * 			description="Exclude episode with latest event type. Comma separated event type ids to exclude. Default: 70",
-	 * 			paramType="query",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/episodes/:castid', function($castid) use ($app) {
 		$exclude = $app->request->params('exclude');
 		json($app->db->get_episodes($castid, null, null, null, $exclude), true);
 	});
 	
-		/**
-	 * @SWG\Api(
-	 * 	path="/library/episode/{episodeid}",
-	 * 	description="Get a spesific episode",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get a spesific episode",
-	 * 		summary="Get a spesific episode",
-     * 		type="array",
-     * 		items="$ref:episode",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="episodeid",
-	 * 			description="The episodes id",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/episode/:episodeid', function($episodeid) use ($app) {
 		$episode = $app->db->get_episodes(null, null, $episodeid, null, "");
 		if (!empty($episode)){
@@ -366,44 +130,6 @@ $app -> group('/library', function() use ($app) {
 		}
 	});
 	
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/episodes/label/{label}",
-	 * 	description="Get all episodes of a label",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get episodes for label",
-	 * 		summary="Get episodes for label",
-     * 		type="array",
-     * 		items="$ref:episode",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="label",
-	 * 			description="The labelid",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="exclude",
-	 * 			description="Comma separated event ids to exclude. Default: 70",
-	 * 			paramType="query",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/episodes/label/:label', function($label) use ($app) {
 		$exclude = $app -> request -> params('exclude');
 		if ($exclude != null){
@@ -413,93 +139,14 @@ $app -> group('/library', function() use ($app) {
 		}
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/casts",
-	 * 	description="Get users subcriptions",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get users subcriptions",
-	 * 		summary="Get users subcriptions",
-	 * 		type="array",
-	 * 		items="$ref:cast",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/casts', function() use ($app) {
 		json($app->db->get_casts(), true);
 	});
 	
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/casts.opml",
-	 * 	description="Get users subcriptions",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get users subcriptions as opml",
-	 * 		summary="Get users subcriptions as opml",
-	 * 		type="array",
-	 * 		produces="['text/x-opml']",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app->get('/casts.opml', function() use($app) {
 		opml($app->db->get_label(), $app->db->get_casts());
 	});
 	
-	
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/casts.opml",
-	 * 	description="Adds content of opml to users subscriptions",
-	 * 	@SWG\Operation(
-	 * 		method="POST",
-	 * 		nickname="Adds content of opml to users subscriptions",
-	 * 		summary="Adds content of opml to users subscriptions",
-     * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="opml",
-	 * 			description="Content of a regular opml file",
-	 * 			paramType="form",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> post('/casts.opml', function() use ($app) {
 		set_time_limit(0);
 		$opml = $app->request->params('opml');
@@ -507,86 +154,12 @@ $app -> group('/library', function() use ($app) {
 		$app->db->import_opml($opml->body);
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/casts",
-	 * 	description="Subcribe to a cast",
-	 * 	@SWG\Operation(
-	 * 		method="POST",
-	 * 		nickname="Subcribe to a cast",
-	 * 		summary="Subcribe to a cast",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="feedurl",
-	 * 			description="URL of podcast feed",
-	 * 			paramType="form",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="name",
-	 * 			description="The displayname for the cast",
-	 * 			paramType="form",
-	 * 			required=false,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> post('/casts', function() use ($app) {
 		$feedurl = $app -> request -> params('feedurl');
 		$name = $app -> request -> params('name');
 		json($app->db->subscribe_to($feedurl, $name, null, true));
 	});
 	
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/casts/{id}",
-	 * 	description="Edit a subcription",
-	 * 	@SWG\Operation(
-	 * 		method="PUT",
-	 * 		nickname="Edit a subcription",
-	 * 		summary="Edit a subcription",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="id",
-	 * 			description="The casts id",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="name",
-	 * 			description="The feeds display name",
-	 * 			paramType="form",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> put('/casts/:id', function($id) use ($app) {
 		$name = $app -> request -> params('name');
 		$dbh = $GLOBALS['dbh'];
@@ -599,87 +172,12 @@ $app -> group('/library', function() use ($app) {
 		$sth -> execute();
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/casts/{id}",
-	 * 	description="Unsubscribe from a cast",
-	 * 	@SWG\Operation(
-	 * 		method="DELETE",
-	 * 		nickname="Unsubscribe from a cast",
-	 * 		summary="Unsubscribe from a cast",
-     * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="id",
-	 * 			description="The casts id",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app->delete('/casts/:id', function($id) use($app) {
 		$userid = $app->userid;
 		$db_prefix = $GLOBALS['db_prefix'];
 		$GLOBALS['dbh']->exec("DELETE FROM {$db_prefix}subscription WHERE castid=$id AND userid=$userid");
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/events",
-	 * 	description="Get events",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get users tags",
-	 * 		summary="Get users tags",
-     * 		type="array",
-     * 		items="$ref:event",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="since",
-	 * 			description="timestamp of last call",
-	 * 			paramType="query",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="episodeid",
-	 * 			description="filter by episodeid",
-	 * 			paramType="query",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="exclude",
-	 * 			description="Comma separated event type ids to exclude. Exclude events for episodes where the most recent event has this type. Default: 70. Ignored if since or episodeid parameters are set.",
-	 * 			paramType="query",
-	 * 			required=false,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/events', function() use ($app) {
 		include_once 'models/eventsresult.php';
 		
@@ -696,37 +194,6 @@ $app -> group('/library', function() use ($app) {
 		}
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/events",
-	 * 	description="Add events",
-	 * 	@SWG\Operation(
-	 * 		method="POST",
-	 * 		nickname="Add events",
-	 * 		summary="Add events",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="json",
-	 * 			description="New events",
-	 * 			paramType="form",
-	 * 			required=true,
-	 * 			type="array",
-	 * 			items="$ref:event"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> post('/events', function() use ($app) {
 		$db_prefix = $GLOBALS['db_prefix'];
 		$receivedts = time();
@@ -740,83 +207,11 @@ $app -> group('/library', function() use ($app) {
 		}
 	});
 
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/labels",
-	 * 	description="Get users labels",
-	 * 	@SWG\Operation(
-	 * 		method="GET",
-	 * 		nickname="Get users labels",
-	 * 		summary="Get users labels",
-	 * 		type="array",
-	 * 		@SWG\Items("string"),
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> get('/labels', function() use ($app) {
 		$app->db->clean_labels();
 		json($app->db->get_label(), true);
 	});
-	
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/labels",
-	 * 	description="Create a new label",
-	 * 	@SWG\Operation(
-	 * 		method="POST",
-	 * 		nickname="Create a new label",
-	 * 		summary="Create a new label",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="name",
-	 * 			description="The name of the new label. Mimimum 1 character",
-	 * 			paramType="form",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="content",
-	 * 			description="The content of the label. See GET label for formatting",
-	 * 			paramType="form",
-	 * 			required=false,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="expanded",
-	 * 			description="Wether or not the label is expanded in the client UI. Default false. root is always true.",
-	 * 			paramType="form",
-	 * 			required=false,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Name to short"
-	 * 		)
-	 * 	)
-	 * )
-	 */
+
 	$app -> post('/labels', function() use ($app) {
 		$name = $app -> request -> params('name');
 		$content = $app -> request -> params('content');
@@ -867,57 +262,6 @@ $app -> group('/library', function() use ($app) {
 		}
 	});
 	
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/labels/{id}",
-	 * 	description="Edit a label",
-	 * 	@SWG\Operation(
-	 * 		method="PUT",
-	 * 		nickname="Edit a label",
-	 * 		summary="Edit a label",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="id",
-	 * 			description="The id of the label you want to edit",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="name",
-	 * 			description="The name of the new label",
-	 * 			paramType="form",
-	 * 			required=false,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="content",
-	 * 			description="The content of the label. See GET label for formatting",
-	 * 			paramType="form",
-	 * 			required=false,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="expanded",
-	 * 			description="Wether or not the label is expanded in the client UI. Default false. root is always true.",
-	 * 			paramType="form",
-	 * 			required=false,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> put('/labels/:id', function($id) use ($app) {
 		$name = $app -> request -> params('name');
 		$content = $app -> request -> params('content');
@@ -983,36 +327,6 @@ $app -> group('/library', function() use ($app) {
 		$sth -> execute($inputs);
 	});
 	
-	/**
-	 * @SWG\Api(
-	 * 	path="/library/labels/{labelid}",
-	 * 	description="Delete a label",
-	 * 	@SWG\Operation(
-	 * 		method="DELETE",
-	 * 		nickname="Delete Label",
-	 * 		summary="Delete Label",
-	 * 		type="void",
-	 * 		@SWG\Parameter(
-	 * 			name="Authorization",
-	 * 			description="clients login token",
-	 * 			paramType="header",
-	 * 			required=true,
-	 * 			type="string"
-	 * 		),
-	 * 		@SWG\Parameter(
-	 * 			name="labelid",
-	 * 			description="ID of the label that is to be removed",
-	 * 			paramType="path",
-	 * 			required=true,
-	 * 			type="integer"
-	 * 		),
-	 * 		@SWG\ResponseMessage(
-	 * 			code=400,
-	 * 			message="Bad token"
-	 * 		)
-	 * 	)
-	 * )
-	 */
 	$app -> delete('/labels/:labelid', function($labelid) use ($app) {
 		$app->db->del_label($labelid);
 	});
